@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabMaster — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="ai.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
+  --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
+  --text1: #1A1714; --text2: #5C5751; --text3: #9C9590;
+  --accent: #C84B2F; --accent2: #E86A4A; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
+  --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
+  --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
+  --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
+  --idiom: #6B3FA0; --idiom-bg: #F3EDFC; --idiom-border: #C9AEED;
+  --grammar: #B5760A; --grammar-bg: #FDF6E7; --grammar-border: #E8C97A;
+  --modal-c: #1A7A6E; --modal-bg: #E8F6F4; --modal-border: #89CECA;
+  --calc-c: #5C5751; --calc-bg: #EEEAE2; --calc-border: #CBC5B8;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.10);
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+
+/* ── NAV ── */
+.top-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem;
+  height: 56px; position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 1px 0 var(--border);
+}
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); letter-spacing: -0.4px; }
+.nav-brand span { color: var(--accent); }
+.nav-spacer { flex: 1; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+
+/* AI Model Selector */
+.model-selector {
+  display: flex; align-items: center; gap: 2px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px;
+}
+.model-pill {
+  font-size: 11.5px; padding: 4px 12px; border-radius: 17px;
+  border: none; background: transparent; color: var(--text3);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  transition: all 0.15s; white-space: nowrap;
+}
+.model-pill.active { background: var(--surface); color: var(--text1); box-shadow: var(--shadow); }
+
+/* Streak badge */
+.streak-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: #FFF8F0; border: 1px solid #F5C88A;
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 13px; font-weight: 600; color: #C47A1A;
+}
+
+/* Avatar */
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 2px solid var(--border); cursor: pointer;
+  object-fit: cover; background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text2); overflow: hidden;
+}
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* Dropdown for user */
+.user-menu {
+  position: relative;
+}
+.user-dropdown {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 6px;
+  box-shadow: var(--shadow-md); min-width: 160px; z-index: 300;
+}
+.user-dropdown.open { display: block; }
+.user-dropdown-item {
+  width: 100%; text-align: left; padding: 8px 12px;
+  border: none; background: transparent; color: var(--text2);
+  font-family: 'DM Sans', sans-serif; font-size: 13.5px;
+  cursor: pointer; border-radius: 5px; display: flex; align-items: center; gap: 8px;
+}
+.user-dropdown-item:hover { background: var(--bg2); color: var(--text1); }
+.user-dropdown-item.danger { color: var(--red); }
+.user-dropdown-item.danger:hover { background: var(--red-bg); }
+
+/* ── MAIN ── */
+.wrap { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 2rem 2rem 1.75rem;
+  margin-bottom: 1.75rem; box-shadow: var(--shadow-md);
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle at top right, rgba(200,75,47,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.hero-greeting {
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px; color: var(--text1); line-height: 1.2; letter-spacing: -0.5px;
+}
+.hero-sub { font-size: 13.5px; color: var(--text3); margin-top: 4px; }
+
+.hero-stats { display: flex; gap: 10px; }
+.hstat {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 18px; min-width: 80px;
+}
+.hstat-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 26px; color: var(--text1); line-height: 1;
+}
+.hstat-num.fire { color: #E07020; }
+.hstat-label { font-size: 11px; color: var(--text3); margin-top: 4px; font-weight: 500; }
+
+/* Daily goal ring */
+.goal-row { display: flex; align-items: center; gap: 12px; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.goal-ring-wrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.goal-ring-wrap svg { transform: rotate(-90deg); }
+.goal-ring-bg { fill: none; stroke: var(--border); stroke-width: 4; }
+.goal-ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.goal-ring-label {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 600; color: var(--text1);
+}
+.goal-text { flex: 1; }
+.goal-title { font-size: 14px; font-weight: 600; color: var(--text1); }
+.goal-sub { font-size: 12.5px; color: var(--text3); margin-top: 2px; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 1rem;
+}
+
+/* ── PROGRESS CARDS ── */
+.progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+.prog-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow); transition: all 0.15s;
+}
+.prog-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.prog-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.prog-card-left { display: flex; align-items: center; gap: 9px; }
+.prog-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.prog-name { font-size: 14px; font-weight: 600; color: var(--text1); }
+.prog-pct { font-size: 13px; font-weight: 600; color: var(--text3); }
+.prog-bar-track {
+  height: 5px; background: var(--bg2);
+  border-radius: 3px; overflow: hidden; margin-bottom: 10px;
+}
+.prog-bar-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+.prog-bottom { display: flex; align-items: center; justify-content: space-between; }
+.prog-done { font-size: 12px; color: var(--text3); }
+.prog-continue {
+  font-size: 12px; padding: 4px 11px; border-radius: 20px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: all 0.12s;
+}
+.prog-continue:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); }
+
+/* ── MODULE NAV ── */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+.mod-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  cursor: pointer; transition: all 0.15s; text-align: left;
+  box-shadow: var(--shadow); text-decoration: none; color: inherit;
+  display: block;
+}
+.mod-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--border2); }
+.mod-card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 10px;
+}
+.mod-card-name { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 3px; }
+.mod-card-desc { font-size: 12.5px; color: var(--text3); line-height: 1.5; }
+
+/* Per-module colors */
+.m-pv  .prog-bar-fill, .m-pv  .prog-pct.done { background: var(--accent); }
+.m-pv  .prog-icon, .m-pv  .mod-card-icon { background: var(--accent-bg); }
+.m-pre .prog-bar-fill { background: var(--blue); }
+.m-pre .prog-icon, .m-pre .mod-card-icon { background: var(--blue-bg); }
+.m-id  .prog-bar-fill { background: var(--idiom); }
+.m-id  .prog-icon, .m-id  .mod-card-icon { background: var(--idiom-bg); }
+.m-gr  .prog-bar-fill { background: var(--grammar); }
+.m-gr  .prog-icon, .m-gr  .mod-card-icon { background: var(--grammar-bg); }
+.m-mo  .prog-bar-fill { background: var(--modal-c); }
+.m-mo  .prog-icon, .m-mo  .mod-card-icon { background: var(--modal-bg); }
+.m-ca  .prog-bar-fill { background: var(--calc-c); }
+.m-ca  .prog-icon, .m-ca  .mod-card-icon { background: var(--calc-bg); }
+
+/* ── TEST CTA ── */
+.test-cta {
+  background: var(--text1); border-radius: var(--radius);
+  padding: 1.5rem 2rem; display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem; margin-bottom: 2rem;
+  cursor: pointer; transition: all 0.15s; border: none; width: 100%;
+  text-align: left; font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 4px 20px rgba(26,23,20,0.15);
+}
+.test-cta:hover { background: #2a2521; transform: translateY(-1px); box-shadow: 0 8px 30px rgba(26,23,20,0.2); }
+.test-cta-left {}
+.test-cta-title { font-family: 'Instrument Serif', serif; font-size: 22px; color: #fff; letter-spacing: -0.3px; }
+.test-cta-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+.test-cta-btn {
+  background: var(--accent); color: #fff;
+  padding: 11px 22px; border-radius: 8px; font-size: 14px;
+  font-weight: 600; white-space: nowrap; flex-shrink: 0;
+  display: flex; align-items: center; gap: 7px;
+}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,23,20,0.5); z-index: 500;
+  align-items: center; justify-content: center;
+  padding: 1rem; backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface); border-radius: 18px;
+  width: 100%; max-width: 520px; max-height: 90vh;
+  overflow-y: auto; box-shadow: var(--shadow-lg);
+  animation: modalIn 0.25s ease both;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.modal-head {
+  padding: 1.5rem 1.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; color: var(--text3);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  transition: all 0.12s;
+}
+.modal-close:hover { background: var(--bg2); color: var(--text1); }
+
+.modal-body { padding: 1.5rem 1.75rem; }
+
+.form-group { margin-bottom: 1.25rem; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+
+.form-select {
+  width: 100%; padding: 10px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text1); font-family: 'DM Sans', sans-serif; font-size: 14px;
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239C9590' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  transition: border-color 0.15s;
+}
+.form-select:focus { outline: none; border-color: var(--accent); }
+
+/* Multi-select chips */
+.chip-group { display: flex; flex-wrap: wrap; gap: 7px; max-height: 130px; overflow-y: auto; padding: 2px; }
+.chip {
+  padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--text2); font-size: 12.5px;
+  cursor: pointer; transition: all 0.12s; font-family: 'DM Sans', sans-serif;
+  user-select: none;
+}
+.chip:hover { border-color: var(--border2); color: var(--text1); }
+.chip.selected { background: var(--text1); color: #fff; border-color: var(--text1); }
+
+/* Quantity + time row */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Model pills in modal */
+.model-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.modal-model-pill {
+  padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--text2); font-size: 13px;
+  cursor: pointer; transition: all 0.12s; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; display: flex; align-items: center; gap: 6px;
+}
+.modal-model-pill:hover { border-color: var(--border2); }
+.modal-model-pill.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+
+.modal-foot {
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid var(--border);
+}
+.start-btn {
+  width: 100%; padding: 13px; border-radius: 10px;
+  border: none; background: var(--accent); color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+}
+.start-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+.start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── TEST VIEW ── */
+.test-overlay {
+  display: none; position: fixed; inset: 0;
+  background: var(--bg); z-index: 600; overflow-y: auto;
+}
+.test-overlay.open { display: block; }
+
+.test-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; height: 56px; display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem; position: sticky; top: 0;
+  box-shadow: 0 1px 0 var(--border); z-index: 10;
+}
+.test-progress-info { display: flex; align-items: center; gap: 1rem; }
+.test-qcount { font-size: 13.5px; font-weight: 600; color: var(--text1); }
+.test-score-live { font-size: 13px; color: var(--text3); }
+
+/* Timer */
+.timer-wrap { display: flex; align-items: center; gap: 8px; }
+.timer-bar-track { width: 120px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.timer-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 1s linear; }
+.timer-bar-fill.warn { background: #E09020; }
+.timer-bar-fill.danger { background: var(--red); }
+.timer-display { font-size: 13.5px; font-weight: 600; color: var(--text1); min-width: 45px; text-align: right; }
+
+.test-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.test-q-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+  margin-bottom: 1.25rem; box-shadow: var(--shadow);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.test-q-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.test-q-num { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.test-q-timer { font-size: 12px; color: var(--text3); font-variant-numeric: tabular-nums; }
+
+.test-q-sentence { font-size: 16px; font-weight: 500; color: var(--text1); line-height: 1.75; margin-bottom: 1.25rem; }
+.test-blank { display: inline-block; min-width: 120px; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 600; text-align: center; padding: 0 6px; }
+
+.test-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.test-opt {
+  padding: 11px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: transparent;
+  cursor: pointer; text-align: left; font-family: 'DM Sans', sans-serif;
+  transition: all 0.12s; width: 100%;
+}
+.test-opt:hover:not(:disabled) { background: var(--bg2); border-color: var(--border2); }
+.test-opt-verb { font-size: 13.5px; font-weight: 500; color: var(--text1); display: block; margin-bottom: 2px; }
+.test-opt-hint { font-size: 12px; color: var(--text3); display: block; }
+.test-opt.sel-correct { background: var(--green-bg); border-color: var(--green-border); }
+.test-opt.sel-correct .test-opt-verb, .test-opt.sel-correct .test-opt-hint { color: var(--green); }
+.test-opt.sel-wrong { background: var(--red-bg); border-color: var(--red-border); }
+.test-opt.sel-wrong .test-opt-verb, .test-opt.sel-wrong .test-opt-hint { color: var(--red); }
+.test-opt.show-correct { background: var(--green-bg); border-color: var(--green-border); }
+.test-opt.show-correct .test-opt-verb, .test-opt.show-correct .test-opt-hint { color: var(--green); }
+.test-opt:disabled { cursor: default; }
+
+.test-feedback {
+  font-size: 13px; color: var(--text2); line-height: 1.7;
+  padding: 10px 13px; background: var(--bg2); border-radius: var(--radius-sm);
+  margin-top: 10px; display: none;
+}
+.test-feedback.show { display: block; }
+
+/* Results */
+.results-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem; }
+.results-hero {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 2rem; text-align: center;
+  margin-bottom: 1.5rem; box-shadow: var(--shadow-md);
+}
+.results-score {
+  font-family: 'Instrument Serif', serif;
+  font-size: 52px; color: var(--text1); line-height: 1; margin-bottom: 6px;
+}
+.results-score span { color: var(--text3); font-size: 32px; }
+.results-label { font-size: 14px; color: var(--text3); margin-bottom: 1.25rem; }
+.results-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.rstat { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+.rstat-num { font-size: 20px; font-weight: 700; color: var(--text1); }
+.rstat-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.results-btn-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.results-btn {
+  flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.results-btn:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); }
+.results-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.results-btn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+/* Spinner */
+.spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ai-loading { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 3rem 0; }
+.ai-loading-text { font-size: 13.5px; color: var(--text3); }
+
+/* Loading screen */
+.page-loading {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; flex-direction: column; gap: 14px;
+}
+.page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
+.page-loading-brand span { color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .progress-grid { grid-template-columns: 1fr 1fr; }
+  .module-grid { grid-template-columns: 1fr 1fr; }
+  .hero-stats { gap: 7px; }
+  .hstat { padding: 10px 12px; min-width: 64px; }
+  .model-selector { display: none; }
+  .test-cta { flex-direction: column; align-items: flex-start; }
+  .form-row { grid-template-columns: 1fr; }
+  .test-opts { grid-template-columns: 1fr; }
+  .results-stats { grid-template-columns: repeat(3, 1fr); }
+  .timer-bar-track { width: 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Page loading -->
+<div class="page-loading" id="page-loading">
+  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="spinner"></div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-brand">Vocab<span>Master</span></div>
+  <div class="nav-spacer"></div>
+  <div class="nav-right">
+    <div class="model-selector" id="model-selector">
+      <button class="model-pill active" data-model="claude" onclick="switchModel('claude',this)">◆ Claude</button>
+      <button class="model-pill" data-model="gemini" onclick="switchModel('gemini',this)">✦ Gemini</button>
+      <button class="model-pill" data-model="grok" onclick="switchModel('grok',this)">⬡ Groq</button>
+    </div>
+    <div class="streak-badge" id="nav-streak">🔥 <span id="streak-count">0</span></div>
+    <div class="user-menu">
+      <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()">?</div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="user-dropdown-item" id="user-name-item"><i class="ti ti-user" style="font-size:14px"></i> <span id="dd-name">User</span></div>
+        <button class="user-dropdown-item danger" onclick="sbSignOut()"><i class="ti ti-logout" style="font-size:14px"></i> Sign out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-greeting" id="greeting">Good morning 👋</div>
+        <div class="hero-sub" id="hero-sub">Keep your streak going — practice a little every day.</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat">
+          <div class="hstat-num fire" id="hero-streak">0</div>
+          <div class="hstat-label">Day Streak 🔥</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-num" id="hero-total">0</div>
+          <div class="hstat-label">Total Done</div>
+        </div>
+      </div>
+    </div>
+    <div class="goal-row">
+      <div class="goal-ring-wrap">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+          <circle class="goal-ring-bg" cx="24" cy="24" r="20"/>
+          <circle class="goal-ring-fill" id="goal-ring" cx="24" cy="24" r="20"
+            stroke-dasharray="125.7" stroke-dashoffset="125.7"/>
+        </svg>
+        <div class="goal-ring-label" id="goal-ring-label">0%</div>
+      </div>
+      <div class="goal-text">
+        <div class="goal-title" id="goal-title">Daily Goal: 5 questions</div>
+        <div class="goal-sub" id="goal-sub">Answer 5 questions today to keep your streak alive.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="section-label">Your Progress</div>
+  <div class="progress-grid" id="progress-grid"></div>
+
+  <!-- TEST CTA -->
+  <button class="test-cta" onclick="openTestModal()">
+    <div class="test-cta-left">
+      <div class="test-cta-title">Take a Timed Test</div>
+      <div class="test-cta-sub">AI-generated questions • Choose topic, length & time</div>
+    </div>
+    <div class="test-cta-btn"><i class="ti ti-bolt" style="font-size:16px"></i> Start Test</div>
+  </button>
+
+  <!-- MODULES -->
+  <div class="section-label">Learn & Practice</div>
+  <div class="module-grid" id="module-grid"></div>
+</div>
+
+<!-- ── TEST MODAL ── -->
+<div class="modal-overlay" id="test-modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Configure Test</div>
+      <button class="modal-close" onclick="closeTestModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Topic -->
+      <div class="form-group">
+        <label class="form-label">Topic</label>
+        <select class="form-select" id="test-topic" onchange="updateSubtopics()">
+          <option value="">— Select a topic —</option>
+          <option value="phrasal">Phrasal Verbs</option>
+          <option value="preposition">Prepositions</option>
+          <option value="idiom">Idioms</option>
+          <option value="grammar">Grammar Rules</option>
+          <option value="modal">Modals</option>
+        </select>
+      </div>
+      <!-- Subtopic chips -->
+      <div class="form-group" id="subtopic-group" style="display:none">
+        <label class="form-label">Subtopics <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(select one or more)</span></label>
+        <div class="chip-group" id="subtopic-chips"></div>
+      </div>
+      <!-- Count + Time -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">No. of Questions</label>
+          <select class="form-select" id="test-count">
+            <option value="5">5 questions</option>
+            <option value="10" selected>10 questions</option>
+            <option value="15">15 questions</option>
+            <option value="20">20 questions</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time Limit</label>
+          <select class="form-select" id="test-time">
+            <option value="300">5 minutes</option>
+            <option value="600" selected>10 minutes</option>
+            <option value="900">15 minutes</option>
+            <option value="1200">20 minutes</option>
+            <option value="1800">30 minutes</option>
+          </select>
+        </div>
+      </div>
+      <!-- AI Model -->
+      <div class="form-group">
+        <label class="form-label">AI Model</label>
+        <div class="model-pills" id="modal-model-pills">
+          <button class="modal-model-pill selected" data-m="claude" onclick="selectModalModel('claude',this)">◆ Claude Sonnet 4</button>
+          <button class="modal-model-pill" data-m="gemini" onclick="selectModalModel('gemini',this)">✦ Gemini 2.5 Flash</button>
+          <button class="modal-model-pill" data-m="grok" onclick="selectModalModel('grok',this)">⬡ Groq Llama 3.3</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="start-btn" id="start-test-btn" onclick="startTest()" disabled>
+        <i class="ti ti-bolt" style="font-size:16px"></i> Generate & Start Test
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TEST VIEW ── -->
+<div class="test-overlay" id="test-overlay">
+  <div class="test-nav">
+    <div class="test-progress-info">
+      <div class="test-qcount" id="test-qcount">Q 0 / 0</div>
+      <div class="test-score-live" id="test-score-live">Score: 0</div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
+      <div class="timer-display" id="timer-display">--:--</div>
+    </div>
+  </div>
+  <div id="test-body">
+    <!-- questions or results rendered here -->
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   MODULES CONFIG
+════════════════════════════════ */
+const MODULES = [
+  { key:'phrasal',    name:'Phrasal Verbs', desc:'Master verb + particle combos',       icon:'⚡', cls:'m-pv',  file:'app.html?m=phrasal',    total:50  },
+  { key:'preposition',name:'Prepositions',  desc:'Correct preposition with every word',  icon:'🔗', cls:'m-pre', file:'app.html?m=preposition', total:45  },
+  { key:'idiom',      name:'Idioms',        desc:'200 common idioms with Hindi meanings', icon:'💡', cls:'m-id',  file:'app.html?m=idiom',      total:60  },
+  { key:'grammar',    name:'Grammar Rules', desc:'12 essential grammar rules',           icon:'📖', cls:'m-gr',  file:'app.html?m=grammar',    total:36  },
+  { key:'modal',      name:'Modals',        desc:'Can, could, should, must & more',      icon:'🎯', cls:'m-mo',  file:'app.html?m=modal',      total:40  },
+  { key:'calc',       name:'Calculations',  desc:'Arithmetic, percentages & reasoning',  icon:'🔢', cls:'m-ca',  file:'app.html?m=calc',       total:50  },
+];
+
+const SUBTOPICS = {
+  phrasal:     ['Break','Bring','Call','Catch','Come','Cut','Get','Give','Go','Keep','Look','Make','Put','Run','Set','Take','Turn'],
+  preposition: ['FROM_Prevention','TO_Attachment','IN_Location','AT_Time','ON_Surface','WITH_Association','FOR_Purpose','BY_Agent','OF_Belonging','ABOUT_Topic'],
+  idiom:       ['Set 1 (1–20)','Set 2 (21–40)','Set 3 (41–60)','Set 4 (61–80)','Set 5 (81–100)'],
+  grammar:     ['Rule 1: Subject-Verb Agreement','Rule 2: Tense Consistency','Rule 3: Articles (A/An/The)','Rule 4: Prepositions','Rule 5: Pronouns','Rule 6: Adjectives & Adverbs','Rule 7: Active vs Passive','Rule 8: Direct vs Indirect Speech','Rule 9: Conditionals','Rule 10: Modal Verbs','Rule 11: Gerunds & Infinitives','Rule 12: Conjunctions'],
+  modal:       ['Can / Could','May / Might','Will / Would','Shall / Should','Must / Ought to','Need / Dare','Used to / Would (past habits)'],
+};
+
+/* ════════════════════════════════
+   STATE
+════════════════════════════════ */
+let currentUser = null;
+let progressData = [];
+let selectedSubtopics = new Set();
+let modalModel = getActiveModel();
+let testQuestions = [];
+let testAnswers   = {};
+let testTimerInterval = null;
+let testTimeLeft  = 0;
+let testTimeTotal = 0;
+let qStartTimes   = {};
+let testScore     = 0;
+
+/* ════════════════════════════════
+   INIT
+════════════════════════════════ */
+(async () => {
+  const session = await sbGetSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+
+  currentUser = await sbGetUser();
+  await sbUpsertProfile(currentUser);
+
+  // Set model from storage
+  const m = getActiveModel();
+  document.querySelectorAll('.model-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.model === m);
+  });
+  document.querySelectorAll('.modal-model-pill').forEach(p => {
+    p.classList.toggle('selected', p.dataset.m === m);
+  });
+  modalModel = m;
+
+  await loadDashboard();
+  document.getElementById('page-loading').style.display = 'none';
+})();
+
+async function loadDashboard() {
+  const [profile, streakData, progress] = await Promise.all([
+    sbGetProfile(currentUser.id),
+    sbGetStreak(currentUser.id),
+    sbGetProgress(currentUser.id)
+  ]);
+
+  progressData = progress;
+
+  // Greeting
+  const hr = new Date().getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  const name = (profile?.name || currentUser.email).split(' ')[0];
+  document.getElementById('greeting').textContent = `${greet}, ${name} 👋`;
+
+  // Streak
+  document.getElementById('hero-streak').textContent = streakData.current;
+  document.getElementById('hero-total').textContent  = streakData.total;
+  document.getElementById('streak-count').textContent = streakData.current;
+
+  // User avatar
+  const av = document.getElementById('user-avatar');
+  if (profile?.avatar_url) {
+    av.innerHTML = `<img src="${profile.avatar_url}" alt="">`;
+  } else {
+    av.textContent = name[0].toUpperCase();
+  }
+  document.getElementById('dd-name').textContent = name;
+
+  // Goal ring
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayDone = progress.filter(p => {
+    const d = new Date(p.created_at || Date.now()).toISOString().split('T')[0];
+    return d === todayStr;
+  }).length;
+  const goalPct = Math.min(100, Math.round((todayDone / 5) * 100));
+  const circ = 125.7;
+  document.getElementById('goal-ring').style.strokeDashoffset = circ - (circ * goalPct / 100);
+  document.getElementById('goal-ring-label').textContent = goalPct + '%';
+  document.getElementById('goal-title').textContent = `Daily Goal: ${todayDone} / 5 questions`;
+  document.getElementById('goal-sub').textContent = todayDone >= 5
+    ? '✓ Goal complete! Great work today.'
+    : `${5 - todayDone} more question${5 - todayDone !== 1 ? 's' : ''} to reach today's goal.`;
+
+  renderProgressCards(progress);
+  renderModuleGrid();
+}
+
+function renderProgressCards(progress) {
+  const grid = document.getElementById('progress-grid');
+  grid.innerHTML = MODULES.map(mod => {
+    const done = new Set(progress.filter(p => p.module === mod.key && p.correct).map(p => p.question_id)).size;
+    const pct  = mod.total > 0 ? Math.round((done / mod.total) * 100) : 0;
+    const lv   = getLastVisited();
+    return `<div class="prog-card ${mod.cls}">
+      <div class="prog-card-top">
+        <div class="prog-card-left">
+          <div class="prog-icon">${mod.icon}</div>
+          <div class="prog-name">${mod.name}</div>
+        </div>
+        <div class="prog-pct">${pct}%</div>
+      </div>
+      <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+      <div class="prog-bottom">
+        <div class="prog-done">${done} / ${mod.total} correct</div>
+        <button class="prog-continue" onclick="goToModule('${mod.key}')">Continue →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderModuleGrid() {
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = MODULES.map(mod => `
+    <a class="mod-card ${mod.cls}" href="${mod.file}">
+      <div class="mod-card-icon">${mod.icon}</div>
+      <div class="mod-card-name">${mod.name}</div>
+      <div class="mod-card-desc">${mod.desc}</div>
+    </a>`).join('');
+}
+
+function goToModule(key) {
+  const mod = MODULES.find(m => m.key === key);
+  if (mod) window.location.href = mod.file;
+}
+
+/* ════════════════════════════════
+   MODEL SELECTOR
+════════════════════════════════ */
+function switchModel(key, btn) {
+  setActiveModel(key);
+  document.querySelectorAll('.model-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+}
+function selectModalModel(key, btn) {
+  modalModel = key;
+  document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+/* ════════════════════════════════
+   USER MENU
+════════════════════════════════ */
+function toggleUserMenu() {
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.user-menu')) document.getElementById('user-dropdown').classList.remove('open');
+});
+
+/* ════════════════════════════════
+   TEST MODAL
+════════════════════════════════ */
+function openTestModal() { document.getElementById('test-modal-overlay').classList.add('open'); }
+function closeTestModal() { document.getElementById('test-modal-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('test-modal-overlay')) closeTestModal(); }
+
+function updateSubtopics() {
+  const topic = document.getElementById('test-topic').value;
+  selectedSubtopics.clear();
+  const group = document.getElementById('subtopic-group');
+  const chips = document.getElementById('subtopic-chips');
+  if (!topic || !SUBTOPICS[topic]) { group.style.display = 'none'; checkStartBtn(); return; }
+  group.style.display = 'block';
+  chips.innerHTML = SUBTOPICS[topic].map(s => `
+    <div class="chip" onclick="toggleChip(this,'${s.replace(/'/g,"\\'")}')"><span>${s}</span></div>`).join('');
+  checkStartBtn();
+}
+
+function toggleChip(el, val) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) selectedSubtopics.add(val);
+  else selectedSubtopics.delete(val);
+  checkStartBtn();
+}
+
+function checkStartBtn() {
+  const topic = document.getElementById('test-topic').value;
+  const ok = topic && selectedSubtopics.size > 0;
+  document.getElementById('start-test-btn').disabled = !ok;
+}
+
+async function startTest() {
+  const topic  = document.getElementById('test-topic').value;
+  const count  = parseInt(document.getElementById('test-count').value);
+  const timeSec= parseInt(document.getElementById('test-time').value);
+  const subs   = [...selectedSubtopics];
+
+  closeTestModal();
+  setActiveModel(modalModel);
+
+  // Show test overlay with loading
+  document.getElementById('test-overlay').classList.add('open');
+  document.getElementById('test-body').innerHTML = `
+    <div class="test-wrap"><div class="ai-loading">
+      <div class="spinner"></div>
+      <div class="ai-loading-text">Generating ${count} questions using AI…</div>
+    </div></div>`;
+
+  try {
+    const prompt = PROMPTS.testBatch(topic, subs, count);
+    const raw    = await aiCall(prompt, modalModel);
+    let   qs     = parseAIJson(raw);
+    qs = qs.slice(0, count).map((q, i) => ({ ...q, id: `test_${i}` }));
+
+    if (currentUser) await sbSaveCachedQuestions(currentUser.id, topic, subs.join('|'), modalModel, qs);
+
+    testQuestions = qs;
+    testAnswers   = {};
+    testScore     = 0;
+    testTimeTotal = timeSec;
+    testTimeLeft  = timeSec;
+    qStartTimes   = {};
+
+    renderTestQuestions();
+    startTimer();
+    updateTestNav();
+  } catch (err) {
+    document.getElementById('test-body').innerHTML = `
+      <div class="test-wrap"><div style="padding:3rem 0;text-align:center;color:var(--red)">
+        Failed to generate questions. Please try again.<br>
+        <button onclick="document.getElementById('test-overlay').classList.remove('open')" style="margin-top:1rem;padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:DM Sans,sans-serif">← Back</button>
+      </div></div>`;
+  }
+}
+
+function renderTestQuestions() {
+  const wrap = document.getElementById('test-body');
+  const now  = Date.now();
+  wrap.innerHTML = `<div class="test-wrap">` +
+    testQuestions.map((q, i) => {
+      qStartTimes[q.id] = now;
+      return `<div class="test-q-card" id="tqc-${q.id}">
+        <div class="test-q-meta">
+          <div class="test-q-num">Question ${i+1} of ${testQuestions.length}${q.topic ? ' · ' + q.topic : ''}</div>
+          <div class="test-q-timer" id="tqt-${q.id}">—</div>
+        </div>
+        <div class="test-q-sentence">${q.sentence.replace('___', `<span class="test-blank" id="tb-${q.id}">________</span>`)}</div>
+        <div class="test-opts">
+          ${q.options.map(o => `
+            <button class="test-opt" onclick="testAnswer(this,'${esc(q.id)}','${esc(o.verb)}')">
+              <span class="test-opt-verb">${o.verb}</span>
+              <span class="test-opt-hint">${o.hint}</span>
+            </button>`).join('')}
+        </div>
+        <div class="test-feedback" id="tqf-${q.id}">${q.feedback}</div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+function testAnswer(btn, qid, chosen) {
+  if (testAnswers[qid]) return;
+  const q = testQuestions.find(x => x.id === qid);
+  if (!q) return;
+
+  const timeTaken = Math.round((Date.now() - (qStartTimes[qid] || Date.now())) / 1000);
+  const correct   = chosen === q.correct;
+  testAnswers[qid] = { chosen, correct, timeTaken };
+  if (correct) testScore++;
+
+  // Update time label on card
+  const tqt = document.getElementById('tqt-' + qid);
+  if (tqt) tqt.textContent = `${timeTaken}s`;
+
+  // Style tiles
+  btn.closest('.test-opts').querySelectorAll('.test-opt').forEach(t => {
+    t.disabled = true;
+    const v = t.querySelector('.test-opt-verb').textContent.trim();
+    if (v === chosen && correct)  t.classList.add('sel-correct');
+    else if (v === chosen)        t.classList.add('sel-wrong');
+    else if (v === q.correct)     t.classList.add('show-correct');
+  });
+
+  // Fill blank
+  const tb = document.getElementById('tb-' + qid);
+  if (tb) { tb.textContent = q.correct; if (!correct) tb.style.color = 'var(--green)'; }
+
+  // Show feedback
+  const fb = document.getElementById('tqf-' + qid);
+  if (fb) fb.classList.add('show');
+
+  // Save to Supabase
+  if (currentUser) {
+    const topic = document.getElementById('test-topic')?.value || 'test';
+    sbSaveAnswer({ userId: currentUser.id, module: topic, itemKey: 'test', questionId: qid, chosen, correct, source: 'ai' });
+  }
+
+  updateTestNav();
+
+  // Auto-submit if all answered
+  if (Object.keys(testAnswers).length === testQuestions.length) {
+    setTimeout(submitTest, 800);
+  }
+}
+
+function updateTestNav() {
+  document.getElementById('test-qcount').textContent   = `${Object.keys(testAnswers).length} / ${testQuestions.length} answered`;
+  document.getElementById('test-score-live').textContent = `Score: ${testScore}`;
+}
+
+function startTimer() {
+  clearInterval(testTimerInterval);
+  updateTimerDisplay();
+  testTimerInterval = setInterval(() => {
+    testTimeLeft--;
+    updateTimerDisplay();
+    if (testTimeLeft <= 0) { clearInterval(testTimerInterval); submitTest(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(testTimeLeft / 60);
+  const s = testTimeLeft % 60;
+  document.getElementById('timer-display').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  const pct = (testTimeLeft / testTimeTotal) * 100;
+  const bar = document.getElementById('timer-bar');
+  bar.style.width = pct + '%';
+  bar.className = 'timer-bar-fill' + (pct < 20 ? ' danger' : pct < 40 ? ' warn' : '');
+}
+
+async function submitTest() {
+  clearInterval(testTimerInterval);
+  const timeTaken = testTimeTotal - testTimeLeft;
+  const total     = testQuestions.length;
+  const pct       = Math.round((testScore / total) * 100);
+
+  const results = testQuestions.map(q => ({
+    qid: q.id, topic: q.topic || '',
+    correct: q.correct,
+    ...testAnswers[q.id] || { chosen: null, correct: false, timeTaken: 0 }
+  }));
+
+  // Save session
+  if (currentUser) {
+    const topic = document.getElementById('test-topic')?.value || 'test';
+    const subs  = [...selectedSubtopics];
+    await sbSaveTestSession({
+      userId: currentUser.id, module: topic, subtopics: subs,
+      model: modalModel, totalQuestions: total,
+      timeAllocated: testTimeTotal, timeTaken, score: testScore, results
+    });
+  }
+
+  // Render results
+  document.getElementById('test-overlay').classList.remove('open');
+  document.getElementById('test-body').innerHTML = '';
+
+  // Reload dashboard to refresh bars
+  loadDashboard();
+}
+
+function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

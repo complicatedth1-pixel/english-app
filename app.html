@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabMaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="ai.js"></script>
+<script src="db_phrasal.js"></script>
+<script src="db_preposition.js"></script>
+<script src="db_idioms.js"></script>
+<script src="db_grammar.js"></script>
+<script src="db_modals.js"></script>
+<script src="db_calculations.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
+  --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
+  --text1: #1A1714; --text2: #5C5751; --text3: #9C9590;
+  --accent: #C84B2F; --accent2: #E86A4A; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
+  --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
+  --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
+  --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
+  --idiom: #6B3FA0; --idiom-bg: #F3EDFC; --idiom-border: #C9AEED;
+  --grammar: #B5760A; --grammar-bg: #FDF6E7; --grammar-border: #E8C97A;
+  --modal-c: #1A7A6E; --modal-bg: #E8F6F4; --modal-border: #89CECA;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
+
+/* ── NAV ── */
+.top-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
+  height: 54px; position: sticky; top: 0; z-index: 100;
+}
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; }
+.nav-brand span { color: var(--accent); }
+.nav-divider { width: 1px; height: 20px; background: var(--border); }
+.nav-module-name { font-size: 13.5px; font-weight: 500; color: var(--text2); }
+.nav-spacer { flex: 1; }
+.nav-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text3); background: transparent;
+  border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  padding: 4px 0; transition: color 0.12s;
+}
+.nav-back:hover { color: var(--text1); }
+
+/* Model pill in nav */
+.nav-model-pill {
+  font-size: 12px; padding: 4px 12px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: all 0.12s;
+}
+.nav-model-pill:hover { background: var(--bg3); }
+
+/* ── LAYOUT ── */
+.app-wrap { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.25rem; }
+
+/* ── HOME GRID ── */
+.home-section { margin-bottom: 1.75rem; }
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.75rem; }
+.base-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
+.base-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.1rem;
+  cursor: pointer; transition: all 0.15s; text-align: left;
+  width: 100%; box-shadow: var(--shadow); border-top: 3px solid var(--border);
+}
+.base-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.base-verb { font-size: 16px; font-weight: 600; color: var(--text1); margin-bottom: 3px; }
+.base-count { font-size: 11.5px; color: var(--text3); }
+.base-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.base-chip { font-size: 11px; padding: 2px 7px; border-radius: 20px; background: var(--bg2); color: var(--text2); }
+
+/* Module variants */
+.base-card.pv-card  { border-top-color: var(--accent); }
+.base-card.pv-card  .base-verb { color: var(--accent); }
+.base-card.pv-card  .base-chip { background: var(--accent-bg); color: var(--accent); }
+.base-card.pre-card { border-top-color: var(--blue); }
+.base-card.pre-card .base-verb { color: var(--blue); }
+.base-card.pre-card .base-chip { background: var(--blue-bg); color: var(--blue); }
+.base-card.id-card  { border-top-color: var(--idiom); }
+.base-card.id-card  .base-verb { color: var(--idiom); }
+.base-card.id-card  .base-chip { background: var(--idiom-bg); color: var(--idiom); }
+.base-card.gr-card  { border-top-color: var(--grammar); }
+.base-card.gr-card  .base-verb { color: var(--grammar); }
+.base-card.gr-card  .base-chip { background: var(--grammar-bg); color: var(--grammar); }
+.base-card.mo-card  { border-top-color: var(--modal-c); }
+.base-card.mo-card  .base-verb { color: var(--modal-c); }
+.base-card.mo-card  .base-chip { background: var(--modal-bg); color: var(--modal-c); }
+
+/* ── MODULE VIEW ── */
+.module-view { display: none; }
+.module-view.active { display: block; }
+
+.module-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.mod-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+.mod-badge.pv  { background: var(--accent-bg); color: var(--accent); }
+.mod-badge.pre { background: var(--blue-bg); color: var(--blue); }
+.mod-badge.id  { background: var(--idiom-bg); color: var(--idiom); }
+.mod-badge.gr  { background: var(--grammar-bg); color: var(--grammar); }
+.mod-badge.mo  { background: var(--modal-bg); color: var(--modal-c); }
+
+/* ── TABS ── */
+.tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+.tab-btn {
+  padding: 9px 18px; border: none; border-bottom: 2.5px solid transparent;
+  background: transparent; color: var(--text2); font-size: 13.5px;
+  cursor: pointer; margin-bottom: -1px; transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif; font-weight: 400;
+}
+.tab-btn:hover { color: var(--text1); }
+.tab-btn.active { color: var(--text1); font-weight: 500; }
+.tab-btn.active.t-pv  { border-bottom-color: var(--accent); }
+.tab-btn.active.t-pre { border-bottom-color: var(--blue); }
+.tab-btn.active.t-id  { border-bottom-color: var(--idiom); }
+.tab-btn.active.t-gr  { border-bottom-color: var(--grammar); }
+.tab-btn.active.t-mo  { border-bottom-color: var(--modal-c); }
+
+.sec { display: none; } .sec.active { display: block; }
+
+/* ── PROGRESS BAR (module top) ── */
+.mod-progress { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+.mod-progress-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+.pf-pv  { background: var(--accent); }
+.pf-pre { background: var(--blue); }
+.pf-id  { background: var(--idiom); }
+.pf-gr  { background: var(--grammar); }
+.pf-mo  { background: var(--modal-c); }
+
+/* ── LEARN CARDS ── */
+.pv-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+.pv-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.pv-en { font-size: 13.5px; color: var(--text2); line-height: 1.65; margin-bottom: 3px; }
+.pv-hi { font-size: 13px; color: var(--text3); line-height: 1.65; margin-bottom: 10px; font-style: italic; }
+.pv-example {
+  background: var(--bg2); border-left: 2.5px solid var(--border2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 8px 12px; font-size: 13px; color: var(--text1); margin-bottom: 8px; line-height: 1.6;
+}
+.pv-note { font-size: 12px; color: var(--text3); line-height: 1.6; }
+.intro-box { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 13.5px; color: var(--text2); line-height: 1.7; }
+
+/* ── GRAMMAR two-col compare ── */
+.gr-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.gr-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
+.gr-col-head { font-size: 14px; font-weight: 700; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 2px solid var(--grammar-border); color: var(--grammar); }
+.gr-col-ex { background: var(--grammar-bg); border-left: 2.5px solid var(--grammar); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 7px 10px; font-size: 12.5px; color: var(--text1); line-height: 1.55; margin-bottom: 6px; }
+.gr-col-note { font-size: 11.5px; color: var(--text3); line-height: 1.55; }
+
+/* ── PRACTICE ── */
+.score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 10px; }
+.score-pill { font-size: 13px; color: var(--text2); background: var(--surface); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.practice-actions { display: flex; gap: 8px; }
+.reset-btn, .ai-practice-btn {
+  font-size: 13px; padding: 6px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+}
+.reset-btn:hover { background: var(--bg2); border-color: var(--border2); color: var(--text1); }
+.ai-practice-btn { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
+.ai-practice-btn:hover { background: #fae3dc; }
+
+.fib-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+.q-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; }
+.q-tag.static-pv  { background: var(--accent-bg); color: var(--accent); }
+.q-tag.static-pre { background: var(--blue-bg); color: var(--blue); }
+.q-tag.static-id  { background: var(--idiom-bg); color: var(--idiom); }
+.q-tag.static-gr  { background: var(--grammar-bg); color: var(--grammar); }
+.q-tag.static-mo  { background: var(--modal-bg); color: var(--modal-c); }
+.q-tag.ai-tag { background: #FFF8E6; color: #9A6700; border: 1px solid #F0D898; }
+
+.fib-sentence { font-size: 15px; color: var(--text1); line-height: 1.75; margin-bottom: 1rem; font-weight: 500; }
+.blank { display: inline-block; min-width: 110px; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 500; text-align: center; padding: 0 4px; }
+.blank.pre { border-bottom-color: var(--blue); color: var(--blue); }
+.blank.id  { border-bottom-color: var(--idiom); color: var(--idiom); }
+.blank.gr  { border-bottom-color: var(--grammar); color: var(--grammar); }
+.blank.mo  { border-bottom-color: var(--modal-c); color: var(--modal-c); }
+
+.opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.opt-tile { text-align: left; padding: 10px 13px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: all 0.15s; width: 100%; font-family: 'DM Sans', sans-serif; }
+.opt-tile:hover:not(:disabled) { background: var(--bg2); border-color: var(--border2); }
+.opt-tile-verb { font-size: 13.5px; font-weight: 500; color: var(--text1); display: block; margin-bottom: 2px; }
+.opt-tile-hint { font-size: 12px; color: var(--text3); display: block; line-height: 1.4; }
+.opt-tile.sel-correct { background: var(--green-bg); border-color: var(--green-border); }
+.opt-tile.sel-correct .opt-tile-verb, .opt-tile.sel-correct .opt-tile-hint { color: var(--green); }
+.opt-tile.sel-wrong   { background: var(--red-bg); border-color: var(--red-border); }
+.opt-tile.sel-wrong   .opt-tile-verb, .opt-tile.sel-wrong .opt-tile-hint { color: var(--red); }
+.opt-tile.show-correct { background: var(--green-bg); border-color: var(--green-border); }
+.opt-tile.show-correct .opt-tile-verb, .opt-tile.show-correct .opt-tile-hint { color: var(--green); }
+.opt-tile:disabled { cursor: default; }
+
+.fib-feedback { font-size: 13px; color: var(--text2); line-height: 1.7; padding: 10px 13px; background: var(--bg2); border-radius: var(--radius-sm); display: none; margin-top: 4px; }
+.fib-feedback.show { display: block; }
+
+/* ── REVIEW ── */
+.rv-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+.rv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.rv-sent { font-size: 14px; font-weight: 500; color: var(--text1); line-height: 1.6; }
+.rv-badge { flex-shrink: 0; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+.rv-badge.c { background: var(--green-bg); color: var(--green); }
+.rv-badge.w { background: var(--red-bg); color: var(--red); }
+.rv-badge.u { background: var(--bg2); color: var(--text3); }
+.rv-ans-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; flex-wrap: wrap; }
+.rv-lbl { color: var(--text3); }
+.rv-ans { font-weight: 500; color: var(--blue); }
+.rv-ans.x { color: var(--red); text-decoration: line-through; }
+.rv-ok { font-weight: 500; color: var(--green); }
+.rv-div { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
+.rv-fb { font-size: 13px; color: var(--text2); line-height: 1.7; padding: 10px 12px; background: var(--bg2); border-radius: var(--radius-sm); margin-bottom: 8px; }
+.rv-pv { border-top: 1px solid var(--border); padding-top: 8px; }
+.rv-pv-name { font-size: 13px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
+.rv-pv-def { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+
+/* AI loading */
+.ai-loading { display: flex; flex-direction: column; align-items: center; padding: 3rem 1rem; gap: 12px; }
+.ai-spinner { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-loading-text { font-size: 13.5px; color: var(--text3); }
+
+.empty { font-size: 13.5px; color: var(--text3); text-align: center; padding: 2.5rem 0; }
+
+/* Page loading */
+.page-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
+.page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
+.page-loading-brand span { color: var(--accent); }
+.spinner-lg { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+@media (max-width: 520px) {
+  .gr-compare { grid-template-columns: 1fr; }
+  .opts-grid { grid-template-columns: 1fr; }
+  .base-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="page-loading" id="page-loading">
+  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="spinner-lg"></div>
+</div>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">Vocab<span>Master</span></div>
+  <div class="nav-divider"></div>
+  <div class="nav-module-name" id="nav-module-name">Loading…</div>
+  <div class="nav-spacer"></div>
+  <button class="nav-model-pill" id="nav-model-pill" onclick="cycleModel()">◆ Claude</button>
+  <button class="nav-back" onclick="goHome()"><i class="ti ti-home" style="font-size:15px"></i> Home</button>
+</nav>
+
+<div class="app-wrap">
+
+  <!-- HOME (module list within app) -->
+  <div id="view-home">
+    <div class="home-section" id="home-pv-section">
+      <div class="section-label">Phrasal Verbs</div>
+      <div class="base-grid" id="home-pv-grid"></div>
+    </div>
+    <div class="home-section" id="home-pre-section">
+      <div class="section-label">Prepositions</div>
+      <div class="base-grid" id="home-pre-grid"></div>
+    </div>
+    <div class="home-section" id="home-id-section">
+      <div class="section-label">Idioms</div>
+      <div class="base-grid" id="home-id-grid"></div>
+    </div>
+    <div class="home-section" id="home-gr-section">
+      <div class="section-label">Grammar Rules</div>
+      <div class="base-grid" id="home-gr-grid"></div>
+    </div>
+    <div class="home-section" id="home-mo-section">
+      <div class="section-label">Modals</div>
+      <div class="base-grid" id="home-mo-grid"></div>
+    </div>
+  </div>
+
+  <!-- MODULE VIEW -->
+  <div id="view-module" style="display:none">
+    <div class="module-header">
+      <button class="nav-back" onclick="goHome()"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+      <span style="color:var(--border2)">|</span>
+      <span style="font-size:18px; font-weight:600; color:var(--text1)" id="mod-title"></span>
+      <span class="mod-badge" id="mod-badge"></span>
+    </div>
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab-btn active" id="tab-learn"    onclick="switchTab('learn',this)">Learn</button>
+      <button class="tab-btn"        id="tab-practice" onclick="switchTab('practice',this)">Practice</button>
+      <button class="tab-btn"        id="tab-review"   onclick="switchTab('review',this)">Review</button>
+    </div>
+    <div class="mod-progress"><div class="mod-progress-fill" id="mod-progress-fill"></div></div>
+    <div class="sec active" id="sec-learn"></div>
+    <div class="sec"        id="sec-practice"></div>
+    <div class="sec"        id="sec-review"></div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════
+   STATE
+════════════════════════════════ */
+let currentUser  = null;
+let currentMod   = null;  // 'phrasal' | 'preposition' | 'idiom' | 'grammar' | 'modal'
+let currentKey   = null;  // e.g. 'Catch', 'Set 1 (1-20)'
+let scores       = {};
+let attempts     = {};
+let aiStatus     = {};
+let aiQuestions  = {};
+let modProgress  = {};
+let tabClass     = 't-pv';
+
+const MOD_META = {
+  phrasal:     { label:'Phrasal Verbs', badge:'PV',  badgeCls:'pv',  tabCls:'t-pv',  pfCls:'pf-pv',  blankCls:'',    tagCls:'static-pv'  },
+  preposition: { label:'Prepositions',  badge:'PREP', badgeCls:'pre', tabCls:'t-pre', pfCls:'pf-pre', blankCls:'pre', tagCls:'static-pre' },
+  idiom:       { label:'Idioms',        badge:'IDIOM',badgeCls:'id',  tabCls:'t-id',  pfCls:'pf-id',  blankCls:'id',  tagCls:'static-id'  },
+  grammar:     { label:'Grammar',       badge:'GRAM', badgeCls:'gr',  tabCls:'t-gr',  pfCls:'pf-gr',  blankCls:'gr',  tagCls:'static-gr'  },
+  modal:       { label:'Modals',        badge:'MOD',  badgeCls:'mo',  tabCls:'t-mo',  pfCls:'pf-mo',  blankCls:'mo',  tagCls:'static-mo'  },
+};
+
+/* ════════════════════════════════
+   INIT
+════════════════════════════════ */
+(async () => {
+  const session = await sbGetSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = await sbGetUser();
+
+  // Update model pill
+  updateModelPill();
+
+  // Get URL param
+  const params = new URLSearchParams(window.location.search);
+  const mod = params.get('m');
+
+  if (mod && MOD_META[mod]) {
+    currentMod = mod;
+    modProgress = {};
+    const prog = await sbGetModuleProgress(currentUser.id, mod);
+    prog.forEach(p => {
+      if (!modProgress[p.item_key]) modProgress[p.item_key] = { attempts:{}, scores:{c:0,a:0} };
+      modProgress[p.item_key].attempts[p.question_id] = { chosen: p.chosen, correct: p.correct };
+    });
+    buildHome();
+    showHomeView();
+  } else {
+    buildHome();
+    showHomeView();
+  }
+
+  document.getElementById('page-loading').style.display = 'none';
+})();
+
+function buildHome() {
+  buildGrid('home-pv-grid',  Object.keys(DB_PV || {}),  'phrasal',     'pv-card');
+  buildGrid('home-pre-grid', Object.keys(DB_FP || {}),  'preposition', 'pre-card');
+  buildGrid('home-id-grid',  Object.keys(DB_IDIOMS||{}),'idiom',       'id-card');
+  buildGrid('home-gr-grid',  Object.keys(DB_GR || {}),  'grammar',     'gr-card');
+  buildGrid('home-mo-grid',  Object.keys(DB_MOD || {}), 'modal',       'mo-card');
+
+  // Show/hide sections
+  const secs = [
+    ['home-pv-section',  DB_PV],
+    ['home-pre-section', DB_FP],
+    ['home-id-section',  DB_IDIOMS],
+    ['home-gr-section',  DB_GR],
+    ['home-mo-section',  DB_MOD],
+  ];
+  secs.forEach(([id, db]) => {
+    document.getElementById(id).style.display = db && Object.keys(db).length ? 'block' : 'none';
+  });
+
+  document.getElementById('nav-module-name').textContent = 'All Modules';
+}
+
+function buildGrid(gridId, keys, mod, cardCls) {
+  const db = getDB(mod);
+  if (!db) return;
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = keys.map(k => {
+    const entry = db[k];
+    const verbs = entry.verbs || entry.words || entry.idioms || entry.examples || [];
+    const qs    = entry.questions || [];
+    const chips = verbs.slice(0,3).map(v => {
+      const name = v.pv || v.word || v.phrase || v.modal || '';
+      return `<span class="base-chip">${name}</span>`;
+    }).join('');
+    return `<button class="base-card ${cardCls}" onclick="openModule('${mod}','${esc(k)}')">
+      <div class="base-verb">${k}</div>
+      <div class="base-count">${verbs.length} items · ${qs.length} questions</div>
+      <div class="base-chips">${chips}</div>
+    </button>`;
+  }).join('');
+}
+
+function getDB(mod) {
+  return { phrasal: DB_PV, preposition: DB_FP, idiom: DB_IDIOMS, grammar: DB_GR, modal: DB_MOD }[mod];
+}
+
+/* ════════════════════════════════
+   NAVIGATION
+════════════════════════════════ */
+function showHomeView() {
+  document.getElementById('view-home').style.display = 'block';
+  document.getElementById('view-module').style.display = 'none';
+  document.getElementById('nav-module-name').textContent = currentMod ? MOD_META[currentMod]?.label : 'All Modules';
+}
+
+function openModule(mod, key) {
+  currentMod  = mod;
+  currentKey  = key;
+  if (!scores[key])   scores[key]   = { c:0, a:0 };
+  if (!attempts[key]) attempts[key] = {};
+
+  const meta = MOD_META[mod];
+  tabClass   = meta.tabCls;
+
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-module').style.display = 'block';
+  document.getElementById('mod-title').textContent = key;
+  document.getElementById('nav-module-name').textContent = meta.label;
+
+  const badge = document.getElementById('mod-badge');
+  badge.textContent = meta.badge;
+  badge.className   = `mod-badge ${meta.badgeCls}`;
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
+  const tl = document.getElementById('tab-learn');
+  tl.className = `tab-btn active ${tabClass}`;
+
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-learn').classList.add('active');
+
+  buildLearn(mod, key);
+  updateProgress(key);
+  setLastVisited(mod, key);
+}
+
+function goHome() {
+  document.getElementById('view-home').style.display = 'block';
+  document.getElementById('view-module').style.display = 'none';
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
+  btn.className = `tab-btn active ${tabClass}`;
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  if (tab === 'practice') buildPractice(currentMod, currentKey);
+  if (tab === 'review')   buildReview(currentMod, currentKey);
+}
+
+/* ════════════════════════════════
+   LEARN
+════════════════════════════════ */
+function buildLearn(mod, key) {
+  const db = getDB(mod);
+  if (!db || !db[key]) { document.getElementById('sec-learn').innerHTML = '<div class="empty">Content coming soon.</div>'; return; }
+  const entry = db[key];
+  const meta  = MOD_META[mod];
+  let html = '';
+
+  if (entry.intro) html += `<div class="intro-box">${entry.intro}</div>`;
+
+  // Phrasal verbs / prepositions / modals — word cards
+  const items = entry.verbs || entry.words || entry.items || [];
+  items.forEach(v => {
+    const title = v.pv || (v.word ? `${v.word} <span style="font-weight:400;color:var(--text3)">+ ${v.preposition || ''}</span>` : v.modal || v.title || '');
+    html += `<div class="pv-card">
+      <div class="pv-title" style="color:var(--${meta.badgeCls === 'pre' ? 'blue' : meta.badgeCls === 'id' ? 'idiom' : meta.badgeCls === 'gr' ? 'grammar' : meta.badgeCls === 'mo' ? 'modal-c' : 'accent'})">${title}</div>
+      <div class="pv-en">${v.def_en || v.meaning_en || v.desc_en || ''}</div>
+      <div class="pv-hi">${v.def_hi || v.meaning_hi || v.desc_hi || ''}</div>
+      ${v.example ? `<div class="pv-example" style="border-left-color:var(--${meta.badgeCls === 'pre' ? 'blue' : meta.badgeCls === 'id' ? 'idiom' : meta.badgeCls === 'gr' ? 'grammar' : meta.badgeCls === 'mo' ? 'modal-c' : 'accent'})">${v.example}</div>` : ''}
+      ${v.note ? `<div class="pv-note">${v.note}</div>` : ''}
+    </div>`;
+  });
+
+  // Idioms
+  (entry.idioms || []).forEach(i => {
+    html += `<div class="pv-card">
+      <div class="pv-title" style="color:var(--idiom)">${i.phrase}</div>
+      <div class="pv-en">${i.meaning_en}</div>
+      <div class="pv-hi">${i.meaning_hi}</div>
+      <div class="pv-example" style="border-left-color:var(--idiom)">${i.example}</div>
+      ${i.note ? `<div class="pv-note">${i.note}</div>` : ''}
+    </div>`;
+  });
+
+  // Grammar rules — two-col compare
+  if (entry.rule) {
+    html += `<div class="gr-compare">
+      <div class="gr-col">
+        <div class="gr-col-head">❌ Incorrect</div>
+        ${(entry.wrong || []).map(s => `<div class="gr-col-ex">${s}</div>`).join('')}
+        ${entry.wrong_note ? `<div class="gr-col-note">${entry.wrong_note}</div>` : ''}
+      </div>
+      <div class="gr-col">
+        <div class="gr-col-head" style="border-bottom-color:var(--green-border);color:var(--green)">✓ Correct</div>
+        ${(entry.correct || []).map(s => `<div class="gr-col-ex" style="background:var(--green-bg);border-left-color:var(--green)">${s}</div>`).join('')}
+        ${entry.correct_note ? `<div class="gr-col-note">${entry.correct_note}</div>` : ''}
+      </div>
+    </div>`;
+    if (entry.rule_en) html += `<div class="intro-box"><strong>Rule:</strong> ${entry.rule_en}${entry.rule_hi ? `<br><span style="color:var(--text3);font-style:italic">${entry.rule_hi}</span>` : ''}</div>`;
+  }
+
+  document.getElementById('sec-learn').innerHTML = html || '<div class="empty">Content coming soon.</div>';
+}
+
+/* ════════════════════════════════
+   PRACTICE
+════════════════════════════════ */
+function buildPractice(mod, key) {
+  const db   = getDB(mod);
+  const meta = MOD_META[mod];
+  const qs   = db?.[key]?.questions || [];
+  const sc   = scores[key];
+
+  let html = `<div class="score-row">
+    <span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span>
+    <div class="practice-actions">
+      ${qs.length ? `<button class="reset-btn" onclick="resetQuiz('${esc(key)}','static')"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Reset</button>` : ''}
+      <button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')"><i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>AI Practice (5 Qs)</button>
+    </div>
+  </div>`;
+
+  if (qs.length) {
+    qs.forEach(q => {
+      html += renderFibCard(q, key, mod, false);
+    });
+  } else {
+    html += `<div class="empty">No static questions yet. Use AI Practice to generate questions.</div>`;
+  }
+
+  document.getElementById('sec-practice').innerHTML = html;
+  reapplyAttempts(key, qs);
+}
+
+function renderFibCard(q, key, mod, isAI) {
+  const meta = MOD_META[mod];
+  const tagCls = isAI ? 'ai-tag' : meta.tagCls;
+  const tagLbl = isAI ? '✦ AI Question' : 'Practice';
+  const blCls  = meta.blankCls;
+  return `<div class="fib-card" id="fc-${q.id}">
+    <span class="q-tag ${tagCls}">${tagLbl}</span>
+    <div class="fib-sentence">${q.sentence.replace('_____', `<span class="blank ${blCls}" id="bl-${q.id}">________</span>`)}</div>
+    <div class="opts-grid">
+      ${q.options.map(o => `
+        <button class="opt-tile" onclick="fibAns(this,'${esc(key)}','${esc(mod)}','${esc(q.id)}','${esc(o.verb)}')">
+          <span class="opt-tile-verb">${o.verb}</span>
+          <span class="opt-tile-hint">${o.hint}</span>
+        </button>`).join('')}
+    </div>
+    <div class="fib-feedback" id="fb-${q.id}">${q.feedback}</div>
+  </div>`;
+}
+
+/* ── AI Practice ── */
+async function loadAIPractice(key) {
+  const mod   = currentMod;
+  const db    = getDB(mod);
+  const entry = db?.[key];
+  if (!entry) return;
+
+  // Build prompt
+  let promptText;
+  if (mod === 'phrasal') {
+    const verbs = (entry.verbs || []).map(v => v.pv);
+    promptText  = PROMPTS.phrasal(key, verbs);
+  } else if (mod === 'preposition') {
+    const words = (entry.words || []).map(v => v.word);
+    promptText  = PROMPTS.preposition(key, words);
+  } else if (mod === 'idiom') {
+    promptText  = PROMPTS.idiom(key, entry.idioms || []);
+  } else if (mod === 'grammar') {
+    promptText  = PROMPTS.grammar(key, entry.rule_en || '');
+  } else if (mod === 'modal') {
+    const uses  = (entry.items || []).map(i => i.use || i.title || '');
+    promptText  = PROMPTS.modal(key, uses);
+  }
+
+  const aiArea = document.getElementById('sec-practice');
+  const existing = aiArea.innerHTML;
+
+  // Show loading at bottom
+  const loaderId = 'ai-loader-' + Date.now();
+  aiArea.innerHTML += `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
+
+  await generateAndCache({
+    userId: currentUser?.id,
+    module: mod,
+    itemKey: key,
+    promptText,
+    onLoad: () => {},
+    onReady: (qs, src) => {
+      const loader = document.getElementById(loaderId);
+      if (loader) loader.remove();
+      aiQuestions[key] = qs;
+      aiStatus[key]    = 'ready';
+      // Append AI cards
+      let html = '';
+      qs.forEach(q => { html += renderFibCard(q, key, mod, true); });
+      document.getElementById('sec-practice').innerHTML += html;
+      reapplyAttempts(key, qs);
+    },
+    onError: (err) => {
+      const loader = document.getElementById(loaderId);
+      if (loader) loader.innerHTML = `<div style="color:var(--red);font-size:13px;text-align:center">Failed to generate questions. <button onclick="loadAIPractice('${esc(key)}')" style="color:var(--accent);border:none;background:transparent;cursor:pointer;font-family:DM Sans,sans-serif">Retry</button></div>`;
+    }
+  });
+}
+
+/* ── Answer Handling ── */
+function fibAns(btn, key, mod, qid, chosen) {
+  const att = attempts[key] || (attempts[key] = {});
+  if (att[qid]) return;
+
+  const allQs = [...(getDB(mod)?.[key]?.questions || []), ...(aiQuestions[key] || [])];
+  const q     = allQs.find(x => x.id === qid);
+  if (!q) return;
+
+  const isCorrect = chosen === q.correct;
+  att[qid] = { chosen, correct: isCorrect };
+  const sc = scores[key] || (scores[key] = {c:0, a:0});
+  sc.a++; if (isCorrect) sc.c++;
+
+  btn.closest('.opts-grid').querySelectorAll('.opt-tile').forEach(t => {
+    t.disabled = true;
+    const v = t.querySelector('.opt-tile-verb').textContent.trim();
+    if (v === chosen && isCorrect)  t.classList.add('sel-correct');
+    else if (v === chosen)          t.classList.add('sel-wrong');
+    else if (v === q.correct)       t.classList.add('show-correct');
+  });
+  const bl = document.getElementById('bl-' + qid);
+  if (bl) { bl.textContent = q.correct; if (!isCorrect) bl.style.color = 'var(--green)'; }
+  const fb = document.getElementById('fb-' + qid);
+  if (fb) { fb.textContent = q.feedback; fb.classList.add('show'); }
+  const sp = document.getElementById('sp-' + key);
+  if (sp) sp.textContent = sc.c + ' / ' + sc.a;
+
+  updateProgress(key);
+
+  // Save to Supabase
+  if (currentUser) {
+    const source = (aiQuestions[key] || []).find(x => x.id === qid) ? 'ai' : 'static';
+    sbSaveAnswer({ userId: currentUser.id, module: mod, itemKey: key, questionId: qid, chosen, correct: isCorrect, source });
+  }
+}
+
+function reapplyAttempts(key, qs) {
+  const att = attempts[key] || {};
+  Object.keys(att).forEach(qid => {
+    const a  = att[qid];
+    const q  = qs.find(x => x.id === qid);
+    if (!q) return;
+    const fc = document.getElementById('fc-' + qid); if (!fc) return;
+    fc.querySelectorAll('.opt-tile').forEach(t => {
+      t.disabled = true;
+      const v = t.querySelector('.opt-tile-verb').textContent.trim();
+      if (v === a.chosen && !a.correct) t.classList.add('sel-wrong');
+      if (v === q.correct)              t.classList.add(a.correct && v === a.chosen ? 'sel-correct' : 'show-correct');
+    });
+    const bl = document.getElementById('bl-' + qid);
+    if (bl) { bl.textContent = q.correct; if (!a.correct) bl.style.color = 'var(--green)'; }
+    const fb = document.getElementById('fb-' + qid);
+    if (fb) { fb.textContent = q.feedback; fb.classList.add('show'); }
+  });
+}
+
+function resetQuiz(key) {
+  scores[key]   = { c:0, a:0 };
+  attempts[key] = {};
+  aiQuestions[key] = null;
+  aiStatus[key]    = null;
+  buildPractice(currentMod, key);
+}
+
+/* ════════════════════════════════
+   REVIEW
+════════════════════════════════ */
+function buildReview(mod, key) {
+  const att = attempts[key] || {};
+  const db  = getDB(mod);
+  if (Object.keys(att).length === 0) {
+    document.getElementById('sec-review').innerHTML = '<div class="empty">Practice some questions first — your review will appear here.</div>';
+    return;
+  }
+  const allQs = [...(db?.[key]?.questions || []), ...(aiQuestions[key] || [])];
+  if (!allQs.length) { document.getElementById('sec-review').innerHTML = '<div class="empty">No questions loaded yet.</div>'; return; }
+
+  let html = '';
+  allQs.forEach(q => {
+    const a = att[q.id];
+    let badge, ansHtml;
+    if (!a) {
+      badge   = '<span class="rv-badge u">Not attempted</span>';
+      ansHtml = '<span class="rv-lbl">Answer:</span> <span style="color:var(--text3);font-size:13px">—</span>';
+    } else if (a.correct) {
+      badge   = '<span class="rv-badge c">✓ Correct</span>';
+      ansHtml = `<span class="rv-lbl">Answer:</span> <span class="rv-ans">${a.chosen}</span>`;
+    } else {
+      badge   = '<span class="rv-badge w">✗ Incorrect</span>';
+      ansHtml = `<span class="rv-lbl">You chose:</span> <span class="rv-ans x">${a.chosen}</span><div class="rv-div"></div><span class="rv-lbl">Correct:</span> <span class="rv-ok">${q.correct}</span>`;
+    }
+    const filled = q.sentence.replace('_____', `<strong style="color:var(--text1)">${a ? q.correct : '_____'}</strong>`);
+    html += `<div class="rv-card">
+      <div class="rv-head"><div class="rv-sent">${filled}</div>${badge}</div>
+      <div class="rv-ans-row">${ansHtml}</div>
+      ${a ? `<div class="rv-fb">${q.feedback}</div>` : ''}
+    </div>`;
+  });
+  document.getElementById('sec-review').innerHTML = html;
+}
+
+/* ════════════════════════════════
+   PROGRESS BAR
+════════════════════════════════ */
+function updateProgress(key) {
+  const db   = getDB(currentMod);
+  const total = [...(db?.[key]?.questions||[]), ...(aiQuestions[key]||[])].length;
+  const done  = Object.values(attempts[key]||{}).filter(a => a.correct).length;
+  const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+  const fill  = document.getElementById('mod-progress-fill');
+  if (fill) { fill.style.width = pct + '%'; fill.className = `mod-progress-fill ${MOD_META[currentMod]?.pfCls}`; }
+}
+
+/* ════════════════════════════════
+   MODEL CYCLING
+════════════════════════════════ */
+function updateModelPill() {
+  const m = getActiveModel();
+  const labels = { claude:'◆ Claude', gemini:'✦ Gemini', grok:'⬡ Groq' };
+  document.getElementById('nav-model-pill').textContent = labels[m] || '◆ Claude';
+}
+function cycleModel() {
+  const order = ['claude','gemini','grok'];
+  const cur   = getActiveModel();
+  const next  = order[(order.indexOf(cur) + 1) % order.length];
+  setActiveModel(next);
+  updateModelPill();
+}
+
+function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
