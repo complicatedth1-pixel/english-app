@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VocabMaster — Dashboard</title>
+<title>SmartLearn — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -77,9 +77,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
 /* Dropdown for user */
-.user-menu {
-  position: relative;
-}
+.user-menu { position: relative; }
 .user-dropdown {
   display: none; position: absolute; top: calc(100% + 8px); right: 0;
   background: var(--surface); border: 1px solid var(--border);
@@ -458,13 +456,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 <!-- Page loading -->
 <div class="page-loading" id="page-loading">
-  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="page-loading-brand">Smart<span>Learn</span></div>
   <div class="spinner"></div>
 </div>
 
 <!-- TOP NAV -->
 <nav class="top-nav">
-  <div class="nav-brand">Vocab<span>Master</span></div>
+  <div class="nav-brand">Smart<span>Learn</span></div>
   <div class="nav-spacer"></div>
   <div class="nav-right">
     <div class="model-selector" id="model-selector">
@@ -545,7 +543,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <button class="modal-close" onclick="closeTestModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">
-      <!-- Topic -->
       <div class="form-group">
         <label class="form-label">Topic</label>
         <select class="form-select" id="test-topic" onchange="updateSubtopics()">
@@ -557,12 +554,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <option value="modal">Modals</option>
         </select>
       </div>
-      <!-- Subtopic chips -->
       <div class="form-group" id="subtopic-group" style="display:none">
         <label class="form-label">Subtopics <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(select one or more)</span></label>
         <div class="chip-group" id="subtopic-chips"></div>
       </div>
-      <!-- Count + Time -->
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">No. of Questions</label>
@@ -584,7 +579,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           </select>
         </div>
       </div>
-      <!-- AI Model -->
       <div class="form-group">
         <label class="form-label">AI Model</label>
         <div class="model-pills" id="modal-model-pills">
@@ -614,9 +608,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="timer-display" id="timer-display">--:--</div>
     </div>
   </div>
-  <div id="test-body">
-    <!-- questions or results rendered here -->
-  </div>
+  <div id="test-body"></div>
 </div>
 
 <script>
@@ -656,7 +648,7 @@ let qStartTimes   = {};
 let testScore     = 0;
 
 /* ════════════════════════════════
-   INIT
+   INIT & DASHBOARD
 ════════════════════════════════ */
 (async () => {
   const session = await sbGetSession();
@@ -665,7 +657,6 @@ let testScore     = 0;
   currentUser = await sbGetUser();
   await sbUpsertProfile(currentUser);
 
-  // Set model from storage
   const m = getActiveModel();
   document.querySelectorAll('.model-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.model === m);
@@ -683,23 +674,20 @@ async function loadDashboard() {
   const [profile, streakData, progress] = await Promise.all([
     sbGetProfile(currentUser.id),
     sbGetStreak(currentUser.id),
-    sbGetProgress(currentUser.id)
+    sbGetProgress(currentUser.id) // now includes created_at field
   ]);
 
   progressData = progress;
 
-  // Greeting
   const hr = new Date().getHours();
   const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
   const name = (profile?.name || currentUser.email).split(' ')[0];
   document.getElementById('greeting').textContent = `${greet}, ${name} 👋`;
 
-  // Streak
   document.getElementById('hero-streak').textContent = streakData.current;
   document.getElementById('hero-total').textContent  = streakData.total;
   document.getElementById('streak-count').textContent = streakData.current;
 
-  // User avatar
   const av = document.getElementById('user-avatar');
   if (profile?.avatar_url) {
     av.innerHTML = `<img src="${profile.avatar_url}" alt="">`;
@@ -708,10 +696,10 @@ async function loadDashboard() {
   }
   document.getElementById('dd-name').textContent = name;
 
-  // Goal ring
   const todayStr = new Date().toISOString().split('T')[0];
   const todayDone = progress.filter(p => {
-    const d = new Date(p.created_at || Date.now()).toISOString().split('T')[0];
+    if (!p.created_at) return false;
+    const d = new Date(p.created_at).toISOString().split('T')[0];
     return d === todayStr;
   }).length;
   const goalPct = Math.min(100, Math.round((todayDone / 5) * 100));
@@ -732,7 +720,6 @@ function renderProgressCards(progress) {
   grid.innerHTML = MODULES.map(mod => {
     const done = new Set(progress.filter(p => p.module === mod.key && p.correct).map(p => p.question_id)).size;
     const pct  = mod.total > 0 ? Math.round((done / mod.total) * 100) : 0;
-    const lv   = getLastVisited();
     return `<div class="prog-card ${mod.cls}">
       <div class="prog-card-top">
         <div class="prog-card-left">
@@ -779,15 +766,8 @@ function selectModalModel(key, btn) {
   btn.classList.add('selected');
 }
 
-/* ════════════════════════════════
-   USER MENU
-════════════════════════════════ */
-function toggleUserMenu() {
-  document.getElementById('user-dropdown').classList.toggle('open');
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('.user-menu')) document.getElementById('user-dropdown').classList.remove('open');
-});
+function toggleUserMenu() { document.getElementById('user-dropdown').classList.toggle('open'); }
+document.addEventListener('click', e => { if (!e.target.closest('.user-menu')) document.getElementById('user-dropdown').classList.remove('open'); });
 
 /* ════════════════════════════════
    TEST MODAL
@@ -803,8 +783,7 @@ function updateSubtopics() {
   const chips = document.getElementById('subtopic-chips');
   if (!topic || !SUBTOPICS[topic]) { group.style.display = 'none'; checkStartBtn(); return; }
   group.style.display = 'block';
-  chips.innerHTML = SUBTOPICS[topic].map(s => `
-    <div class="chip" onclick="toggleChip(this,'${s.replace(/'/g,"\\'")}')"><span>${s}</span></div>`).join('');
+  chips.innerHTML = SUBTOPICS[topic].map(s => `<div class="chip" onclick="toggleChip(this,'${s.replace(/'/g,"\\'")}')"><span>${s}</span></div>`).join('');
   checkStartBtn();
 }
 
@@ -830,38 +809,26 @@ async function startTest() {
   closeTestModal();
   setActiveModel(modalModel);
 
-  // Show test overlay with loading
   document.getElementById('test-overlay').classList.add('open');
-  document.getElementById('test-body').innerHTML = `
-    <div class="test-wrap"><div class="ai-loading">
-      <div class="spinner"></div>
-      <div class="ai-loading-text">Generating ${count} questions using AI…</div>
-    </div></div>`;
+  document.getElementById('test-body').innerHTML = `<div class="test-wrap"><div class="ai-loading"><div class="spinner"></div><div class="ai-loading-text">Generating ${count} questions using AI…</div></div></div>`;
 
   try {
     const prompt = PROMPTS.testBatch(topic, subs, count);
     const raw    = await aiCall(prompt, modalModel);
-    let   qs     = parseAIJson(raw);
+    let qs       = parseAIJson(raw);
     qs = qs.slice(0, count).map((q, i) => ({ ...q, id: `test_${i}` }));
-
     if (currentUser) await sbSaveCachedQuestions(currentUser.id, topic, subs.join('|'), modalModel, qs);
-
     testQuestions = qs;
     testAnswers   = {};
     testScore     = 0;
     testTimeTotal = timeSec;
     testTimeLeft  = timeSec;
     qStartTimes   = {};
-
     renderTestQuestions();
     startTimer();
     updateTestNav();
   } catch (err) {
-    document.getElementById('test-body').innerHTML = `
-      <div class="test-wrap"><div style="padding:3rem 0;text-align:center;color:var(--red)">
-        Failed to generate questions. Please try again.<br>
-        <button onclick="document.getElementById('test-overlay').classList.remove('open')" style="margin-top:1rem;padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:DM Sans,sans-serif">← Back</button>
-      </div></div>`;
+    document.getElementById('test-body').innerHTML = `<div class="test-wrap"><div style="padding:3rem 0;text-align:center;color:var(--red)">Failed to generate questions. Please try again.<br><button onclick="document.getElementById('test-overlay').classList.remove('open')" style="margin-top:1rem;padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;">← Back</button></div></div>`;
   }
 }
 
@@ -878,11 +845,7 @@ function renderTestQuestions() {
         </div>
         <div class="test-q-sentence">${q.sentence.replace('___', `<span class="test-blank" id="tb-${q.id}">________</span>`)}</div>
         <div class="test-opts">
-          ${q.options.map(o => `
-            <button class="test-opt" onclick="testAnswer(this,'${esc(q.id)}','${esc(o.verb)}')">
-              <span class="test-opt-verb">${o.verb}</span>
-              <span class="test-opt-hint">${o.hint}</span>
-            </button>`).join('')}
+          ${q.options.map(o => `<button class="test-opt" onclick="testAnswer(this,'${esc(q.id)}','${esc(o.verb)}')"><span class="test-opt-verb">${o.verb}</span><span class="test-opt-hint">${o.hint}</span></button>`).join('')}
         </div>
         <div class="test-feedback" id="tqf-${q.id}">${q.feedback}</div>
       </div>`;
@@ -899,11 +862,8 @@ function testAnswer(btn, qid, chosen) {
   testAnswers[qid] = { chosen, correct, timeTaken };
   if (correct) testScore++;
 
-  // Update time label on card
   const tqt = document.getElementById('tqt-' + qid);
   if (tqt) tqt.textContent = `${timeTaken}s`;
-
-  // Style tiles
   btn.closest('.test-opts').querySelectorAll('.test-opt').forEach(t => {
     t.disabled = true;
     const v = t.querySelector('.test-opt-verb').textContent.trim();
@@ -911,31 +871,20 @@ function testAnswer(btn, qid, chosen) {
     else if (v === chosen)        t.classList.add('sel-wrong');
     else if (v === q.correct)     t.classList.add('show-correct');
   });
-
-  // Fill blank
   const tb = document.getElementById('tb-' + qid);
   if (tb) { tb.textContent = q.correct; if (!correct) tb.style.color = 'var(--green)'; }
-
-  // Show feedback
   const fb = document.getElementById('tqf-' + qid);
   if (fb) fb.classList.add('show');
-
-  // Save to Supabase
   if (currentUser) {
     const topic = document.getElementById('test-topic')?.value || 'test';
     sbSaveAnswer({ userId: currentUser.id, module: topic, itemKey: 'test', questionId: qid, chosen, correct, source: 'ai' });
   }
-
   updateTestNav();
-
-  // Auto-submit if all answered
-  if (Object.keys(testAnswers).length === testQuestions.length) {
-    setTimeout(submitTest, 800);
-  }
+  if (Object.keys(testAnswers).length === testQuestions.length) setTimeout(submitTest, 800);
 }
 
 function updateTestNav() {
-  document.getElementById('test-qcount').textContent   = `${Object.keys(testAnswers).length} / ${testQuestions.length} answered`;
+  document.getElementById('test-qcount').textContent = `${Object.keys(testAnswers).length} / ${testQuestions.length} answered`;
   document.getElementById('test-score-live').textContent = `Score: ${testScore}`;
 }
 
@@ -965,29 +914,34 @@ async function submitTest() {
   const total     = testQuestions.length;
   const pct       = Math.round((testScore / total) * 100);
 
-  const results = testQuestions.map(q => ({
-    qid: q.id, topic: q.topic || '',
-    correct: q.correct,
-    ...testAnswers[q.id] || { chosen: null, correct: false, timeTaken: 0 }
-  }));
-
-  // Save session
   if (currentUser) {
     const topic = document.getElementById('test-topic')?.value || 'test';
     const subs  = [...selectedSubtopics];
     await sbSaveTestSession({
       userId: currentUser.id, module: topic, subtopics: subs,
       model: modalModel, totalQuestions: total,
-      timeAllocated: testTimeTotal, timeTaken, score: testScore, results
+      timeAllocated: testTimeTotal, timeTaken, score: testScore, results: testQuestions.map(q => ({ qid: q.id, ...testAnswers[q.id] }))
     });
   }
 
-  // Render results
-  document.getElementById('test-overlay').classList.remove('open');
-  document.getElementById('test-body').innerHTML = '';
-
-  // Reload dashboard to refresh bars
-  loadDashboard();
+  // === RESULTS SCREEN with proper format ===
+  document.getElementById('test-body').innerHTML = `
+    <div class="results-wrap">
+      <div class="results-hero">
+        <div class="results-score">${testScore}<span> / ${total}</span></div>
+        <div class="results-label">${pct}% correct · ${Math.floor(timeTaken/60)}m ${timeTaken%60}s taken</div>
+        <div class="results-stats">
+          <div class="rstat"><div class="rstat-num">${testScore}</div><div class="rstat-lbl">Correct</div></div>
+          <div class="rstat"><div class="rstat-num">${total - testScore}</div><div class="rstat-lbl">Wrong</div></div>
+          <div class="rstat"><div class="rstat-num">${pct}%</div><div class="rstat-lbl">Score</div></div>
+        </div>
+      </div>
+      <div class="results-btn-row">
+        <button class="results-btn" onclick="document.getElementById('test-overlay').classList.remove('open'); loadDashboard();">← Dashboard</button>
+        <button class="results-btn primary" onclick="openTestModal(); document.getElementById('test-overlay').classList.remove('open');">Try Again</button>
+      </div>
+    </div>`;
+  await loadDashboard();
 }
 
 function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }

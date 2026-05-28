@@ -13,7 +13,7 @@ const SB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 async function sbSignInGoogle() {
   const { error } = await SB.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/index.html' }
+    options: { redirectTo: 'https://complicatedth1-pixel.github.io/english-app/index.html' }
   });
   if (error) console.error('Sign in error:', error.message);
 }
