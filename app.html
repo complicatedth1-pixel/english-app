@@ -146,7 +146,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .pv-note { font-size: 12px; color: var(--text3); line-height: 1.6; }
 .intro-box { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 13.5px; color: var(--text2); line-height: 1.7; }
 
-/* ── GRAMMAR word cards (same as pv-card but grammar-accented) ── */
+/* ── GRAMMAR word cards ── */
 .gr-word-card { background: var(--surface); border: 1px solid var(--grammar-border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); border-left: 3px solid var(--grammar); }
 .gr-word-title { font-size: 16px; font-weight: 600; color: var(--grammar); margin-bottom: 4px; }
 .gr-word-prep { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
@@ -310,24 +310,38 @@ const MOD_META = {
   modal:       { label:'Modals',        badge:'MOD',   badgeCls:'mo',  tabCls:'t-mo',  pfCls:'pf-mo',  blankCls:'mo',  tagCls:'static-mo'  },
 };
 
+/* module → section id map used in Bug A fix */
+const MOD_TO_SECTION = {
+  phrasal:     'home-pv-section',
+  preposition: 'home-pre-section',
+  idiom:       'home-id-section',
+  grammar:     'home-gr-section',
+  modal:       'home-mo-section',
+};
+
 function getDB(mod) {
   const map = {
-    phrasal:     typeof DB      !== 'undefined' ? DB      : null,
-    preposition: typeof DB_FP   !== 'undefined' ? DB_FP   : null,
-    idiom:       typeof DB_IDIOMS!=='undefined' ? DB_IDIOMS: null,
-    grammar:     typeof DB_GRAMMAR!=='undefined'? DB_GRAMMAR: null,
-    modal:       typeof DB_MOD  !== 'undefined' ? DB_MOD  : null,
+    phrasal:     typeof DB       !== 'undefined' ? DB       : null,
+    preposition: typeof DB_FP    !== 'undefined' ? DB_FP    : null,
+    idiom:       typeof DB_IDIOMS!== 'undefined' ? DB_IDIOMS: null,
+    grammar:     typeof DB_GRAMMAR!=='undefined' ? DB_GRAMMAR: null,
+    modal:       typeof DB_MOD   !== 'undefined' ? DB_MOD   : null,
   };
   return map[mod] || null;
 }
 
+/* ════════════════════════════════
+   INIT
+════════════════════════════════ */
 (async () => {
   const session = await sbGetSession();
   if (!session) { window.location.href = 'auth.html'; return; }
   currentUser = await sbGetUser();
   updateModelPill();
+
   const params = new URLSearchParams(window.location.search);
   const mod = params.get('m');
+
   if (mod && MOD_META[mod]) {
     currentMod = mod;
     modProgress = {};
@@ -337,17 +351,31 @@ function getDB(mod) {
       modProgress[p.item_key].attempts[p.question_id] = { chosen: p.chosen, correct: p.correct };
     });
   }
+
   buildHome();
+
+  /* ── BUG A FIX: if ?m= param present, hide all other module sections ── */
+  if (mod && MOD_META[mod]) {
+    Object.entries(MOD_TO_SECTION).forEach(([m, sectionId]) => {
+      document.getElementById(sectionId).style.display = m === mod ? 'block' : 'none';
+    });
+    document.getElementById('nav-module-name').textContent = MOD_META[mod].label;
+  }
+
   showHomeView();
   document.getElementById('page-loading').style.display = 'none';
 })();
 
+/* ════════════════════════════════
+   HOME
+════════════════════════════════ */
 function buildHome() {
   buildGrid('home-pv-grid',  'phrasal',     'pv-card');
   buildGrid('home-pre-grid', 'preposition', 'pre-card');
   buildGrid('home-id-grid',  'idiom',       'id-card');
   buildGrid('home-gr-grid',  'grammar',     'gr-card');
   buildGrid('home-mo-grid',  'modal',       'mo-card');
+
   const secs = [
     ['home-pv-section',  'phrasal'],
     ['home-pre-section', 'preposition'],
@@ -355,8 +383,8 @@ function buildHome() {
     ['home-gr-section',  'grammar'],
     ['home-mo-section',  'modal'],
   ];
-  secs.forEach(([id, mod]) => {
-    const db = getDB(mod);
+  secs.forEach(([id, m]) => {
+    const db = getDB(m);
     document.getElementById(id).style.display = (db && Object.keys(db).length) ? 'block' : 'none';
   });
   document.getElementById('nav-module-name').textContent = 'All Modules';
@@ -383,6 +411,9 @@ function buildGrid(gridId, mod, cardCls) {
   }).join('');
 }
 
+/* ════════════════════════════════
+   NAVIGATION
+════════════════════════════════ */
 function showHomeView() {
   document.getElementById('view-home').style.display = 'block';
   document.getElementById('view-module').style.display = 'none';
@@ -394,22 +425,30 @@ function openModule(mod, key) {
   currentKey  = key;
   if (!scores[key])   scores[key]   = { c:0, a:0 };
   if (!attempts[key]) attempts[key] = {};
+
   const meta = MOD_META[mod];
   tabClass   = meta.tabCls;
+
   document.getElementById('view-home').style.display = 'none';
   document.getElementById('view-module').style.display = 'block';
   document.getElementById('mod-title').textContent = key;
   document.getElementById('nav-module-name').textContent = meta.label;
+
   const badge = document.getElementById('mod-badge');
   badge.textContent = meta.badge;
   badge.className   = `mod-badge ${meta.badgeCls}`;
+
   document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
   document.getElementById('tab-learn').className = `tab-btn active ${tabClass}`;
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-learn').classList.add('active');
+
   buildLearn(mod, key);
   updateProgress(key);
   setLastVisited(mod, key);
+
+  /* ── BUG B FIX: auto-load cached AI questions on module open ── */
+  if (currentUser) loadCachedAIQuestions(mod, key);
 }
 
 function goHome() {
@@ -426,6 +465,23 @@ function switchTab(tab, btn) {
   if (tab === 'review')   buildReview(currentMod, currentKey);
 }
 
+/* ════════════════════════════════
+   BUG B FIX: load cached AI questions from Supabase
+════════════════════════════════ */
+async function loadCachedAIQuestions(mod, key) {
+  const cached = await sbGetCachedQuestions(currentUser.id, mod, key, getActiveModel());
+  if (!cached || !cached.length) return;
+  aiQuestions[key] = cached;
+  aiStatus[key]    = 'ready';
+  /* if practice tab is already visible, re-render to show the cached questions */
+  if (document.getElementById('sec-practice').classList.contains('active')) {
+    buildPractice(mod, key);
+  }
+}
+
+/* ════════════════════════════════
+   LEARN
+════════════════════════════════ */
 function buildLearn(mod, key) {
   const db = getDB(mod);
   if (!db || !db[key]) {
@@ -435,6 +491,7 @@ function buildLearn(mod, key) {
   const entry = db[key];
   let html = '';
   if (entry.intro) html += `<div class="intro-box">${entry.intro}</div>`;
+
   if (mod === 'phrasal') {
     (entry.verbs || []).forEach(v => {
       html += `<div class="pv-card"><div class="pv-title" style="color:var(--accent)">${v.pv}</div><div class="pv-en">${v.def_en}</div><div class="pv-hi">${v.def_hi}</div><div class="pv-example" style="border-left-color:var(--accent)">${v.example}</div>${v.note ? `<div class="pv-note">${v.note}</div>` : ''}</div>`;
@@ -456,27 +513,36 @@ function buildLearn(mod, key) {
       html += `<div class="pv-card"><div class="pv-title" style="color:var(--modal-c)">${v.modal || v.title || ''}</div><div class="pv-en">${v.def_en || v.desc_en || ''}</div><div class="pv-hi">${v.def_hi || v.desc_hi || ''}</div>${v.example ? `<div class="pv-example" style="border-left-color:var(--modal-c)">${v.example}</div>` : ''}${v.note ? `<div class="pv-note">${v.note}</div>` : ''}</div>`;
     });
   }
+
   document.getElementById('sec-learn').innerHTML = html || '<div class="empty">Content coming soon.</div>';
 }
 
+/* ════════════════════════════════
+   PRACTICE
+════════════════════════════════ */
 function buildPractice(mod, key) {
-  const db   = getDB(mod);
-  const qs   = db?.[key]?.questions || [];
-  const sc   = scores[key];
+  const db = getDB(mod);
+  const qs = db?.[key]?.questions || [];
+  const sc = scores[key];
+
   let html = `<div class="score-row"><span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span><div class="practice-actions">${qs.length ? `<button class="reset-btn" onclick="resetQuiz('${esc(key)}')"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Reset</button>` : ''}<button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')"><i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>AI Practice (5 Qs)</button></div></div>`;
+
   if (qs.length) {
     qs.forEach((q, idx) => {
-      if (mod === 'grammar') {
-        html += renderGrammarCard(q, key, idx);
-      } else {
-        html += renderFibCard(q, key, mod, false);
-      }
+      html += mod === 'grammar' ? renderGrammarCard(q, key, idx) : renderFibCard(q, key, mod, false);
     });
   } else {
     html += `<div class="empty">No static questions yet. Use AI Practice to generate questions.</div>`;
   }
+
+  /* append any already-loaded AI questions */
+  if (aiQuestions[key] && aiQuestions[key].length) {
+    aiQuestions[key].forEach(q => { html += renderFibCard(q, key, mod, true); });
+  }
+
   document.getElementById('sec-practice').innerHTML = html;
   reapplyAttempts(key, qs, mod);
+  if (aiQuestions[key]) reapplyAttempts(key, aiQuestions[key], mod);
 }
 
 function renderFibCard(q, key, mod, isAI) {
@@ -494,29 +560,39 @@ function renderGrammarCard(q, key, idx) {
   return `<div class="fib-card" id="fc-${qid}"><span class="q-tag static-gr">Grammar</span><span class="q-type-badge">${q.type}</span><div class="fib-sentence" style="font-size:14px;font-weight:400">${q.q}</div><div class="opts-grid">${q.opts.map((opt, i) => `<button class="opt-tile" onclick="grammarAns(this,'${esc(key)}','${esc(qid)}',${i},${q.ans})"><span class="opt-tile-verb">${letters[i]}. ${opt}</span></button>`).join('')}</div><div class="fib-feedback" id="fb-${qid}">${q.exp}</div></div>`;
 }
 
+/* ════════════════════════════════
+   AI PRACTICE
+════════════════════════════════ */
 async function loadAIPractice(key) {
   const mod   = currentMod;
   const db    = getDB(mod);
   const entry = db?.[key];
   if (!entry) return;
+
+  /* if already loaded (cached in memory), don't regenerate */
+  if (aiStatus[key] === 'ready' && aiQuestions[key]?.length) {
+    alert('AI questions for this section are already loaded below.');
+    return;
+  }
+
   let promptText;
   if (mod === 'phrasal') {
-    const verbs = (entry.verbs || []).map(v => v.pv);
-    promptText  = PROMPTS.phrasal(key, verbs);
+    promptText = PROMPTS.phrasal(key, (entry.verbs || []).map(v => v.pv));
   } else if (mod === 'preposition') {
-    const words = (entry.words || []).map(v => v.word);
-    promptText  = PROMPTS.preposition(key, words);
+    promptText = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
   } else if (mod === 'idiom') {
-    promptText  = PROMPTS.idiom(key, entry.idioms || []);
+    promptText = PROMPTS.idiom(key, entry.idioms || []);
   } else if (mod === 'grammar') {
     const wordList = (entry.words || []).map(v => v.word).join(', ');
     promptText = PROMPTS.grammar ? PROMPTS.grammar(key, wordList) : `Generate 5 SSC-level fill-in-the-blank questions testing: ${wordList}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   } else if (mod === 'modal') {
-    const uses  = (entry.items || []).map(i => i.use || i.title || '');
-    promptText  = PROMPTS.modal ? PROMPTS.modal(key, uses) : `Generate 5 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+    const uses = (entry.items || []).map(i => i.use || i.title || '');
+    promptText = PROMPTS.modal ? PROMPTS.modal(key, uses) : `Generate 5 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   }
+
   const loaderId = 'ai-loader-' + Date.now();
   document.getElementById('sec-practice').innerHTML += `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
+
   await generateAndCache({
     userId: currentUser?.id,
     module: mod,
@@ -540,6 +616,9 @@ async function loadAIPractice(key) {
   });
 }
 
+/* ════════════════════════════════
+   ANSWER HANDLING
+════════════════════════════════ */
 function fibAns(btn, key, mod, qid, chosen) {
   const att = attempts[key] || (attempts[key] = {});
   if (att[qid]) return;
@@ -632,6 +711,9 @@ function resetQuiz(key) {
   buildPractice(currentMod, key);
 }
 
+/* ════════════════════════════════
+   REVIEW
+════════════════════════════════ */
 function buildReview(mod, key) {
   const att = attempts[key] || {};
   const db  = getDB(mod);
@@ -643,7 +725,7 @@ function buildReview(mod, key) {
   if (mod === 'grammar') {
     staticQs.forEach((q, i) => { q.id = q.id ?? `gr_${key}_${i}`; });
   }
-  const allQs    = [...staticQs, ...(aiQuestions[key] || [])];
+  const allQs = [...staticQs, ...(aiQuestions[key] || [])];
   if (!allQs.length) {
     document.getElementById('sec-review').innerHTML = '<div class="empty">No questions loaded yet.</div>';
     return;
@@ -663,24 +745,24 @@ function buildReview(mod, key) {
     } else {
       badge = '<span class="rv-badge w">✗ Incorrect</span>';
       if (mod === 'grammar' && q.opts) {
-        const chosenLabel  = letters[parseInt(a.chosen)]  + '. ' + q.opts[parseInt(a.chosen)];
+        const chosenLabel  = letters[parseInt(a.chosen)] + '. ' + q.opts[parseInt(a.chosen)];
         const correctLabel = letters[q.ans] + '. ' + q.opts[q.ans];
         ansHtml = `<span class="rv-lbl">You chose:</span> <span class="rv-ans x">${chosenLabel}</span><div class="rv-div"></div><span class="rv-lbl">Correct:</span> <span class="rv-ok">${correctLabel}</span>`;
       } else {
         ansHtml = `<span class="rv-lbl">You chose:</span> <span class="rv-ans x">${a.chosen}</span><div class="rv-div"></div><span class="rv-lbl">Correct:</span> <span class="rv-ok">${q.correct}</span>`;
       }
     }
-    let sentDisplay;
-    if (mod === 'grammar' && q.q) {
-      sentDisplay = q.q;
-    } else {
-      sentDisplay = a ? q.sentence.replace('_____', `<strong style="color:var(--text1)">${q.correct}</strong>`) : q.sentence;
-    }
+    const sentDisplay = (mod === 'grammar' && q.q)
+      ? q.q
+      : (a ? q.sentence.replace('_____', `<strong style="color:var(--text1)">${q.correct}</strong>`) : q.sentence);
     html += `<div class="rv-card"><div class="rv-head"><div class="rv-sent">${sentDisplay}</div>${badge}</div><div class="rv-ans-row">${ansHtml}</div>${a ? `<div class="rv-fb">${q.exp || q.feedback || ''}</div>` : ''}</div>`;
   });
   document.getElementById('sec-review').innerHTML = html;
 }
 
+/* ════════════════════════════════
+   PROGRESS BAR
+════════════════════════════════ */
 function updateProgress(key) {
   const db    = getDB(currentMod);
   const total = [...(db?.[key]?.questions || []), ...(aiQuestions[key] || [])].length;
@@ -688,11 +770,14 @@ function updateProgress(key) {
   const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
   const fill  = document.getElementById('mod-progress-fill');
   if (fill) {
-    fill.style.width   = pct + '%';
-    fill.className     = `mod-progress-fill ${MOD_META[currentMod]?.pfCls}`;
+    fill.style.width = pct + '%';
+    fill.className   = `mod-progress-fill ${MOD_META[currentMod]?.pfCls}`;
   }
 }
 
+/* ════════════════════════════════
+   MODEL CYCLING
+════════════════════════════════ */
 function updateModelPill() {
   const m = getActiveModel();
   const labels = { claude:'◆ Claude', gemini:'✦ Gemini', grok:'⬡ Groq' };
@@ -705,6 +790,10 @@ function cycleModel() {
   setActiveModel(next);
   updateModelPill();
 }
+
+/* ════════════════════════════════
+   UTILS
+════════════════════════════════ */
 function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>
