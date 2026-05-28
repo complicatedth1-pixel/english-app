@@ -173,7 +173,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .q-tag.static-gr  { background: var(--grammar-bg); color: var(--grammar); }
 .q-tag.static-mo  { background: var(--modal-bg); color: var(--modal-c); }
 .q-tag.ai-tag { background: #FFF8E6; color: #9A6700; border: 1px solid #F0D898; }
-/* Grammar question type badge */
 .q-type-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; background: var(--grammar-bg); color: var(--grammar); border: 1px solid var(--grammar-border); margin-left: 6px; }
 
 .fib-sentence { font-size: 15px; color: var(--text1); line-height: 1.75; margin-bottom: 1rem; font-weight: 500; }
@@ -183,7 +182,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .blank.gr  { border-bottom-color: var(--grammar); color: var(--grammar); }
 .blank.mo  { border-bottom-color: var(--modal-c); color: var(--modal-c); }
 
-/* Grammar error-spotting options use letter labels */
 .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .opt-tile { text-align: left; padding: 10px 13px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: all 0.15s; width: 100%; font-family: 'DM Sans', sans-serif; }
 .opt-tile:hover:not(:disabled) { background: var(--bg2); border-color: var(--border2); }
@@ -216,20 +214,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .rv-div { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
 .rv-fb { font-size: 13px; color: var(--text2); line-height: 1.7; padding: 10px 12px; background: var(--bg2); border-radius: var(--radius-sm); margin-bottom: 8px; }
 
-/* AI loading */
 .ai-loading { display: flex; flex-direction: column; align-items: center; padding: 3rem 1rem; gap: 12px; }
 .ai-spinner { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .ai-loading-text { font-size: 13.5px; color: var(--text3); }
 
 .empty { font-size: 13.5px; color: var(--text3); text-align: center; padding: 2.5rem 0; }
-
-/* Page loading */
 .page-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
 .page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
 .page-loading-brand span { color: var(--accent); }
 .spinner-lg { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-
 @media (max-width: 520px) {
   .opts-grid { grid-template-columns: 1fr; }
   .base-grid { grid-template-columns: repeat(2, 1fr); }
@@ -254,7 +248,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 <div class="app-wrap">
 
-  <!-- HOME -->
   <div id="view-home">
     <div class="home-section" id="home-pv-section">
       <div class="section-label">Phrasal Verbs</div>
@@ -278,7 +271,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
   </div>
 
-  <!-- MODULE VIEW -->
   <div id="view-module" style="display:none">
     <div class="module-header">
       <button class="nav-back" onclick="goHome()"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
@@ -300,9 +292,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 </div>
 
 <script>
-/* ════════════════════════════════
-   STATE
-════════════════════════════════ */
 let currentUser  = null;
 let currentMod   = null;
 let currentKey   = null;
@@ -321,11 +310,6 @@ const MOD_META = {
   modal:       { label:'Modals',        badge:'MOD',   badgeCls:'mo',  tabCls:'t-mo',  pfCls:'pf-mo',  blankCls:'mo',  tagCls:'static-mo'  },
 };
 
-/* ════════════════════════════════
-   DB ACCESS — maps mod name to variable
-   FIX: phrasal → DB (was DB_PV)
-        grammar → DB_GRAMMAR (was DB_GR)
-════════════════════════════════ */
 function getDB(mod) {
   const map = {
     phrasal:     typeof DB      !== 'undefined' ? DB      : null,
@@ -337,19 +321,13 @@ function getDB(mod) {
   return map[mod] || null;
 }
 
-/* ════════════════════════════════
-   INIT
-════════════════════════════════ */
 (async () => {
   const session = await sbGetSession();
   if (!session) { window.location.href = 'auth.html'; return; }
   currentUser = await sbGetUser();
-
   updateModelPill();
-
   const params = new URLSearchParams(window.location.search);
   const mod = params.get('m');
-
   if (mod && MOD_META[mod]) {
     currentMod = mod;
     modProgress = {};
@@ -359,22 +337,17 @@ function getDB(mod) {
       modProgress[p.item_key].attempts[p.question_id] = { chosen: p.chosen, correct: p.correct };
     });
   }
-
   buildHome();
   showHomeView();
   document.getElementById('page-loading').style.display = 'none';
 })();
 
-/* ════════════════════════════════
-   HOME
-════════════════════════════════ */
 function buildHome() {
   buildGrid('home-pv-grid',  'phrasal',     'pv-card');
   buildGrid('home-pre-grid', 'preposition', 'pre-card');
   buildGrid('home-id-grid',  'idiom',       'id-card');
   buildGrid('home-gr-grid',  'grammar',     'gr-card');
   buildGrid('home-mo-grid',  'modal',       'mo-card');
-
   const secs = [
     ['home-pv-section',  'phrasal'],
     ['home-pre-section', 'preposition'],
@@ -386,7 +359,6 @@ function buildHome() {
     const db = getDB(mod);
     document.getElementById(id).style.display = (db && Object.keys(db).length) ? 'block' : 'none';
   });
-
   document.getElementById('nav-module-name').textContent = 'All Modules';
 }
 
@@ -397,7 +369,6 @@ function buildGrid(gridId, mod, cardCls) {
   const grid = document.getElementById(gridId);
   grid.innerHTML = keys.map(k => {
     const entry = db[k];
-    // FIX: grammar uses words[], others use verbs/words/idioms
     const items = entry.verbs || entry.words || entry.idioms || entry.items || [];
     const qs    = entry.questions || [];
     const chips = items.slice(0,3).map(v => {
@@ -412,9 +383,6 @@ function buildGrid(gridId, mod, cardCls) {
   }).join('');
 }
 
-/* ════════════════════════════════
-   NAVIGATION
-════════════════════════════════ */
 function showHomeView() {
   document.getElementById('view-home').style.display = 'block';
   document.getElementById('view-module').style.display = 'none';
@@ -426,25 +394,19 @@ function openModule(mod, key) {
   currentKey  = key;
   if (!scores[key])   scores[key]   = { c:0, a:0 };
   if (!attempts[key]) attempts[key] = {};
-
   const meta = MOD_META[mod];
   tabClass   = meta.tabCls;
-
   document.getElementById('view-home').style.display = 'none';
   document.getElementById('view-module').style.display = 'block';
   document.getElementById('mod-title').textContent = key;
   document.getElementById('nav-module-name').textContent = meta.label;
-
   const badge = document.getElementById('mod-badge');
   badge.textContent = meta.badge;
   badge.className   = `mod-badge ${meta.badgeCls}`;
-
   document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
   document.getElementById('tab-learn').className = `tab-btn active ${tabClass}`;
-
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-learn').classList.add('active');
-
   buildLearn(mod, key);
   updateProgress(key);
   setLastVisited(mod, key);
@@ -464,10 +426,6 @@ function switchTab(tab, btn) {
   if (tab === 'review')   buildReview(currentMod, currentKey);
 }
 
-/* ════════════════════════════════
-   LEARN
-   FIX: grammar now shows word cards (words[]) instead of compare table
-════════════════════════════════ */
 function buildLearn(mod, key) {
   const db = getDB(mod);
   if (!db || !db[key]) {
@@ -476,102 +434,40 @@ function buildLearn(mod, key) {
   }
   const entry = db[key];
   let html = '';
-
   if (entry.intro) html += `<div class="intro-box">${entry.intro}</div>`;
-
-  // ── Phrasal verbs (DB: verbs[])
   if (mod === 'phrasal') {
     (entry.verbs || []).forEach(v => {
-      html += `<div class="pv-card">
-        <div class="pv-title" style="color:var(--accent)">${v.pv}</div>
-        <div class="pv-en">${v.def_en}</div>
-        <div class="pv-hi">${v.def_hi}</div>
-        <div class="pv-example" style="border-left-color:var(--accent)">${v.example}</div>
-        ${v.note ? `<div class="pv-note">${v.note}</div>` : ''}
-      </div>`;
+      html += `<div class="pv-card"><div class="pv-title" style="color:var(--accent)">${v.pv}</div><div class="pv-en">${v.def_en}</div><div class="pv-hi">${v.def_hi}</div><div class="pv-example" style="border-left-color:var(--accent)">${v.example}</div>${v.note ? `<div class="pv-note">${v.note}</div>` : ''}</div>`;
     });
-  }
-
-  // ── Prepositions (DB_FP: words[])
-  else if (mod === 'preposition') {
+  } else if (mod === 'preposition') {
     (entry.words || []).forEach(v => {
-      html += `<div class="pv-card">
-        <div class="pv-title" style="color:var(--blue)">${v.word} <span style="font-weight:400;color:var(--text3);font-size:14px">+ ${v.preposition}</span></div>
-        <div class="pv-en">${v.def_en}</div>
-        <div class="pv-hi">${v.def_hi}</div>
-        <div class="pv-example" style="border-left-color:var(--blue)">${v.example}</div>
-        ${v.note ? `<div class="pv-note">${v.note}</div>` : ''}
-      </div>`;
+      html += `<div class="pv-card"><div class="pv-title" style="color:var(--blue)">${v.word} <span style="font-weight:400;color:var(--text3);font-size:14px">+ ${v.preposition}</span></div><div class="pv-en">${v.def_en}</div><div class="pv-hi">${v.def_hi}</div><div class="pv-example" style="border-left-color:var(--blue)">${v.example}</div>${v.note ? `<div class="pv-note">${v.note}</div>` : ''}</div>`;
     });
-  }
-
-  // ── Idioms (DB_IDIOMS: idioms[])
-  else if (mod === 'idiom') {
+  } else if (mod === 'idiom') {
     (entry.idioms || []).forEach(i => {
-      html += `<div class="pv-card">
-        <div class="pv-title" style="color:var(--idiom)">${i.phrase}</div>
-        <div class="pv-en">${i.meaning_en}</div>
-        <div class="pv-hi">${i.meaning_hi}</div>
-        <div class="pv-example" style="border-left-color:var(--idiom)">${i.example}</div>
-        ${i.note ? `<div class="pv-note">${i.note}</div>` : ''}
-      </div>`;
+      html += `<div class="pv-card"><div class="pv-title" style="color:var(--idiom)">${i.phrase}</div><div class="pv-en">${i.meaning_en}</div><div class="pv-hi">${i.meaning_hi}</div><div class="pv-example" style="border-left-color:var(--idiom)">${i.example}</div>${i.note ? `<div class="pv-note">${i.note}</div>` : ''}</div>`;
     });
-  }
-
-  // ── Grammar (DB_GRAMMAR: words[])
-  // FIX: real data has words[] like prepositions — no compare table
-  else if (mod === 'grammar') {
+  } else if (mod === 'grammar') {
     (entry.words || []).forEach(v => {
-      html += `<div class="gr-word-card">
-        <div class="gr-word-title">${v.word}</div>
-        <div class="gr-word-prep">Takes: ${v.preposition}</div>
-        <div class="pv-en">${v.def_en}</div>
-        <div class="pv-hi">${v.def_hi}</div>
-        <div class="pv-example" style="border-left-color:var(--grammar)">${v.example}</div>
-        ${v.note ? `<div class="pv-note">${v.note}</div>` : ''}
-      </div>`;
+      html += `<div class="gr-word-card"><div class="gr-word-title">${v.word}</div><div class="gr-word-prep">Takes: ${v.preposition}</div><div class="pv-en">${v.def_en}</div><div class="pv-hi">${v.def_hi}</div><div class="pv-example" style="border-left-color:var(--grammar)">${v.example}</div>${v.note ? `<div class="pv-note">${v.note}</div>` : ''}</div>`;
     });
-  }
-
-  // ── Modals (items[])
-  else if (mod === 'modal') {
+  } else if (mod === 'modal') {
     (entry.items || []).forEach(v => {
-      html += `<div class="pv-card">
-        <div class="pv-title" style="color:var(--modal-c)">${v.modal || v.title || ''}</div>
-        <div class="pv-en">${v.def_en || v.desc_en || ''}</div>
-        <div class="pv-hi">${v.def_hi || v.desc_hi || ''}</div>
-        ${v.example ? `<div class="pv-example" style="border-left-color:var(--modal-c)">${v.example}</div>` : ''}
-        ${v.note ? `<div class="pv-note">${v.note}</div>` : ''}
-      </div>`;
+      html += `<div class="pv-card"><div class="pv-title" style="color:var(--modal-c)">${v.modal || v.title || ''}</div><div class="pv-en">${v.def_en || v.desc_en || ''}</div><div class="pv-hi">${v.def_hi || v.desc_hi || ''}</div>${v.example ? `<div class="pv-example" style="border-left-color:var(--modal-c)">${v.example}</div>` : ''}${v.note ? `<div class="pv-note">${v.note}</div>` : ''}</div>`;
     });
   }
-
   document.getElementById('sec-learn').innerHTML = html || '<div class="empty">Content coming soon.</div>';
 }
 
-/* ════════════════════════════════
-   PRACTICE
-   FIX: grammar questions use type/q/opts/ans/exp format — separate renderer
-════════════════════════════════ */
 function buildPractice(mod, key) {
   const db   = getDB(mod);
-  const meta = MOD_META[mod];
   const qs   = db?.[key]?.questions || [];
   const sc   = scores[key];
-
-  let html = `<div class="score-row">
-    <span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span>
-    <div class="practice-actions">
-      ${qs.length ? `<button class="reset-btn" onclick="resetQuiz('${esc(key)}')"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Reset</button>` : ''}
-      <button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')"><i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>AI Practice (5 Qs)</button>
-    </div>
-  </div>`;
-
+  let html = `<div class="score-row"><span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span><div class="practice-actions">${qs.length ? `<button class="reset-btn" onclick="resetQuiz('${esc(key)}')"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Reset</button>` : ''}<button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')"><i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>AI Practice (5 Qs)</button></div></div>`;
   if (qs.length) {
-    qs.forEach(q => {
-      // FIX: grammar uses its own format; everything else uses FIB format
+    qs.forEach((q, idx) => {
       if (mod === 'grammar') {
-        html += renderGrammarCard(q, key);
+        html += renderGrammarCard(q, key, idx);
       } else {
         html += renderFibCard(q, key, mod, false);
       }
@@ -579,57 +475,30 @@ function buildPractice(mod, key) {
   } else {
     html += `<div class="empty">No static questions yet. Use AI Practice to generate questions.</div>`;
   }
-
   document.getElementById('sec-practice').innerHTML = html;
   reapplyAttempts(key, qs, mod);
 }
 
-/* ── Standard FIB card (phrasal, preposition, idiom, modal, AI questions) ── */
 function renderFibCard(q, key, mod, isAI) {
   const meta   = MOD_META[mod];
   const tagCls = isAI ? 'ai-tag' : meta.tagCls;
   const tagLbl = isAI ? '✦ AI Question' : 'Practice';
   const blCls  = meta.blankCls;
-  return `<div class="fib-card" id="fc-${q.id}">
-    <span class="q-tag ${tagCls}">${tagLbl}</span>
-    <div class="fib-sentence">${q.sentence.replace('_____', `<span class="blank ${blCls}" id="bl-${q.id}">________</span>`)}</div>
-    <div class="opts-grid">
-      ${q.options.map(o => `
-        <button class="opt-tile" onclick="fibAns(this,'${esc(key)}','${esc(mod)}','${esc(q.id)}','${esc(o.verb)}')">
-          <span class="opt-tile-verb">${o.verb}</span>
-          <span class="opt-tile-hint">${o.hint}</span>
-        </button>`).join('')}
-    </div>
-    <div class="fib-feedback" id="fb-${q.id}">${q.feedback}</div>
-  </div>`;
+  return `<div class="fib-card" id="fc-${q.id}"><span class="q-tag ${tagCls}">${tagLbl}</span><div class="fib-sentence">${q.sentence.replace('_____', `<span class="blank ${blCls}" id="bl-${q.id}">________</span>`)}</div><div class="opts-grid">${q.options.map(o => `<button class="opt-tile" onclick="fibAns(this,'${esc(key)}','${esc(mod)}','${esc(q.id)}','${esc(o.verb)}')"><span class="opt-tile-verb">${o.verb}</span><span class="opt-tile-hint">${o.hint}</span></button>`).join('')}</div><div class="fib-feedback" id="fb-${q.id}">${q.feedback}</div></div>`;
 }
 
-/* ── Grammar card (type/q/opts/ans/exp format) ── */
-function renderGrammarCard(q, key) {
+function renderGrammarCard(q, key, idx) {
+  const qid = q.id ?? `gr_${key}_${idx}`;
+  q.id = qid;
   const letters = ['A','B','C','D'];
-  return `<div class="fib-card" id="fc-${q.id}">
-    <span class="q-tag static-gr">Grammar</span>
-    <span class="q-type-badge">${q.type}</span>
-    <div class="fib-sentence" style="font-size:14px;font-weight:400">${q.q}</div>
-    <div class="opts-grid">
-      ${q.opts.map((opt, i) => `
-        <button class="opt-tile" onclick="grammarAns(this,'${esc(key)}','${esc(q.id)}',${i},${q.ans})">
-          <span class="opt-tile-verb">${letters[i]}. ${opt}</span>
-        </button>`).join('')}
-    </div>
-    <div class="fib-feedback" id="fb-${q.id}">${q.exp}</div>
-  </div>`;
+  return `<div class="fib-card" id="fc-${qid}"><span class="q-tag static-gr">Grammar</span><span class="q-type-badge">${q.type}</span><div class="fib-sentence" style="font-size:14px;font-weight:400">${q.q}</div><div class="opts-grid">${q.opts.map((opt, i) => `<button class="opt-tile" onclick="grammarAns(this,'${esc(key)}','${esc(qid)}',${i},${q.ans})"><span class="opt-tile-verb">${letters[i]}. ${opt}</span></button>`).join('')}</div><div class="fib-feedback" id="fb-${qid}">${q.exp}</div></div>`;
 }
 
-/* ════════════════════════════════
-   AI PRACTICE
-════════════════════════════════ */
 async function loadAIPractice(key) {
   const mod   = currentMod;
   const db    = getDB(mod);
   const entry = db?.[key];
   if (!entry) return;
-
   let promptText;
   if (mod === 'phrasal') {
     const verbs = (entry.verbs || []).map(v => v.pv);
@@ -640,18 +509,14 @@ async function loadAIPractice(key) {
   } else if (mod === 'idiom') {
     promptText  = PROMPTS.idiom(key, entry.idioms || []);
   } else if (mod === 'grammar') {
-    // FIX: grammar AI prompt uses words[] not rule_en
     const wordList = (entry.words || []).map(v => v.word).join(', ');
     promptText = PROMPTS.grammar ? PROMPTS.grammar(key, wordList) : `Generate 5 SSC-level fill-in-the-blank questions testing: ${wordList}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   } else if (mod === 'modal') {
     const uses  = (entry.items || []).map(i => i.use || i.title || '');
     promptText  = PROMPTS.modal ? PROMPTS.modal(key, uses) : `Generate 5 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   }
-
   const loaderId = 'ai-loader-' + Date.now();
-  document.getElementById('sec-practice').innerHTML +=
-    `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
-
+  document.getElementById('sec-practice').innerHTML += `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
   await generateAndCache({
     userId: currentUser?.id,
     module: mod,
@@ -675,22 +540,14 @@ async function loadAIPractice(key) {
   });
 }
 
-/* ════════════════════════════════
-   ANSWER HANDLING
-════════════════════════════════ */
-
-/* Standard FIB answer (phrasal, prep, idiom, modal, AI) */
 function fibAns(btn, key, mod, qid, chosen) {
   const att = attempts[key] || (attempts[key] = {});
   if (att[qid]) return;
-
   const allQs = [...(getDB(mod)?.[key]?.questions || []), ...(aiQuestions[key] || [])];
   const q     = allQs.find(x => x.id === qid);
   if (!q) return;
-
   const isCorrect = chosen === q.correct;
   _recordAnswer(key, mod, qid, chosen, isCorrect, 'static');
-
   btn.closest('.opts-grid').querySelectorAll('.opt-tile').forEach(t => {
     t.disabled = true;
     const v = t.querySelector('.opt-tile-verb').textContent.trim();
@@ -698,33 +555,28 @@ function fibAns(btn, key, mod, qid, chosen) {
     else if (v === chosen)          t.classList.add('sel-wrong');
     else if (v === q.correct)       t.classList.add('show-correct');
   });
-
   const bl = document.getElementById('bl-' + qid);
   if (bl) { bl.textContent = q.correct; if (!isCorrect) bl.style.color = 'var(--green)'; }
   const fb = document.getElementById('fb-' + qid);
-  if (fb) { fb.classList.add('show'); }
+  if (fb) fb.classList.add('show');
   const sp = document.getElementById('sp-' + key);
   if (sp) sp.textContent = scores[key].c + ' / ' + scores[key].a;
   updateProgress(key);
 }
 
-/* Grammar answer (type/q/opts/ans/exp format) */
 function grammarAns(btn, key, qid, chosenIdx, correctIdx) {
   const att = attempts[key] || (attempts[key] = {});
   if (att[qid]) return;
-
   const isCorrect = chosenIdx === correctIdx;
-  _recordAnswer(key, 'grammar', qid, String(chosenIdx), isCorrect, 'static');
-
+  _recordAnswer(key, currentMod, qid, String(chosenIdx), isCorrect, 'static');
   btn.closest('.opts-grid').querySelectorAll('.opt-tile').forEach((t, i) => {
     t.disabled = true;
     if (i === chosenIdx && isCorrect)  t.classList.add('sel-correct');
     else if (i === chosenIdx)          t.classList.add('sel-wrong');
     else if (i === correctIdx)         t.classList.add('show-correct');
   });
-
   const fb = document.getElementById('fb-' + qid);
-  if (fb) { fb.classList.add('show'); }
+  if (fb) fb.classList.add('show');
   const sp = document.getElementById('sp-' + key);
   if (sp) sp.textContent = scores[key].c + ' / ' + scores[key].a;
   updateProgress(key);
@@ -747,9 +599,7 @@ function reapplyAttempts(key, qs, mod) {
     const a = att[q.id];
     if (!a) return;
     const fc = document.getElementById('fc-' + q.id); if (!fc) return;
-
     if (mod === 'grammar' && q.opts) {
-      // Grammar: stored as string index
       const chosenIdx  = parseInt(a.chosen);
       const correctIdx = q.ans;
       fc.querySelectorAll('.opt-tile').forEach((t, i) => {
@@ -759,7 +609,6 @@ function reapplyAttempts(key, qs, mod) {
         else if (i === correctIdx)         t.classList.add('show-correct');
       });
     } else {
-      // FIB: stored as verb string
       fc.querySelectorAll('.opt-tile').forEach(t => {
         t.disabled = true;
         const v = t.querySelector('.opt-tile-verb').textContent.trim();
@@ -783,39 +632,32 @@ function resetQuiz(key) {
   buildPractice(currentMod, key);
 }
 
-/* ════════════════════════════════
-   REVIEW
-   FIX: grammar questions handled with opts/ans format
-════════════════════════════════ */
 function buildReview(mod, key) {
   const att = attempts[key] || {};
   const db  = getDB(mod);
-
   if (Object.keys(att).length === 0) {
     document.getElementById('sec-review').innerHTML = '<div class="empty">Practice some questions first — your review will appear here.</div>';
     return;
   }
-
   const staticQs = db?.[key]?.questions || [];
+  if (mod === 'grammar') {
+    staticQs.forEach((q, i) => { q.id = q.id ?? `gr_${key}_${i}`; });
+  }
   const allQs    = [...staticQs, ...(aiQuestions[key] || [])];
   if (!allQs.length) {
     document.getElementById('sec-review').innerHTML = '<div class="empty">No questions loaded yet.</div>';
     return;
   }
-
   const letters = ['A','B','C','D'];
   let html = '';
-
   allQs.forEach(q => {
     const a = att[q.id];
     let badge, ansHtml;
-
     if (!a) {
       badge   = '<span class="rv-badge u">Not attempted</span>';
       ansHtml = '<span class="rv-lbl">Answer:</span> <span style="color:var(--text3);font-size:13px">—</span>';
     } else if (a.correct) {
       badge   = '<span class="rv-badge c">✓ Correct</span>';
-      // Grammar shows letter, others show verb
       const displayAns = (mod === 'grammar' && q.opts) ? letters[parseInt(a.chosen)] + '. ' + q.opts[parseInt(a.chosen)] : a.chosen;
       ansHtml = `<span class="rv-lbl">Answer:</span> <span class="rv-ans">${displayAns}</span>`;
     } else {
@@ -828,30 +670,17 @@ function buildReview(mod, key) {
         ansHtml = `<span class="rv-lbl">You chose:</span> <span class="rv-ans x">${a.chosen}</span><div class="rv-div"></div><span class="rv-lbl">Correct:</span> <span class="rv-ok">${q.correct}</span>`;
       }
     }
-
-    // Sentence display
     let sentDisplay;
     if (mod === 'grammar' && q.q) {
       sentDisplay = q.q;
     } else {
-      sentDisplay = a
-        ? q.sentence.replace('_____', `<strong style="color:var(--text1)">${q.correct}</strong>`)
-        : q.sentence;
+      sentDisplay = a ? q.sentence.replace('_____', `<strong style="color:var(--text1)">${q.correct}</strong>`) : q.sentence;
     }
-
-    html += `<div class="rv-card">
-      <div class="rv-head"><div class="rv-sent">${sentDisplay}</div>${badge}</div>
-      <div class="rv-ans-row">${ansHtml}</div>
-      ${a ? `<div class="rv-fb">${q.exp || q.feedback || ''}</div>` : ''}
-    </div>`;
+    html += `<div class="rv-card"><div class="rv-head"><div class="rv-sent">${sentDisplay}</div>${badge}</div><div class="rv-ans-row">${ansHtml}</div>${a ? `<div class="rv-fb">${q.exp || q.feedback || ''}</div>` : ''}</div>`;
   });
-
   document.getElementById('sec-review').innerHTML = html;
 }
 
-/* ════════════════════════════════
-   PROGRESS BAR
-════════════════════════════════ */
 function updateProgress(key) {
   const db    = getDB(currentMod);
   const total = [...(db?.[key]?.questions || []), ...(aiQuestions[key] || [])].length;
@@ -864,9 +693,6 @@ function updateProgress(key) {
   }
 }
 
-/* ════════════════════════════════
-   MODEL CYCLING
-════════════════════════════════ */
 function updateModelPill() {
   const m = getActiveModel();
   const labels = { claude:'◆ Claude', gemini:'✦ Gemini', grok:'⬡ Groq' };
@@ -879,10 +705,6 @@ function cycleModel() {
   setActiveModel(next);
   updateModelPill();
 }
-
-/* ════════════════════════════════
-   UTILS
-════════════════════════════════ */
 function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>
