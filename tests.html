@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test History — VocabMaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
+  --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
+  --text1: #1A1714; --text2: #5C5751; --text3: #9C9590;
+  --accent: #C84B2F; --accent2: #E86A4A; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
+  --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
+  --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
+  --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
+  --idiom: #6B3FA0; --idiom-bg: #F3EDFC; --idiom-border: #C9AEED;
+  --grammar: #B5760A; --grammar-bg: #FDF6E7; --grammar-border: #E8C97A;
+  --modal-c: #1A7A6E; --modal-bg: #E8F6F4; --modal-border: #89CECA;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
+
+.top-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
+  height: 54px; position: sticky; top: 0; z-index: 100;
+}
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; }
+.nav-brand span { color: var(--accent); }
+.nav-spacer { flex: 1; }
+.nav-link {
+  font-size: 13px; color: var(--text2); text-decoration: none;
+  padding: 5px 10px; border-radius: var(--radius-sm); transition: all 0.12s;
+  display: flex; align-items: center; gap: 5px;
+}
+.nav-link:hover { background: var(--bg2); color: var(--text1); }
+.nav-link.active { background: var(--bg2); color: var(--text1); font-weight: 500; }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.25rem; }
+
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 12px; }
+.page-title { font-family: 'Instrument Serif', serif; font-size: 26px; color: var(--text1); }
+.page-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+
+/* ── SUMMARY ── */
+.summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.75rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
+.stat-val { font-size: 24px; font-weight: 600; color: var(--text1); line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* ── FILTERS ── */
+.filters-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; box-shadow: var(--shadow); }
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-group label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); }
+.filter-sel {
+  font-size: 13px; padding: 6px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text1); font-family: 'DM Sans', sans-serif; cursor: pointer;
+  min-width: 140px;
+}
+.filter-sel:focus { outline: none; border-color: var(--border2); }
+.filter-reset {
+  font-size: 13px; padding: 6px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); font-family: 'DM Sans', sans-serif; cursor: pointer;
+  display: flex; align-items: center; gap: 5px; transition: all 0.12s;
+  align-self: flex-end;
+}
+.filter-reset:hover { background: var(--bg2); color: var(--text1); }
+
+/* ── TEST CARDS ── */
+.test-list { display: flex; flex-direction: column; gap: 12px; }
+.test-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden; cursor: pointer; transition: all 0.15s;
+}
+.test-card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
+.test-card-head {
+  padding: 1rem 1.25rem;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.tc-left { flex: 1; min-width: 0; }
+.tc-date { font-size: 11.5px; color: var(--text3); margin-bottom: 5px; }
+.tc-title { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 6px; }
+.tc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.tc-chip { font-size: 11.5px; padding: 2px 9px; border-radius: 20px; background: var(--bg2); color: var(--text2); }
+.tc-right { text-align: right; flex-shrink: 0; }
+.tc-score { font-size: 26px; font-weight: 600; line-height: 1; }
+.tc-score.great { color: var(--green); }
+.tc-score.ok    { color: var(--grammar); }
+.tc-score.poor  { color: var(--red); }
+.tc-score-sub { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+.tc-meta-row { padding: 8px 1.25rem; background: var(--bg2); border-top: 1px solid var(--border); display: flex; gap: 16px; flex-wrap: wrap; }
+.tc-meta-item { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 4px; }
+.tc-meta-item i { font-size: 13px; color: var(--text3); }
+
+/* ── EXPANDED DETAIL ── */
+.test-detail { border-top: 1px solid var(--border); background: var(--bg); display: none; }
+.test-detail.open { display: block; }
+.td-inner { padding: 1rem 1.25rem; }
+.td-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+.td-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; text-align: center; }
+.td-stat-val { font-size: 20px; font-weight: 600; color: var(--text1); }
+.td-stat-lbl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+.td-q-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.td-q-grid { display: flex; flex-direction: column; gap: 6px; }
+.td-q-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; gap: 10px; align-items: flex-start; }
+.td-q-num { font-size: 11.5px; font-weight: 600; color: var(--text3); min-width: 22px; }
+.td-q-body { flex: 1; min-width: 0; }
+.td-q-sentence { font-size: 13.5px; color: var(--text1); line-height: 1.6; margin-bottom: 5px; }
+.td-q-ans-row { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+.td-q-badge { padding: 2px 8px; border-radius: 20px; font-weight: 500; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+.td-q-badge.c { background: var(--green-bg); color: var(--green); }
+.td-q-badge.w { background: var(--red-bg); color: var(--red); }
+.td-q-badge.s { background: var(--bg2); color: var(--text3); }
+.td-q-time { font-size: 11.5px; color: var(--text3); display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+
+/* ── EMPTY / LOADING ── */
+.empty { font-size: 13.5px; color: var(--text3); text-align: center; padding: 3.5rem 0; }
+.page-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
+.page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
+.page-loading-brand span { color: var(--accent); }
+.spinner-lg { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 520px) {
+  .summary-row { grid-template-columns: repeat(2, 1fr); }
+  .td-stats-row { grid-template-columns: repeat(3, 1fr); }
+}
+
+.load-more-btn {
+  width: 100%; padding: 10px; border: 1px dashed var(--border2);
+  background: transparent; border-radius: var(--radius); color: var(--text2);
+  font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer;
+  margin-top: 8px; transition: all 0.15s;
+}
+.load-more-btn:hover { background: var(--bg2); }
+</style>
+</head>
+<body>
+
+<div class="page-loading" id="page-loading">
+  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="spinner-lg"></div>
+</div>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">Vocab<span>Master</span></div>
+  <div class="nav-spacer"></div>
+  <a href="index.html" class="nav-link"><i class="ti ti-home" style="font-size:15px"></i> Home</a>
+  <a href="analytics.html" class="nav-link"><i class="ti ti-chart-bar" style="font-size:15px"></i> Analytics</a>
+  <a href="tests.html" class="nav-link active"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
+</nav>
+
+<div class="wrap">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Test History</div>
+      <div class="page-sub">All your timed tests in one place</div>
+    </div>
+  </div>
+
+  <div class="summary-row">
+    <div class="stat-card"><div class="stat-label">Tests taken</div><div class="stat-val" id="s-tests">—</div></div>
+    <div class="stat-card"><div class="stat-label">Avg accuracy</div><div class="stat-val" id="s-avg">—</div><div class="stat-sub">across all tests</div></div>
+    <div class="stat-card"><div class="stat-label">Best score</div><div class="stat-val" id="s-best" style="color:var(--green)">—</div><div class="stat-sub" id="s-best-sub"></div></div>
+    <div class="stat-card"><div class="stat-label">Total time</div><div class="stat-val" id="s-time">—</div><div class="stat-sub">spent in tests</div></div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Module</label>
+      <select class="filter-sel" id="f-module" onchange="applyFilters()">
+        <option value="">All modules</option>
+        <option value="phrasal">Phrasal Verbs</option>
+        <option value="preposition">Prepositions</option>
+        <option value="idiom">Idioms</option>
+        <option value="grammar">Grammar Rules</option>
+        <option value="modal">Modals</option>
+        <option value="mixed">Mixed</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Score</label>
+      <select class="filter-sel" id="f-score" onchange="applyFilters()">
+        <option value="">Any score</option>
+        <option value="great">70%+ (strong)</option>
+        <option value="ok">40–70% (needs work)</option>
+        <option value="poor">Under 40% (weak)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Model</label>
+      <select class="filter-sel" id="f-model" onchange="applyFilters()">
+        <option value="">Any model</option>
+        <option value="claude">Claude Sonnet 4</option>
+        <option value="gemini">Gemini 2.5 Flash</option>
+        <option value="grok">Groq Llama 3.3</option>
+      </select>
+    </div>
+    <button class="filter-reset" onclick="resetFilters()">
+      <i class="ti ti-x" style="font-size:13px"></i> Reset
+    </button>
+  </div>
+
+  <div class="test-list" id="test-list"></div>
+  <div id="load-more-wrap"></div>
+</div>
+
+<script>
+let currentUser = null;
+let allSessions = [];
+let displayedCount = 15;
+const PAGE_SIZE = 15;
+
+/* Module meta */
+const MOD_LABELS = {
+  phrasal: 'Phrasal Verbs',
+  preposition: 'Prepositions',
+  idiom: 'Idioms',
+  grammar: 'Grammar',
+  modal: 'Modals',
+  mixed: 'Mixed',
+  '': 'Mixed'
+};
+const MOD_CHIP_STYLE = {
+  phrasal:     'background:var(--accent-bg);color:var(--accent)',
+  preposition: 'background:var(--blue-bg);color:var(--blue)',
+  idiom:       'background:var(--idiom-bg);color:var(--idiom)',
+  grammar:     'background:var(--grammar-bg);color:var(--grammar)',
+  modal:       'background:var(--modal-bg);color:var(--modal-c)',
+  mixed:       'background:var(--bg2);color:var(--text2)'
+};
+
+/* ════════════════ INIT ════════════════ */
+(async () => {
+  const { data: { session } } = await SB.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+
+  /* Load all test sessions */
+  const { data } = await SB.from('test_sessions')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+  allSessions = data || [];
+
+  renderSummary();
+  applyFilters();
+  document.getElementById('page-loading').style.display = 'none';
+})();
+
+/* ════════════════ SUMMARY ════════════════ */
+function renderSummary() {
+  const n = allSessions.length;
+  if (!n) {
+    ['s-tests','s-avg','s-best','s-time'].forEach(id => document.getElementById(id).textContent = '0');
+    return;
+  }
+
+  const totals = allSessions.map(s => {
+    const maxScore = (s.total_questions || 0) * 2;
+    return maxScore > 0 ? Math.round((s.score / maxScore) * 100) : 0;
+  });
+  const avg  = Math.round(totals.reduce((a,b) => a+b, 0) / totals.length);
+  const best = Math.max(...totals);
+  const bestSession = allSessions[totals.indexOf(best)];
+  const totalSec = allSessions.reduce((a,s) => a + (s.time_taken || 0), 0);
+
+  document.getElementById('s-tests').textContent = n;
+  document.getElementById('s-avg').textContent   = avg + '%';
+  document.getElementById('s-best').textContent  = best + '%';
+  document.getElementById('s-best-sub').textContent = bestSession ? formatDate(bestSession.created_at) : '';
+  document.getElementById('s-time').textContent  = formatDuration(totalSec);
+}
+
+/* ════════════════ FILTERS ════════════════ */
+function applyFilters() {
+  const fMod   = document.getElementById('f-module').value;
+  const fScore = document.getElementById('f-score').value;
+  const fModel = document.getElementById('f-model').value;
+  displayedCount = PAGE_SIZE;
+
+  let filtered = allSessions.filter(s => {
+    if (fMod && s.module !== fMod) return false;
+    if (fModel && s.model !== fModel) return false;
+    if (fScore) {
+      const maxScore = (s.total_questions || 0) * 2;
+      const pct = maxScore > 0 ? (s.score / maxScore) * 100 : 0;
+      if (fScore === 'great' && pct < 70)  return false;
+      if (fScore === 'ok'    && (pct < 40 || pct >= 70)) return false;
+      if (fScore === 'poor'  && pct >= 40) return false;
+    }
+    return true;
+  });
+
+  renderList(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('f-module').value = '';
+  document.getElementById('f-score').value  = '';
+  document.getElementById('f-model').value  = '';
+  applyFilters();
+}
+
+/* ════════════════ RENDER LIST ════════════════ */
+function renderList(sessions) {
+  const list = document.getElementById('test-list');
+  if (!sessions.length) {
+    list.innerHTML = `<div class="empty">
+      <i class="ti ti-clipboard-list" style="font-size:32px;color:var(--border2);display:block;margin-bottom:8px"></i>
+      No tests match your filters. <span style="color:var(--text2);cursor:pointer;text-decoration:underline" onclick="resetFilters()">Clear filters</span>
+    </div>`;
+    document.getElementById('load-more-wrap').innerHTML = '';
+    return;
+  }
+
+  const toShow = sessions.slice(0, displayedCount);
+  list.innerHTML = toShow.map((s, idx) => renderTestCard(s, idx)).join('');
+
+  const loadWrap = document.getElementById('load-more-wrap');
+  if (sessions.length > displayedCount) {
+    loadWrap.innerHTML = `<button class="load-more-btn" onclick="loadMore()">
+      Load more (${sessions.length - displayedCount} remaining)
+    </button>`;
+  } else {
+    loadWrap.innerHTML = '';
+  }
+
+  /* Store filtered ref for load more */
+  window._filteredSessions = sessions;
+}
+
+function loadMore() {
+  displayedCount += PAGE_SIZE;
+  renderList(window._filteredSessions || allSessions);
+}
+
+function renderTestCard(s, idx) {
+  const maxScore = (s.total_questions || 0) * 2;
+  const pct      = maxScore > 0 ? Math.round((s.score / maxScore) * 100) : 0;
+  const scoreCls = pct >= 70 ? 'great' : pct >= 40 ? 'ok' : 'poor';
+
+  const subtopics = (s.subtopics || []).slice(0, 4);
+  const extra     = (s.subtopics || []).length - 4;
+  const mod       = s.module || 'mixed';
+  const modLabel  = MOD_LABELS[mod] || mod;
+  const chipStyle = MOD_CHIP_STYLE[mod] || MOD_CHIP_STYLE.mixed;
+
+  const chipHtml = subtopics.map(st => `<span class="tc-chip" style="${chipStyle}">${st}</span>`).join('')
+    + (extra > 0 ? `<span class="tc-chip">+${extra} more</span>` : '');
+
+  const modelLabels = { claude: '◆ Claude', gemini: '✦ Gemini', grok: '⬡ Groq' };
+  const timeAlloc   = formatDuration(s.time_allocated || 0);
+  const timeTaken   = formatDuration(s.time_taken || 0);
+
+  /* Score breakdown */
+  const results = s.results || [];
+  const correct  = results.filter(r => r.correct).length;
+  const wrong    = results.filter(r => !r.correct && r.chosen).length;
+  const skipped  = results.filter(r => !r.chosen).length;
+
+  return `<div class="test-card" id="tc-${s.id}">
+    <div class="test-card-head" onclick="toggleDetail('${s.id}')">
+      <div class="tc-left">
+        <div class="tc-date">${formatDate(s.created_at)}</div>
+        <div class="tc-title">${modLabel} Test · ${s.total_questions} questions</div>
+        <div class="tc-chips">${chipHtml}</div>
+      </div>
+      <div class="tc-right">
+        <div class="tc-score ${scoreCls}">${pct}%</div>
+        <div class="tc-score-sub">${s.score >= 0 ? '+' : ''}${Number(s.score).toFixed(1)} pts</div>
+      </div>
+    </div>
+    <div class="tc-meta-row">
+      <span class="tc-meta-item"><i class="ti ti-clock"></i>${timeTaken} / ${timeAlloc}</span>
+      <span class="tc-meta-item"><i class="ti ti-check"></i>${correct} correct</span>
+      <span class="tc-meta-item"><i class="ti ti-x"></i>${wrong} wrong</span>
+      ${skipped ? `<span class="tc-meta-item"><i class="ti ti-minus"></i>${skipped} skipped</span>` : ''}
+      <span class="tc-meta-item"><i class="ti ti-robot"></i>${modelLabels[s.model] || s.model || '—'}</span>
+    </div>
+    <div class="test-detail" id="td-${s.id}">
+      <div class="td-inner">
+        <div class="td-stats-row">
+          <div class="td-stat"><div class="td-stat-val" style="color:var(--green)">${correct}</div><div class="td-stat-lbl">Correct</div></div>
+          <div class="td-stat"><div class="td-stat-val" style="color:var(--red)">${wrong}</div><div class="td-stat-lbl">Wrong</div></div>
+          <div class="td-stat"><div class="td-stat-val" style="color:var(--text3)">${skipped}</div><div class="td-stat-lbl">Skipped</div></div>
+        </div>
+        ${results.length ? renderQReview(results) : '<div class="empty" style="padding:1rem 0">No per-question data saved.</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderQReview(results) {
+  let html = '<div class="td-q-label">Question breakdown</div><div class="td-q-grid">';
+  results.forEach((r, i) => {
+    const badgeCls = !r.chosen ? 's' : r.correct ? 'c' : 'w';
+    const badgeTxt = !r.chosen ? 'Skipped' : r.correct ? 'Correct' : 'Wrong';
+    const timeTxt  = r.time_taken_seconds != null ? Math.round(r.time_taken_seconds) + 's' : '';
+    html += `<div class="td-q-row">
+      <div class="td-q-num">${i + 1}.</div>
+      <div class="td-q-body">
+        <div class="td-q-ans-row">
+          <span class="td-q-badge ${badgeCls}">${badgeTxt}</span>
+          ${r.chosen ? `<span style="font-size:12px;color:var(--text2)">You chose: <b>${r.chosen}</b></span>` : ''}
+          ${!r.correct && r.correct_answer ? `<span style="font-size:12px;color:var(--green)">Correct: <b>${r.correct_answer}</b></span>` : ''}
+        </div>
+      </div>
+      ${timeTxt ? `<div class="td-q-time"><i class="ti ti-clock" style="font-size:12px"></i>${timeTxt}</div>` : ''}
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+/* ════════════════ TOGGLE DETAIL ════════════════ */
+function toggleDetail(id) {
+  const el = document.getElementById('td-' + id);
+  el.classList.toggle('open');
+}
+
+/* ════════════════ UTILS ════════════════ */
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function formatDuration(sec) {
+  if (!sec) return '0m';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m === 0) return s + 's';
+  return s ? `${m}m ${s}s` : `${m}m`;
+}
+</script>
+</body>
+</html>

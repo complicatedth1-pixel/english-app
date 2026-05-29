@@ -31,7 +31,7 @@ const AI_CFG = {
 
 /* Active model — persisted in localStorage */
 function getActiveModel() {
-  return localStorage.getItem('aiModel') || 'claude';
+  return localStorage.getItem('aiModel') || 'gemini';
 }
 function setActiveModel(key) {
   localStorage.setItem('aiModel', key);
@@ -45,12 +45,23 @@ async function aiCall(prompt, modelKey) {
   if (key === 'claude') {
     const res = await fetch(cfg.url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        /* Required header for direct browser → Anthropic API calls */
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
-        model: cfg.model, max_tokens: cfg.maxTok,
+        model: cfg.model,
+        max_tokens: cfg.maxTok,
         messages: [{ role: 'user', content: prompt }]
       })
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Claude API error:', res.status, errText);
+      throw Object.assign(new Error('Claude API error: ' + res.status), { status: res.status, body: errText });
+    }
     const d = await res.json();
     return d.content.map(c => c.text || '').join('');
   }
@@ -61,6 +72,11 @@ async function aiCall(prompt, modelKey) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Gemini API error:', res.status, errText);
+      throw Object.assign(new Error('Gemini API error: ' + res.status), { status: res.status, body: errText });
+    }
     const d = await res.json();
     return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
@@ -73,10 +89,16 @@ async function aiCall(prompt, modelKey) {
         'Authorization': `Bearer ${cfg.key}`
       },
       body: JSON.stringify({
-        model: cfg.model, max_tokens: cfg.maxTok,
+        model: cfg.model,
+        max_tokens: cfg.maxTok,
         messages: [{ role: 'user', content: prompt }]
       })
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Groq API error:', res.status, errText);
+      throw Object.assign(new Error('Groq API error: ' + res.status), { status: res.status, body: errText });
+    }
     const d = await res.json();
     return d.choices?.[0]?.message?.content || '';
   }
@@ -84,8 +106,15 @@ async function aiCall(prompt, modelKey) {
 
 /* ── PARSE JSON FROM AI RESPONSE ── */
 function parseAIJson(raw) {
-  const clean = raw.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
+  const clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  try {
+    return JSON.parse(clean);
+  } catch (e) {
+    /* Try to extract a JSON array if extra text surrounds it */
+    const match = clean.match(/\[[\s\S]*\]/);
+    if (match) return JSON.parse(match[0]);
+    throw e;
+  }
 }
 
 /* ── PROMPT BUILDERS ── */
@@ -128,9 +157,10 @@ Rules:
 - 4 options per question (idiom phrases)
 - "hint" = Hindi meaning, max 6 words
 - Include "feedback" explaining correct answer and distractors
+- IMPORTANT: Tag each question with which idiom phrase it primarily tests, using field "idiom_tested"
 
 Respond ONLY with a JSON array. No markdown:
-[{"id":"q1","sentence":"...___...","correct":"idiom phrase","options":[{"verb":"phrase","hint":"..."}],"feedback":"..."}]`;
+[{"id":"q1","idiom_tested":"the exact idiom phrase being tested","sentence":"...___...","correct":"idiom phrase","options":[{"verb":"phrase","hint":"..."}],"feedback":"..."}]`;
   },
 
   grammar(ruleName, ruleDesc) {
@@ -183,21 +213,43 @@ Respond ONLY with a JSON array. No markdown:
 async function generateAndCache({ userId, module, itemKey, promptText, onLoad, onReady, onError }) {
   const modelKey = getActiveModel();
 
-  // Check cache first
+  /* Check Supabase cache first */
   if (userId) {
-    const cached = await sbGetCachedQuestions(userId, module, itemKey, modelKey);
-    if (cached) { onReady(cached, 'cache'); return; }
+    try {
+      const cached = await sbGetCachedQuestions(userId, module, itemKey, modelKey);
+      if (cached && cached.length) {
+        onReady(cached, 'cache');
+        return;
+      }
+    } catch (cacheErr) {
+      console.warn('Cache check failed, proceeding to generate:', cacheErr);
+    }
   }
 
   onLoad();
+
   try {
-    const raw  = await aiCall(promptText, modelKey);
-    const qs   = parseAIJson(raw);
-    qs.forEach((q, i) => { q.id = `${itemKey.replace(/\s+/g,'_')}_${modelKey}_${i}`; });
-    if (userId) await sbSaveCachedQuestions(userId, module, itemKey, modelKey, qs);
+    const raw = await aiCall(promptText, modelKey);
+    const qs  = parseAIJson(raw);
+
+    /* Assign stable IDs */
+    qs.forEach((q, i) => {
+      q.id = q.id || `${itemKey.replace(/\s+/g, '_')}_${modelKey}_${i}`;
+    });
+
+    /* Save to cache */
+    if (userId) {
+      try {
+        await sbSaveCachedQuestions(userId, module, itemKey, modelKey, qs);
+      } catch (saveErr) {
+        console.error('Failed to save questions to cache:', saveErr);
+        /* Still deliver the questions even if cache save fails */
+      }
+    }
+
     onReady(qs, 'fresh');
-  } catch(err) {
-    console.error('AI error:', err);
+  } catch (err) {
+    console.error('AI generation error:', err);
     onError(err);
   }
 }

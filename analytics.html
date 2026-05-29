@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics — VocabMaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="db_phrasal.js"></script>
+<script src="db_preposition.js"></script>
+<script src="db_idioms.js"></script>
+<script src="db_grammar.js"></script>
+<script src="db_modals.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
+  --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
+  --text1: #1A1714; --text2: #5C5751; --text3: #9C9590;
+  --accent: #C84B2F; --accent2: #E86A4A; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
+  --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
+  --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
+  --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
+  --idiom: #6B3FA0; --idiom-bg: #F3EDFC; --idiom-border: #C9AEED;
+  --grammar: #B5760A; --grammar-bg: #FDF6E7; --grammar-border: #E8C97A;
+  --modal-c: #1A7A6E; --modal-bg: #E8F6F4; --modal-border: #89CECA;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
+
+.top-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
+  height: 54px; position: sticky; top: 0; z-index: 100;
+}
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; }
+.nav-brand span { color: var(--accent); }
+.nav-spacer { flex: 1; }
+.nav-link {
+  font-size: 13px; color: var(--text2); text-decoration: none;
+  padding: 5px 10px; border-radius: var(--radius-sm); transition: all 0.12s;
+  display: flex; align-items: center; gap: 5px;
+}
+.nav-link:hover { background: var(--bg2); color: var(--text1); }
+.nav-link.active { background: var(--bg2); color: var(--text1); font-weight: 500; }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.25rem; }
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom: 2rem; }
+.page-title { font-family: 'Instrument Serif', serif; font-size: 26px; color: var(--text1); margin-bottom: 4px; }
+.page-sub { font-size: 13.5px; color: var(--text3); }
+
+/* ── SUMMARY ROW ── */
+.summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 2rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
+.stat-val { font-size: 24px; font-weight: 600; color: var(--text1); line-height: 1; margin-bottom: 2px; }
+.stat-sub { font-size: 12px; color: var(--text3); }
+
+/* ── BREADCRUMB ── */
+.breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.bc-item { font-size: 13px; color: var(--text3); cursor: pointer; transition: color 0.12s; }
+.bc-item:hover { color: var(--text1); }
+.bc-item.active { color: var(--text1); font-weight: 500; }
+.bc-sep { font-size: 11px; color: var(--text3); }
+
+/* ── MODULE FILTER TABS ── */
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.filter-pill {
+  font-size: 12.5px; padding: 5px 13px; border-radius: 20px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s; font-weight: 500;
+}
+.filter-pill:hover { background: var(--bg2); }
+.filter-pill.active { color: var(--surface); border-color: transparent; }
+.filter-pill.fp-all    { background: var(--text1); color: var(--surface); border-color: var(--text1); }
+.filter-pill.fp-phrasal.active   { background: var(--accent); border-color: var(--accent); }
+.filter-pill.fp-preposition.active { background: var(--blue); border-color: var(--blue); }
+.filter-pill.fp-idiom.active     { background: var(--idiom); border-color: var(--idiom); }
+.filter-pill.fp-grammar.active   { background: var(--grammar); border-color: var(--grammar); }
+.filter-pill.fp-modal.active     { background: var(--modal-c); border-color: var(--modal-c); }
+
+/* ── SECTION LABEL ── */
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.75rem; }
+
+/* ── TOPIC CARDS (Layer 1) ── */
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+.topic-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+  border-left: 3px solid var(--border);
+}
+.topic-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); border-color: var(--border2); }
+.topic-card.pv    { border-left-color: var(--accent); }
+.topic-card.pre   { border-left-color: var(--blue); }
+.topic-card.id    { border-left-color: var(--idiom); }
+.topic-card.gr    { border-left-color: var(--grammar); }
+.topic-card.mo    { border-left-color: var(--modal-c); }
+.tc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.tc-name { font-size: 15px; font-weight: 600; color: var(--text1); }
+.tc-badge { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
+.tc-badge.pv  { background: var(--accent-bg); color: var(--accent); }
+.tc-badge.pre { background: var(--blue-bg); color: var(--blue); }
+.tc-badge.id  { background: var(--idiom-bg); color: var(--idiom); }
+.tc-badge.gr  { background: var(--grammar-bg); color: var(--grammar); }
+.tc-badge.mo  { background: var(--modal-bg); color: var(--modal-c); }
+.tc-bar-wrap { height: 5px; background: var(--bg2); border-radius: 3px; margin-bottom: 8px; overflow: hidden; }
+.tc-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.tc-bar.pv  { background: var(--accent); }
+.tc-bar.pre { background: var(--blue); }
+.tc-bar.id  { background: var(--idiom); }
+.tc-bar.gr  { background: var(--grammar); }
+.tc-bar.mo  { background: var(--modal-c); }
+.tc-stats { display: flex; gap: 12px; font-size: 12px; color: var(--text3); }
+.tc-stat-hi { color: var(--green); font-weight: 500; }
+.tc-stat-lo { color: var(--red); font-weight: 500; }
+.tc-stat-att { color: var(--text2); font-weight: 500; }
+
+/* ── SUBTOPIC LIST (Layer 2) ── */
+.subtopic-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+.subtopic-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+  cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+}
+.subtopic-row:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
+.sr-info { flex: 1; min-width: 0; }
+.sr-name { font-size: 14px; font-weight: 500; color: var(--text1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-bar-wrap { height: 4px; background: var(--bg2); border-radius: 2px; overflow: hidden; }
+.sr-bar { height: 100%; border-radius: 2px; }
+.sr-nums { text-align: right; flex-shrink: 0; }
+.sr-pct { font-size: 16px; font-weight: 600; color: var(--text1); line-height: 1; }
+.sr-count { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.sr-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-great { background: var(--green); }
+.dot-ok    { background: var(--grammar); }
+.dot-weak  { background: var(--red); }
+.dot-none  { background: var(--border2); }
+.sr-arrow { color: var(--text3); font-size: 16px; flex-shrink: 0; }
+
+/* ── MICRO CARDS (Layer 3) ── */
+.micro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+.micro-sort { display: flex; gap: 6px; }
+.micro-sort-btn {
+  font-size: 12px; padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+.micro-sort-btn.active { background: var(--text1); color: var(--surface); border-color: var(--text1); }
+.micro-grid { display: flex; flex-direction: column; gap: 8px; }
+.micro-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.9rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+.mc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.mc-phrase { font-size: 14px; font-weight: 500; color: var(--text1); line-height: 1.4; }
+.mc-badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; }
+.mc-badge.great { background: var(--green-bg); color: var(--green); }
+.mc-badge.ok    { background: var(--grammar-bg); color: var(--grammar); }
+.mc-badge.weak  { background: var(--red-bg); color: var(--red); }
+.mc-badge.none  { background: var(--bg2); color: var(--text3); }
+.mc-bar-wrap { height: 4px; background: var(--bg2); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+.mc-bar { height: 100%; border-radius: 2px; }
+.mc-meta { font-size: 12px; color: var(--text3); display: flex; gap: 10px; }
+.mc-meta span b { font-weight: 500; }
+.mc-wrong-box { margin-top: 8px; padding: 7px 10px; background: var(--red-bg); border-radius: var(--radius-sm); font-size: 12px; color: var(--red); border: 1px solid var(--red-border); }
+
+/* ── EMPTY / LOADING ── */
+.empty { font-size: 13.5px; color: var(--text3); text-align: center; padding: 3rem 0; }
+.page-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
+.page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
+.page-loading-brand span { color: var(--accent); }
+.spinner-lg { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 520px) {
+  .summary-row { grid-template-columns: repeat(2, 1fr); }
+  .topic-grid { grid-template-columns: 1fr; }
+}
+
+/* ── WEAK ALERT BAR ── */
+.weak-alert { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius); padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; display: flex; gap: 10px; align-items: flex-start; }
+.weak-alert-icon { color: var(--red); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.weak-alert-text { font-size: 13px; color: var(--red); line-height: 1.6; }
+.weak-alert-text b { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-loading" id="page-loading">
+  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="spinner-lg"></div>
+</div>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">Vocab<span>Master</span></div>
+  <div class="nav-spacer"></div>
+  <a href="index.html" class="nav-link"><i class="ti ti-home" style="font-size:15px"></i> Home</a>
+  <a href="analytics.html" class="nav-link active"><i class="ti ti-chart-bar" style="font-size:15px"></i> Analytics</a>
+  <a href="tests.html" class="nav-link"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
+</nav>
+
+<div class="wrap">
+  <div class="page-header">
+    <div class="page-title">Analytics</div>
+    <div class="page-sub">See where you're strong and where you need more practice</div>
+  </div>
+
+  <div class="summary-row" id="summary-row">
+    <div class="stat-card"><div class="stat-label">Total answered</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">questions</div></div>
+    <div class="stat-card"><div class="stat-label">Correct</div><div class="stat-val" id="s-correct" style="color:var(--green)">—</div><div class="stat-sub" id="s-pct">—% accuracy</div></div>
+    <div class="stat-card"><div class="stat-label">Topics started</div><div class="stat-val" id="s-topics">—</div><div class="stat-sub">of 5 modules</div></div>
+    <div class="stat-card"><div class="stat-label">Weak items</div><div class="stat-val" id="s-weak" style="color:var(--red)">—</div><div class="stat-sub">need more work</div></div>
+  </div>
+
+  <div id="weak-alert" style="display:none"></div>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb" id="breadcrumb">
+    <span class="bc-item active" onclick="drillTo('home')">All Topics</span>
+  </div>
+
+  <!-- LAYER 1: topic overview -->
+  <div id="layer-home">
+    <div class="filter-row" id="filter-row">
+      <button class="filter-pill fp-all active" onclick="filterMod(null,this)">All</button>
+      <button class="filter-pill fp-phrasal" onclick="filterMod('phrasal',this)">Phrasal Verbs</button>
+      <button class="filter-pill fp-preposition" onclick="filterMod('preposition',this)">Prepositions</button>
+      <button class="filter-pill fp-idiom" onclick="filterMod('idiom',this)">Idioms</button>
+      <button class="filter-pill fp-grammar" onclick="filterMod('grammar',this)">Grammar</button>
+      <button class="filter-pill fp-modal" onclick="filterMod('modal',this)">Modals</button>
+    </div>
+    <div class="section-label" id="topic-section-label">Topics overview</div>
+    <div class="topic-grid" id="topic-grid"></div>
+  </div>
+
+  <!-- LAYER 2: subtopics for one module -->
+  <div id="layer-subtopic" style="display:none">
+    <div class="subtopic-list" id="subtopic-list"></div>
+  </div>
+
+  <!-- LAYER 3: micro items for one subtopic -->
+  <div id="layer-micro" style="display:none">
+    <div class="micro-header">
+      <div class="section-label" style="margin:0">Items in this subtopic</div>
+      <div class="micro-sort">
+        <button class="micro-sort-btn active" onclick="sortMicro('weak',this)">Weakest first</button>
+        <button class="micro-sort-btn" onclick="sortMicro('alpha',this)">A–Z</button>
+        <button class="micro-sort-btn" onclick="sortMicro('attempts',this)">Most attempted</button>
+      </div>
+    </div>
+    <div class="micro-grid" id="micro-grid"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════ DATA ════════════════ */
+let currentUser = null;
+let allProgress = [];   /* raw rows from progress table */
+let activeFilter = null;
+let drillMod = null;
+let drillKey = null;
+let microSort = 'weak';
+
+/* Map module names to DB and CSS classes */
+const MOD_INFO = {
+  phrasal:     { label:'Phrasal Verbs', cls:'pv',  getDB: () => typeof DB         !== 'undefined' ? DB         : {} },
+  preposition: { label:'Prepositions',  cls:'pre', getDB: () => typeof DB_FP      !== 'undefined' ? DB_FP      : {} },
+  idiom:       { label:'Idioms',        cls:'id',  getDB: () => typeof DB_IDIOMS  !== 'undefined' ? DB_IDIOMS  : {} },
+  grammar:     { label:'Grammar Rules', cls:'gr',  getDB: () => typeof DB_GRAMMAR !== 'undefined' ? DB_GRAMMAR : {} },
+  modal:       { label:'Modals',        cls:'mo',  getDB: () => typeof DB_MOD     !== 'undefined' ? DB_MOD     : {} },
+};
+
+function displayKey(k) {
+  return k.replace(/^Rule_\d+_/, '').replace(/_/g, ' ');
+}
+
+/* ════════════════ INIT ════════════════ */
+(async () => {
+  const { data: { session } } = await SB.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+
+  const { data } = await SB.from('progress')
+    .select('module, item_key, question_id, chosen, correct, source, created_at')
+    .eq('user_id', currentUser.id);
+  allProgress = data || [];
+
+  renderSummary();
+  renderWeakAlert();
+  renderTopicGrid(null);
+  document.getElementById('page-loading').style.display = 'none';
+})();
+
+/* ════════════════ SUMMARY ════════════════ */
+function renderSummary() {
+  const total   = allProgress.length;
+  const correct = allProgress.filter(r => r.correct).length;
+  const pct     = total ? Math.round((correct / total) * 100) : 0;
+  const topics  = new Set(allProgress.map(r => r.module)).size;
+
+  /* Count weak items: attempted ≥2 times with accuracy < 50% */
+  const weakCount = countWeakItems(allProgress);
+
+  document.getElementById('s-total').textContent   = total.toLocaleString();
+  document.getElementById('s-correct').textContent = correct.toLocaleString();
+  document.getElementById('s-pct').textContent     = pct + '% accuracy';
+  document.getElementById('s-topics').textContent  = topics;
+  document.getElementById('s-weak').textContent    = weakCount;
+}
+
+function countWeakItems(rows) {
+  /* Group by (module + item_key + question_id) */
+  const qMap = {};
+  rows.forEach(r => {
+    const k = r.module + '|' + r.item_key + '|' + r.question_id;
+    if (!qMap[k]) qMap[k] = { total: 0, correct: 0 };
+    qMap[k].total++;
+    if (r.correct) qMap[k].correct++;
+  });
+  return Object.values(qMap).filter(v => v.total >= 2 && (v.correct / v.total) < 0.5).length;
+}
+
+function renderWeakAlert() {
+  const weakMods = getWeakModules();
+  if (!weakMods.length) return;
+  const names = weakMods.map(m => MOD_INFO[m]?.label || m).join(', ');
+  document.getElementById('weak-alert').style.display = 'flex';
+  document.getElementById('weak-alert').innerHTML = `
+    <i class="ti ti-alert-triangle weak-alert-icon"></i>
+    <div class="weak-alert-text"><b>Focus areas:</b> You have low accuracy in ${names}. Click a topic below to drill down and see exactly what to revise.</div>`;
+}
+
+function getWeakModules() {
+  const modStats = {};
+  allProgress.forEach(r => {
+    if (!modStats[r.module]) modStats[r.module] = { c: 0, t: 0 };
+    modStats[r.module].t++;
+    if (r.correct) modStats[r.module].c++;
+  });
+  return Object.entries(modStats)
+    .filter(([, v]) => v.t >= 5 && (v.c / v.t) < 0.5)
+    .map(([k]) => k);
+}
+
+/* ════════════════ LAYER 1 — TOPIC GRID ════════════════ */
+function filterMod(mod, btn) {
+  activeFilter = mod;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active', 'fp-all'));
+  btn.classList.add('active');
+  if (!mod) btn.classList.add('fp-all');
+  renderTopicGrid(mod);
+}
+
+function renderTopicGrid(filterMod) {
+  const grid = document.getElementById('topic-grid');
+  const mods = filterMod ? [filterMod] : Object.keys(MOD_INFO);
+  document.getElementById('topic-section-label').textContent =
+    filterMod ? MOD_INFO[filterMod].label + ' — subtopics' : 'Topics overview';
+
+  grid.innerHTML = mods.map(mod => {
+    const info = MOD_INFO[mod];
+    const rows = allProgress.filter(r => r.module === mod);
+    const total   = rows.length;
+    const correct = rows.filter(r => r.correct).length;
+    const pct     = total ? Math.round((correct / total) * 100) : 0;
+    const subtopicsDone = new Set(rows.map(r => r.item_key)).size;
+    const totalSubtopics = Object.keys(info.getDB()).length;
+    const weakItems = countWeakItems(rows);
+
+    return `<div class="topic-card ${info.cls}" onclick="drillTo('subtopic','${mod}')">
+      <div class="tc-header">
+        <div class="tc-name">${info.label}</div>
+        <span class="tc-badge ${info.cls}">${info.cls.toUpperCase()}</span>
+      </div>
+      <div class="tc-bar-wrap"><div class="tc-bar ${info.cls}" style="width:${pct}%"></div></div>
+      <div class="tc-stats">
+        <span>${total ? pct + '% accuracy' : 'Not started'}</span>
+        <span>${subtopicsDone}/${totalSubtopics} subtopics</span>
+        ${weakItems ? `<span class="tc-stat-lo">⚠ ${weakItems} weak</span>` : (total ? `<span class="tc-stat-hi">✓ Good</span>` : '')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════ LAYER 2 — SUBTOPICS ════════════════ */
+function renderSubtopicList(mod) {
+  const info = MOD_INFO[mod];
+  const db   = info.getDB();
+  const rows = allProgress.filter(r => r.module === mod);
+
+  const keys = Object.keys(db);
+  const items = keys.map(key => {
+    const keyRows = rows.filter(r => r.item_key === key);
+    const total   = keyRows.length;
+    const correct = keyRows.filter(r => r.correct).length;
+    const pct     = total ? Math.round((correct / total) * 100) : -1;
+    return { key, total, correct, pct };
+  });
+
+  /* Sort: weakest first (attempted ones), then unattempted */
+  items.sort((a, b) => {
+    if (a.pct === -1 && b.pct === -1) return 0;
+    if (a.pct === -1) return 1;
+    if (b.pct === -1) return -1;
+    return a.pct - b.pct;
+  });
+
+  const list = document.getElementById('subtopic-list');
+  list.innerHTML = items.map(({ key, total, correct, pct }) => {
+    const label = mod === 'grammar' ? displayKey(key) : key;
+    const dotCls = pct === -1 ? 'dot-none' : pct >= 70 ? 'dot-great' : pct >= 40 ? 'dot-ok' : 'dot-weak';
+    const barCol = pct === -1 ? 'var(--border)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)';
+    const pctTxt = pct === -1 ? '—' : pct + '%';
+    return `<div class="subtopic-row" onclick="drillTo('micro','${mod}','${esc(key)}')">
+      <div class="sr-dot ${dotCls}"></div>
+      <div class="sr-info">
+        <div class="sr-name">${label}</div>
+        <div class="sr-bar-wrap"><div class="sr-bar" style="width:${Math.max(pct,0)}%;background:${barCol}"></div></div>
+      </div>
+      <div class="sr-nums">
+        <div class="sr-pct" style="color:${pct === -1 ? 'var(--text3)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)'}">${pctTxt}</div>
+        <div class="sr-count">${total ? correct + '/' + total : 'Not started'}</div>
+      </div>
+      <i class="ti ti-chevron-right sr-arrow"></i>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════ LAYER 3 — MICRO ITEMS ════════════════ */
+function renderMicro(mod, key) {
+  const info  = MOD_INFO[mod];
+  const db    = info.getDB();
+  const entry = db[key];
+  if (!entry) { document.getElementById('micro-grid').innerHTML = '<div class="empty">No data for this subtopic.</div>'; return; }
+
+  /* Get all items in this subtopic */
+  const items = getItemsForEntry(mod, entry);
+
+  /* Build question-level stats from progress rows */
+  const rows = allProgress.filter(r => r.module === mod && r.item_key === key);
+  /* Map: question_id → { total, correct, chosen[] } */
+  const qStats = {};
+  rows.forEach(r => {
+    if (!qStats[r.question_id]) qStats[r.question_id] = { total: 0, correct: 0, wrongChosen: [] };
+    qStats[r.question_id].total++;
+    if (r.correct) qStats[r.question_id].correct++;
+    else if (r.chosen) qStats[r.question_id].wrongChosen.push(r.chosen);
+  });
+
+  /* Map each item to its question attempts.
+     For idioms/phrasal verbs, question_ids should contain the phrase/verb.
+     We also check if the ai question was tagged with idiom_tested. */
+  const microItems = items.map(item => {
+    const phrase = item.phrase || item.pv || item.word || item.modal || item.title || item.id || '';
+    /* Find matching question stats — question_id may contain the phrase or be tagged */
+    const matchingRows = rows.filter(r => {
+      const qid = r.question_id || '';
+      return qid.toLowerCase().includes(phrase.toLowerCase().replace(/\s+/g,'_'))
+          || qid.toLowerCase().includes(phrase.toLowerCase().substring(0,8));
+    });
+    const total   = matchingRows.length;
+    const correct = matchingRows.filter(r => r.correct).length;
+    const pct     = total ? Math.round((correct / total) * 100) : -1;
+    const wrongChosen = matchingRows.filter(r => !r.correct && r.chosen).map(r => r.chosen);
+    return { phrase, def: item.def_en || item.meaning_en || '', total, correct, pct, wrongChosen };
+  });
+
+  sortAndRenderMicro(microItems, mod, key);
+}
+
+function getItemsForEntry(mod, entry) {
+  if (mod === 'phrasal')     return entry.verbs   || [];
+  if (mod === 'preposition') return entry.words   || [];
+  if (mod === 'idiom')       return entry.idioms  || [];
+  if (mod === 'grammar')     return entry.words   || [];
+  if (mod === 'modal')       return entry.items   || [];
+  return [];
+}
+
+function sortAndRenderMicro(items, mod, key) {
+  const sorted = [...items];
+  if (microSort === 'weak') {
+    sorted.sort((a, b) => {
+      if (a.pct === -1 && b.pct === -1) return 0;
+      if (a.pct === -1) return 1;
+      if (b.pct === -1) return -1;
+      return a.pct - b.pct;
+    });
+  } else if (microSort === 'alpha') {
+    sorted.sort((a, b) => a.phrase.localeCompare(b.phrase));
+  } else if (microSort === 'attempts') {
+    sorted.sort((a, b) => b.total - a.total);
+  }
+
+  const grid = document.getElementById('micro-grid');
+  if (!sorted.length) { grid.innerHTML = '<div class="empty">No items found for this subtopic.</div>'; return; }
+
+  const info = MOD_INFO[mod];
+  grid.innerHTML = sorted.map(item => {
+    const { phrase, def, total, correct, pct, wrongChosen } = item;
+    const badgeCls = pct === -1 ? 'none' : pct >= 70 ? 'great' : pct >= 40 ? 'ok' : 'weak';
+    const badgeTxt = pct === -1 ? 'Not attempted' : pct >= 70 ? 'Strong' : pct >= 40 ? 'Needs work' : 'Weak';
+    const barCol   = pct === -1 ? 'var(--border2)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)';
+    const barPct   = pct === -1 ? 0 : pct;
+    const uniqueWrong = [...new Set(wrongChosen)].slice(0, 3);
+    return `<div class="micro-card">
+      <div class="mc-top">
+        <div>
+          <div class="mc-phrase" style="color:var(--${info.cls === 'pv' ? 'accent' : info.cls === 'pre' ? 'blue' : info.cls === 'id' ? 'idiom' : info.cls === 'gr' ? 'grammar' : 'modal-c'})">${phrase}</div>
+          ${def ? `<div style="font-size:12px;color:var(--text3);margin-top:2px">${def.substring(0,100)}${def.length > 100 ? '…' : ''}</div>` : ''}
+        </div>
+        <span class="mc-badge ${badgeCls}">${badgeTxt}</span>
+      </div>
+      <div class="mc-bar-wrap"><div class="mc-bar" style="width:${barPct}%;background:${barCol}"></div></div>
+      <div class="mc-meta">
+        <span><b>${total}</b> attempts</span>
+        <span><b style="color:var(--green)">${correct}</b> correct</span>
+        ${total ? `<span><b>${pct}%</b> accuracy</span>` : ''}
+      </div>
+      ${uniqueWrong.length ? `<div class="mc-wrong-box">Common wrong answers: ${uniqueWrong.map(w => `<b>${w}</b>`).join(', ')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function sortMicro(type, btn) {
+  microSort = type;
+  document.querySelectorAll('.micro-sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (drillMod && drillKey) renderMicro(drillMod, drillKey);
+}
+
+/* ════════════════ DRILL NAVIGATION ════════════════ */
+function drillTo(layer, mod, key) {
+  /* Update state */
+  if (layer === 'home') { drillMod = null; drillKey = null; }
+  if (layer === 'subtopic') { drillMod = mod; drillKey = null; }
+  if (layer === 'micro') { drillMod = mod; drillKey = key; }
+
+  /* Show/hide layers */
+  document.getElementById('layer-home').style.display     = layer === 'home' ? 'block' : 'none';
+  document.getElementById('layer-subtopic').style.display = layer === 'subtopic' ? 'block' : 'none';
+  document.getElementById('layer-micro').style.display    = layer === 'micro' ? 'block' : 'none';
+
+  /* Breadcrumb */
+  updateBreadcrumb(layer, mod, key);
+
+  if (layer === 'subtopic') renderSubtopicList(mod);
+  if (layer === 'micro')    renderMicro(mod, key);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateBreadcrumb(layer, mod, key) {
+  const bc = document.getElementById('breadcrumb');
+  const modLabel = mod ? MOD_INFO[mod]?.label : '';
+  const keyLabel = key ? (drillMod === 'grammar' ? displayKey(key) : key) : '';
+
+  let html = `<span class="bc-item ${layer === 'home' ? 'active' : ''}" onclick="drillTo('home')">All Topics</span>`;
+  if (mod) {
+    html += `<span class="bc-sep">›</span>
+             <span class="bc-item ${layer === 'subtopic' ? 'active' : ''}" onclick="drillTo('subtopic','${mod}')">${modLabel}</span>`;
+  }
+  if (key) {
+    html += `<span class="bc-sep">›</span>
+             <span class="bc-item active">${keyLabel}</span>`;
+  }
+  bc.innerHTML = html;
+}
+
+function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+</script>
+</body>
+</html>
