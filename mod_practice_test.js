@@ -1,5 +1,9 @@
 /* ═══════════════════════════════════════════════════════
    mod_practice_test.js  —  Practice Test Screen
+   Fixes:
+   - Loading screen shows % progress and step labels
+   - Groq 429 / AI errors handled gracefully with retry
+   - generateAndCache errors no longer freeze the overlay
    Depends on: ai.js (generateAndCache, PROMPTS, getActiveModel)
                supabase.js (sbSaveAnswer, sbSaveTestSession)
                app.html (getDB exposed globally)
@@ -172,10 +176,11 @@ const PT = (() => {
 }
 .pt-submit-btn:hover { opacity: .88; }
 .pt-pal-note { font-size: 11px; color: var(--text3); text-align: center; margin-top: 5px; }
-/* loading screen */
+
+/* ── LOADING SCREEN (enhanced with progress) ── */
 .pt-loading-screen {
   position: absolute; inset: 0; background: var(--bg); z-index: 10;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
 }
 .pt-spinner {
   width: 36px; height: 36px; border: 2.5px solid var(--border);
@@ -184,7 +189,48 @@ const PT = (() => {
 }
 @keyframes pt-spin { to { transform: rotate(360deg); } }
 .pt-load-title { font-family: 'Instrument Serif', serif; font-size: 18px; color: var(--text1); }
-.pt-load-sub   { font-size: 13px; color: var(--text3); }
+.pt-load-sub   { font-size: 13px; color: var(--text3); text-align: center; max-width: 280px; line-height: 1.5; }
+.pt-load-bar-wrap {
+  width: 240px; height: 5px; background: var(--border);
+  border-radius: 3px; overflow: hidden; margin-top: 4px;
+}
+.pt-load-bar {
+  height: 100%; background: var(--accent);
+  border-radius: 3px; transition: width 0.4s ease;
+  width: 0%;
+}
+.pt-load-pct { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.pt-load-steps {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px;
+}
+.pt-load-step {
+  font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 6px;
+}
+.pt-load-step.done { color: var(--green); }
+.pt-load-step.active { color: var(--text1); font-weight: 500; }
+.pt-load-step-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--border2); flex-shrink: 0;
+}
+.pt-load-step.done .pt-load-step-dot   { background: var(--green); }
+.pt-load-step.active .pt-load-step-dot { background: var(--accent); }
+
+/* ── ERROR STATE ── */
+.pt-load-error {
+  display: none; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center; padding: 0 24px;
+}
+.pt-load-error.show { display: flex; }
+.pt-load-error-icon { font-size: 32px; }
+.pt-load-error-title { font-size: 15px; font-weight: 600; color: var(--red); }
+.pt-load-error-sub   { font-size: 13px; color: var(--text2); line-height: 1.5; }
+.pt-load-retry-btn {
+  padding: 8px 20px; border-radius: var(--radius-sm);
+  background: var(--accent); color: #fff; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: opacity .15s;
+}
+.pt-load-retry-btn:hover { opacity: .85; }
+
 /* results */
 .pt-results {
   position: absolute; inset: 0; background: var(--bg); z-index: 20;
@@ -254,9 +300,32 @@ const PT = (() => {
     div.id = 'pt-overlay';
     div.innerHTML = `
       <div class="pt-loading-screen" id="pt-loading">
-        <div class="pt-spinner"></div>
+        <div class="pt-spinner" id="pt-spinner"></div>
         <div class="pt-load-title">Generating questions…</div>
-        <div class="pt-load-sub" id="pt-load-sub">Asking AI for SSC-level questions</div>
+        <div class="pt-load-bar-wrap"><div class="pt-load-bar" id="pt-load-bar"></div></div>
+        <div class="pt-load-pct" id="pt-load-pct">0%</div>
+        <div class="pt-load-steps" id="pt-load-steps">
+          <div class="pt-load-step active" id="pls-prompt">
+            <div class="pt-load-step-dot"></div>Building prompt
+          </div>
+          <div class="pt-load-step" id="pls-ai">
+            <div class="pt-load-step-dot"></div>Asking AI model
+          </div>
+          <div class="pt-load-step" id="pls-parse">
+            <div class="pt-load-step-dot"></div>Parsing questions
+          </div>
+          <div class="pt-load-step" id="pls-cache">
+            <div class="pt-load-step-dot"></div>Saving to cache
+          </div>
+        </div>
+        <div class="pt-load-sub" id="pt-load-sub"></div>
+        <div class="pt-load-error" id="pt-load-error">
+          <div class="pt-load-error-icon">⚠️</div>
+          <div class="pt-load-error-title" id="pt-err-title">Generation failed</div>
+          <div class="pt-load-error-sub" id="pt-err-sub">The AI model couldn't generate questions right now.</div>
+          <button class="pt-load-retry-btn" id="pt-retry-btn">Try Again</button>
+          <button class="pt-close-btn" style="margin-top:4px" onclick="PT.close()">Close</button>
+        </div>
       </div>
 
       <div class="pt-hdr">
@@ -359,6 +428,57 @@ const PT = (() => {
     document.body.appendChild(div);
   }
 
+  /* ── LOADING PROGRESS HELPERS ── */
+  function setLoadStep(stepId, status) {
+    // status: 'active' | 'done' | '' (pending)
+    const steps = ['pls-prompt', 'pls-ai', 'pls-parse', 'pls-cache'];
+    const pcts  = { 'pls-prompt': 10, 'pls-ai': 40, 'pls-parse': 75, 'pls-cache': 100 };
+    steps.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'pt-load-step' + (id === stepId && status ? ' ' + status : '');
+      if (status === 'done' && steps.indexOf(id) < steps.indexOf(stepId)) {
+        el.className = 'pt-load-step done';
+      }
+    });
+    const pct = pcts[stepId] || 0;
+    const bar = document.getElementById('pt-load-bar');
+    const pctEl = document.getElementById('pt-load-pct');
+    if (bar)   bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+  }
+
+  function showLoadError(title, sub, retryFn) {
+    const spinner = document.getElementById('pt-spinner');
+    const steps   = document.getElementById('pt-load-steps');
+    const bar     = document.getElementById('pt-load-bar-wrap');
+    const pct     = document.getElementById('pt-load-pct');
+    const errDiv  = document.getElementById('pt-load-error');
+    if (spinner) spinner.style.display = 'none';
+    if (steps)   steps.style.display   = 'none';
+    if (bar)     bar.style.display     = 'none';
+    if (pct)     pct.style.display     = 'none';
+    document.getElementById('pt-err-title').textContent = title;
+    document.getElementById('pt-err-sub').textContent   = sub;
+    if (errDiv) errDiv.classList.add('show');
+    const retryBtn = document.getElementById('pt-retry-btn');
+    if (retryBtn && retryFn) retryBtn.onclick = retryFn;
+  }
+
+  function resetLoadState() {
+    const spinner = document.getElementById('pt-spinner');
+    const steps   = document.getElementById('pt-load-steps');
+    const bar     = document.getElementById('pt-load-bar-wrap');
+    const pct     = document.getElementById('pt-load-pct');
+    const errDiv  = document.getElementById('pt-load-error');
+    if (spinner) spinner.style.display = '';
+    if (steps)   steps.style.display   = '';
+    if (bar)     bar.style.display     = '';
+    if (pct)     pct.style.display     = '';
+    if (errDiv)  errDiv.classList.remove('show');
+    setLoadStep('pls-prompt', 'active');
+  }
+
   /* ── PALETTE ── */
   function buildPalette() {
     const body = document.getElementById('pt-pal-body');
@@ -407,7 +527,6 @@ const PT = (() => {
 
     document.getElementById('pt-qnum').textContent = `Question ${qi + 1} of ${S.questions.length}`;
 
-    /* handle both FIB (sentence) and grammar (q.q) formats */
     let questionHtml = '';
     if (q.sentence) {
       questionHtml = q.sentence.replace('_____',
@@ -421,7 +540,6 @@ const PT = (() => {
     ol.innerHTML = '';
     const keys = ['A', 'B', 'C', 'D', 'E'];
 
-    /* handle both options:[{verb,hint}] and opts:[] formats */
     const opts = q.options || q.opts?.map(o => ({ verb: o, hint: '' })) || [];
 
     opts.forEach((opt, i) => {
@@ -496,7 +614,6 @@ const PT = (() => {
     if (!S.user) return;
     const results = S.questions.map((q, i) => {
       const chosen  = S.answers[i] !== undefined ? S.answers[i] : null;
-      /* correct answer: q.correct for FIB, q.opts[q.ans] for grammar */
       const correctAns = q.correct || (q.opts ? q.opts[q.ans] : null);
       return {
         qid:        q.id,
@@ -598,6 +715,90 @@ const PT = (() => {
     showResults();
   }
 
+  /* ── GENERATE QUESTIONS ── */
+  async function generateQuestions(mod, key, user) {
+    const db    = (typeof getDB === 'function') ? getDB(mod) : null;
+    const entry = db?.[key];
+
+    if (!entry) {
+      showLoadError('Content not found', `Could not load content for "${key}". Please go back and try again.`, null);
+      return null;
+    }
+
+    let prompt = '';
+    setLoadStep('pls-prompt', 'active');
+
+    if      (mod === 'phrasal')     prompt = PROMPTS.phrasal(key, (entry.verbs  || []).map(v => v.pv));
+    else if (mod === 'preposition') prompt = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
+    else if (mod === 'idiom')       prompt = PROMPTS.idiom(key, entry.idioms || []);
+    else if (mod === 'grammar')     prompt = (typeof PROMPTS.grammar === 'function')
+      ? PROMPTS.grammar(key, (entry.words || []).map(v => v.word).join(', '))
+      : `Generate 10 SSC-level fill-in-the-blank questions for grammar rule: ${key}. Words: ${(entry.words||[]).map(v=>v.word).join(', ')}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+    else if (mod === 'modal')       prompt = (typeof PROMPTS.modal === 'function')
+      ? PROMPTS.modal(key, (entry.items || []).map(i => i.use || i.title || ''))
+      : `Generate 10 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+
+    setLoadStep('pls-ai', 'active');
+    document.getElementById('pt-load-sub').textContent =
+      `Using ${(typeof AI_CFG !== 'undefined' && AI_CFG[getActiveModel()]?.label) || 'AI'}…`;
+
+    let qs = null;
+    let genError = null;
+
+    await generateAndCache({
+      userId:     user?.id,
+      module:     mod,
+      itemKey:    key,
+      promptText: prompt,
+      onLoad:     () => {
+        setLoadStep('pls-ai', 'done');
+        setLoadStep('pls-parse', 'active');
+      },
+      onReady: (generated) => {
+        setLoadStep('pls-parse', 'done');
+        setLoadStep('pls-cache', 'active');
+        qs = generated;
+        setTimeout(() => setLoadStep('pls-cache', 'done'), 400);
+      },
+      onError: (err) => {
+        genError = err;
+        console.error('PT generate error:', err);
+      }
+    });
+
+    if (genError || !qs || !qs.length) {
+      const isRateLimit = genError?.message?.includes('429') || String(genError).includes('429');
+      showLoadError(
+        isRateLimit ? 'Rate limit reached' : 'Generation failed',
+        isRateLimit
+          ? 'The AI model is busy (rate limited). Switch to a different model using the pill in the nav, or wait 30 seconds and retry.'
+          : 'The AI couldn\'t generate questions. Check your connection and try again.',
+        () => {
+          resetLoadState();
+          generateQuestions(mod, key, user).then(q => {
+            if (q) startTest(q, mod, key);
+          });
+        }
+      );
+      return null;
+    }
+
+    return qs;
+  }
+
+  function startTest(qs, mod, key) {
+    S.questions = qs;
+    document.getElementById('pt-loading').style.display = 'none';
+    document.getElementById('pt-meta').textContent =
+      `${key} · ${qs.length} questions · +2 / −0.5`;
+
+    buildPalette();
+    renderQ(0);
+
+    S.lastTick    = Date.now();
+    S.timerHandle = setInterval(tick, 500);
+  }
+
   /* ══════════════════════════════════════
      PUBLIC API
   ══════════════════════════════════════ */
@@ -613,59 +814,10 @@ const PT = (() => {
       resetState(mod, key, user, []);
 
       document.getElementById('pt-loading').style.display = 'flex';
-      document.getElementById('pt-load-sub').textContent  =
-        `Asking ${(typeof AI_CFG !== 'undefined' && AI_CFG[getActiveModel()]?.label) || 'AI'} for questions…`;
+      setLoadStep('pls-prompt', 'active');
 
-      /* ── build prompt ── */
-      const db    = (typeof getDB === 'function') ? getDB(mod) : null;
-      const entry = db?.[key];
-      let prompt  = '';
-
-      if (!entry) {
-        document.getElementById('pt-load-sub').textContent = '⚠ Could not find content for this section.';
-        return;
-      }
-
-      if      (mod === 'phrasal')     prompt = PROMPTS.phrasal(key, (entry.verbs  || []).map(v => v.pv));
-      else if (mod === 'preposition') prompt = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
-      else if (mod === 'idiom')       prompt = PROMPTS.idiom(key, entry.idioms || []);
-      else if (mod === 'grammar')     prompt = PROMPTS.grammar
-        ? PROMPTS.grammar(key, (entry.words || []).map(v => v.word).join(', '))
-        : `Generate 10 SSC-level fill-in-the-blank questions for: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
-      else if (mod === 'modal')       prompt = PROMPTS.modal
-        ? PROMPTS.modal(key, (entry.items || []).map(i => i.use || i.title || ''))
-        : `Generate 10 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
-
-      /* ── generate or use cache ── */
-      let qs = null;
-      await generateAndCache({
-        userId:     user?.id,
-        module:     mod,
-        itemKey:    key,
-        promptText: prompt,
-        onLoad:     () => {},
-        onReady:    (generated) => { qs = generated; },
-        onError:    (err) => {
-          document.getElementById('pt-load-sub').textContent = '⚠ Failed to generate. Try again.';
-          console.error('PT generate error:', err);
-        }
-      });
-
-      if (!qs || !qs.length) {
-        document.getElementById('pt-load-sub').textContent = '⚠ No questions generated. Try again.';
-        return;
-      }
-
-      S.questions = qs;
-      document.getElementById('pt-loading').style.display = 'none';
-      document.getElementById('pt-meta').textContent =
-        `${key} · ${qs.length} questions · +2 / −0.5`;
-
-      buildPalette();
-      renderQ(0);
-
-      S.lastTick    = Date.now();
-      S.timerHandle = setInterval(tick, 500);
+      const qs = await generateQuestions(mod, key, user);
+      if (qs) startTest(qs, mod, key);
     },
 
     togglePause() {

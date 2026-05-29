@@ -10,6 +10,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="ai.js"></script>
+<!-- DB files needed so PT.open() can build prompts from index.html -->
+<script src="db_phrasal.js"></script>
+<script src="db_preposition.js"></script>
+<script src="db_idioms.js"></script>
+<script src="db_grammar.js"></script>
+<script src="db_modals.js"></script>
+<!-- Practice Test overlay (shared with app.html) -->
+<script src="mod_practice_test.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -37,14 +45,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   background: var(--surface); border-bottom: 1px solid var(--border);
   padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem;
   height: 56px; position: sticky; top: 0; z-index: 200;
-  box-shadow: 0 1px 0 var(--border);
 }
 .nav-brand { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); letter-spacing: -0.4px; }
 .nav-brand span { color: var(--accent); }
 .nav-spacer { flex: 1; }
 .nav-right { display: flex; align-items: center; gap: 10px; }
 
-/* AI Model Selector */
 .model-selector {
   display: flex; align-items: center; gap: 2px;
   background: var(--bg2); border: 1px solid var(--border);
@@ -58,7 +64,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .model-pill.active { background: var(--surface); color: var(--text1); box-shadow: var(--shadow); }
 
-/* Streak badge */
 .streak-badge {
   display: flex; align-items: center; gap: 5px;
   background: #FFF8F0; border: 1px solid #F5C88A;
@@ -66,17 +71,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   font-size: 13px; font-weight: 600; color: #C47A1A;
 }
 
-/* Avatar */
 .user-avatar {
   width: 34px; height: 34px; border-radius: 50%;
   border: 2px solid var(--border); cursor: pointer;
-  object-fit: cover; background: var(--bg2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: var(--text2); overflow: hidden;
+  background: var(--bg2); display: flex; align-items: center;
+  justify-content: center; font-size: 14px; color: var(--text2); overflow: hidden;
 }
 .user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-/* Dropdown for user */
 .user-menu { position: relative; }
 .user-dropdown {
   display: none; position: absolute; top: calc(100% + 8px); right: 0;
@@ -106,17 +108,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   position: relative; overflow: hidden;
 }
 .hero::before {
-  content: '';
-  position: absolute; top: 0; right: 0;
+  content: ''; position: absolute; top: 0; right: 0;
   width: 300px; height: 300px;
   background: radial-gradient(circle at top right, rgba(200,75,47,0.06) 0%, transparent 70%);
   pointer-events: none;
 }
 .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
-.hero-greeting {
-  font-family: 'Instrument Serif', serif;
-  font-size: 28px; color: var(--text1); line-height: 1.2; letter-spacing: -0.5px;
-}
+.hero-greeting { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); line-height: 1.2; letter-spacing: -0.5px; }
 .hero-sub { font-size: 13.5px; color: var(--text3); margin-top: 4px; }
 
 .hero-stats { display: flex; gap: 10px; }
@@ -125,32 +123,22 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   background: var(--bg); border: 1px solid var(--border);
   border-radius: 12px; padding: 12px 18px; min-width: 80px;
 }
-.hstat-num {
-  font-family: 'Instrument Serif', serif;
-  font-size: 26px; color: var(--text1); line-height: 1;
-}
+.hstat-num { font-family: 'Instrument Serif', serif; font-size: 26px; color: var(--text1); line-height: 1; }
 .hstat-num.fire { color: #E07020; }
 .hstat-label { font-size: 11px; color: var(--text3); margin-top: 4px; font-weight: 500; }
 
-/* Daily goal ring */
 .goal-row { display: flex; align-items: center; gap: 12px; padding-top: 1.25rem; border-top: 1px solid var(--border); }
 .goal-ring-wrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
 .goal-ring-wrap svg { transform: rotate(-90deg); }
 .goal-ring-bg { fill: none; stroke: var(--border); stroke-width: 4; }
 .goal-ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
-.goal-ring-label {
-  position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; font-size: 11px; font-weight: 600; color: var(--text1);
-}
+.goal-ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text1); }
 .goal-text { flex: 1; }
 .goal-title { font-size: 14px; font-weight: 600; color: var(--text1); }
 .goal-sub { font-size: 12.5px; color: var(--text3); margin-top: 2px; }
 
 /* ── SECTION LABEL ── */
-.section-label {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text3); margin-bottom: 1rem;
-}
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1rem; }
 
 /* ── PROGRESS CARDS ── */
 .progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 2rem; }
@@ -162,22 +150,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .prog-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .prog-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .prog-card-left { display: flex; align-items: center; gap: 9px; }
-.prog-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-}
+.prog-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .prog-name { font-size: 14px; font-weight: 600; color: var(--text1); }
 .prog-pct { font-size: 13px; font-weight: 600; color: var(--text3); }
-.prog-bar-track {
-  height: 5px; background: var(--bg2);
-  border-radius: 3px; overflow: hidden; margin-bottom: 10px;
-}
-.prog-bar-fill {
-  height: 100%; border-radius: 3px;
-  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 0%;
-}
+.prog-bar-track { height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.prog-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); width: 0%; }
 .prog-bottom { display: flex; align-items: center; justify-content: space-between; }
 .prog-done { font-size: 12px; color: var(--text3); }
 .prog-continue {
@@ -188,37 +165,26 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .prog-continue:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); }
 
-/* ── MODULE NAV ── */
+/* ── MODULE GRID ── */
 .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 2rem; }
 .mod-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1.25rem;
   cursor: pointer; transition: all 0.15s; text-align: left;
-  box-shadow: var(--shadow); text-decoration: none; color: inherit;
-  display: block;
+  box-shadow: var(--shadow); text-decoration: none; color: inherit; display: block;
 }
 .mod-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--border2); }
-.mod-card-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; margin-bottom: 10px;
-}
+.mod-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px; }
 .mod-card-name { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 3px; }
 .mod-card-desc { font-size: 12.5px; color: var(--text3); line-height: 1.5; }
 
-/* Per-module colors */
-.m-pv  .prog-bar-fill, .m-pv  .prog-pct.done { background: var(--accent); }
-.m-pv  .prog-icon, .m-pv  .mod-card-icon { background: var(--accent-bg); }
-.m-pre .prog-bar-fill { background: var(--blue); }
-.m-pre .prog-icon, .m-pre .mod-card-icon { background: var(--blue-bg); }
-.m-id  .prog-bar-fill { background: var(--idiom); }
-.m-id  .prog-icon, .m-id  .mod-card-icon { background: var(--idiom-bg); }
-.m-gr  .prog-bar-fill { background: var(--grammar); }
-.m-gr  .prog-icon, .m-gr  .mod-card-icon { background: var(--grammar-bg); }
-.m-mo  .prog-bar-fill { background: var(--modal-c); }
-.m-mo  .prog-icon, .m-mo  .mod-card-icon { background: var(--modal-bg); }
-.m-ca  .prog-bar-fill { background: var(--calc-c); }
-.m-ca  .prog-icon, .m-ca  .mod-card-icon { background: var(--calc-bg); }
+/* Per-module colours */
+.m-pv  .prog-bar-fill { background: var(--accent);   } .m-pv  .prog-icon, .m-pv  .mod-card-icon { background: var(--accent-bg);  }
+.m-pre .prog-bar-fill { background: var(--blue);     } .m-pre .prog-icon, .m-pre .mod-card-icon { background: var(--blue-bg);    }
+.m-id  .prog-bar-fill { background: var(--idiom);    } .m-id  .prog-icon, .m-id  .mod-card-icon { background: var(--idiom-bg);   }
+.m-gr  .prog-bar-fill { background: var(--grammar);  } .m-gr  .prog-icon, .m-gr  .mod-card-icon { background: var(--grammar-bg); }
+.m-mo  .prog-bar-fill { background: var(--modal-c);  } .m-mo  .prog-icon, .m-mo  .mod-card-icon { background: var(--modal-bg);   }
+.m-ca  .prog-bar-fill { background: var(--calc-c);   } .m-ca  .prog-icon, .m-ca  .mod-card-icon { background: var(--calc-bg);    }
 
 /* ── TEST CTA ── */
 .test-cta {
@@ -230,17 +196,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   box-shadow: 0 4px 20px rgba(26,23,20,0.15);
 }
 .test-cta:hover { background: #2a2521; transform: translateY(-1px); box-shadow: 0 8px 30px rgba(26,23,20,0.2); }
-.test-cta-left {}
 .test-cta-title { font-family: 'Instrument Serif', serif; font-size: 22px; color: #fff; letter-spacing: -0.3px; }
 .test-cta-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 3px; }
 .test-cta-btn {
-  background: var(--accent); color: #fff;
-  padding: 11px 22px; border-radius: 8px; font-size: 14px;
-  font-weight: 600; white-space: nowrap; flex-shrink: 0;
-  display: flex; align-items: center; gap: 7px;
+  background: var(--accent); color: #fff; padding: 11px 22px;
+  border-radius: 8px; font-size: 14px; font-weight: 600;
+  white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 7px;
 }
 
-/* ── MODAL OVERLAY ── */
+/* ── MODAL ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(26,23,20,0.5); z-index: 500;
@@ -255,19 +219,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   overflow-y: auto; box-shadow: var(--shadow-lg);
   animation: modalIn 0.25s ease both;
 }
-@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
 
 .modal-head {
-  padding: 1.5rem 1.75rem 1.25rem;
-  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 1.75rem 1.25rem; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
 }
 .modal-title { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); }
 .modal-close {
   width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
   background: transparent; cursor: pointer; color: var(--text3);
-  display: flex; align-items: center; justify-content: center; font-size: 18px;
-  transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.12s;
 }
 .modal-close:hover { background: var(--bg2); color: var(--text1); }
 
@@ -287,21 +249,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .form-select:focus { outline: none; border-color: var(--accent); }
 
-/* Multi-select chips */
 .chip-group { display: flex; flex-wrap: wrap; gap: 7px; max-height: 130px; overflow-y: auto; padding: 2px; }
 .chip {
   padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border);
   background: var(--bg); color: var(--text2); font-size: 12.5px;
-  cursor: pointer; transition: all 0.12s; font-family: 'DM Sans', sans-serif;
-  user-select: none;
+  cursor: pointer; transition: all 0.12s; font-family: 'DM Sans', sans-serif; user-select: none;
 }
 .chip:hover { border-color: var(--border2); color: var(--text1); }
 .chip.selected { background: var(--text1); color: #fff; border-color: var(--text1); }
 
-/* Quantity + time row */
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* Model pills in modal */
 .model-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 .modal-model-pill {
   padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border);
@@ -312,123 +270,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .modal-model-pill:hover { border-color: var(--border2); }
 .modal-model-pill.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
 
-.modal-foot {
-  padding: 1.25rem 1.75rem;
-  border-top: 1px solid var(--border);
-}
+.modal-foot { padding: 1.25rem 1.75rem; border-top: 1px solid var(--border); }
 .start-btn {
   width: 100%; padding: 13px; border-radius: 10px;
   border: none; background: var(--accent); color: #fff;
   font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s; display: flex; align-items: center;
-  justify-content: center; gap: 8px;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .start-btn:hover { background: var(--accent2); transform: translateY(-1px); }
 .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* ── TEST VIEW ── */
-.test-overlay {
-  display: none; position: fixed; inset: 0;
-  background: var(--bg); z-index: 600; overflow-y: auto;
-}
-.test-overlay.open { display: block; }
-
-.test-nav {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; height: 56px; display: flex; align-items: center;
-  justify-content: space-between; gap: 1rem; position: sticky; top: 0;
-  box-shadow: 0 1px 0 var(--border); z-index: 10;
-}
-.test-progress-info { display: flex; align-items: center; gap: 1rem; }
-.test-qcount { font-size: 13.5px; font-weight: 600; color: var(--text1); }
-.test-score-live { font-size: 13px; color: var(--text3); }
-
-/* Timer */
-.timer-wrap { display: flex; align-items: center; gap: 8px; }
-.timer-bar-track { width: 120px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.timer-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 1s linear; }
-.timer-bar-fill.warn { background: #E09020; }
-.timer-bar-fill.danger { background: var(--red); }
-.timer-display { font-size: 13.5px; font-weight: 600; color: var(--text1); min-width: 45px; text-align: right; }
-
-.test-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-.test-q-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.5rem;
-  margin-bottom: 1.25rem; box-shadow: var(--shadow);
-  animation: fadeIn 0.2s ease;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-.test-q-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.test-q-num { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
-.test-q-timer { font-size: 12px; color: var(--text3); font-variant-numeric: tabular-nums; }
-
-.test-q-sentence { font-size: 16px; font-weight: 500; color: var(--text1); line-height: 1.75; margin-bottom: 1.25rem; }
-.test-blank { display: inline-block; min-width: 120px; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 600; text-align: center; padding: 0 6px; }
-
-.test-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.test-opt {
-  padding: 11px 14px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border); background: transparent;
-  cursor: pointer; text-align: left; font-family: 'DM Sans', sans-serif;
-  transition: all 0.12s; width: 100%;
-}
-.test-opt:hover:not(:disabled) { background: var(--bg2); border-color: var(--border2); }
-.test-opt-verb { font-size: 13.5px; font-weight: 500; color: var(--text1); display: block; margin-bottom: 2px; }
-.test-opt-hint { font-size: 12px; color: var(--text3); display: block; }
-.test-opt.sel-correct { background: var(--green-bg); border-color: var(--green-border); }
-.test-opt.sel-correct .test-opt-verb, .test-opt.sel-correct .test-opt-hint { color: var(--green); }
-.test-opt.sel-wrong { background: var(--red-bg); border-color: var(--red-border); }
-.test-opt.sel-wrong .test-opt-verb, .test-opt.sel-wrong .test-opt-hint { color: var(--red); }
-.test-opt.show-correct { background: var(--green-bg); border-color: var(--green-border); }
-.test-opt.show-correct .test-opt-verb, .test-opt.show-correct .test-opt-hint { color: var(--green); }
-.test-opt:disabled { cursor: default; }
-
-.test-feedback {
-  font-size: 13px; color: var(--text2); line-height: 1.7;
-  padding: 10px 13px; background: var(--bg2); border-radius: var(--radius-sm);
-  margin-top: 10px; display: none;
-}
-.test-feedback.show { display: block; }
-
-/* Results */
-.results-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem; }
-.results-hero {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 2rem; text-align: center;
-  margin-bottom: 1.5rem; box-shadow: var(--shadow-md);
-}
-.results-score {
-  font-family: 'Instrument Serif', serif;
-  font-size: 52px; color: var(--text1); line-height: 1; margin-bottom: 6px;
-}
-.results-score span { color: var(--text3); font-size: 32px; }
-.results-label { font-size: 14px; color: var(--text3); margin-bottom: 1.25rem; }
-.results-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.rstat { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
-.rstat-num { font-size: 20px; font-weight: 700; color: var(--text1); }
-.rstat-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
-.results-btn-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
-.results-btn {
-  flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border);
-  background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14px;
-  font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-}
-.results-btn:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); }
-.results-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.results-btn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
-
-/* Spinner */
-.spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.ai-loading { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 3rem 0; }
-.ai-loading-text { font-size: 13.5px; color: var(--text3); }
-
-/* Loading screen */
+/* ── PAGE LOADING ── */
 .page-loading {
   position: fixed; inset: 0; background: var(--bg);
   display: flex; align-items: center; justify-content: center;
@@ -436,8 +288,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
 .page-loading-brand span { color: var(--accent); }
+.spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* Responsive */
 @media (max-width: 600px) {
   .progress-grid { grid-template-columns: 1fr 1fr; }
   .module-grid { grid-template-columns: 1fr 1fr; }
@@ -446,15 +299,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .model-selector { display: none; }
   .test-cta { flex-direction: column; align-items: flex-start; }
   .form-row { grid-template-columns: 1fr; }
-  .test-opts { grid-template-columns: 1fr; }
-  .results-stats { grid-template-columns: repeat(3, 1fr); }
-  .timer-bar-track { width: 80px; }
 }
 </style>
 </head>
 <body>
 
-<!-- Page loading -->
+<!-- PAGE LOADING -->
 <div class="page-loading" id="page-loading">
   <div class="page-loading-brand">Smart<span>Learn</span></div>
   <div class="spinner"></div>
@@ -466,29 +316,30 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <div class="nav-spacer"></div>
   <div class="nav-right">
     <div class="model-selector" id="model-selector">
-      <button class="model-pill active" data-model="claude" onclick="switchModel('claude',this)">◆ Claude</button>
+      <button class="model-pill" data-model="claude" onclick="switchModel('claude',this)">◆ Claude</button>
       <button class="model-pill" data-model="gemini" onclick="switchModel('gemini',this)">✦ Gemini</button>
-      <button class="model-pill" data-model="grok" onclick="switchModel('grok',this)">⬡ Groq</button>
+      <button class="model-pill" data-model="grok"   onclick="switchModel('grok',this)">⬡ Groq</button>
     </div>
-    <div class="streak-badge" id="nav-streak">🔥 <span id="streak-count">0</span></div>
+    <div class="streak-badge">🔥 <span id="streak-count">0</span></div>
     <div class="user-menu">
       <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()">?</div>
       <div class="user-dropdown" id="user-dropdown">
-        <div class="user-dropdown-item" id="user-name-item"><i class="ti ti-user" style="font-size:14px"></i> <span id="dd-name">User</span></div>
+        <div class="user-dropdown-item"><i class="ti ti-user" style="font-size:14px"></i> <span id="dd-name">User</span></div>
         <button class="user-dropdown-item danger" onclick="sbSignOut()"><i class="ti ti-logout" style="font-size:14px"></i> Sign out</button>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- MAIN -->
+<!-- MAIN CONTENT -->
 <div class="wrap">
+
   <!-- HERO -->
   <div class="hero">
     <div class="hero-top">
       <div>
         <div class="hero-greeting" id="greeting">Good morning 👋</div>
-        <div class="hero-sub" id="hero-sub">Keep your streak going — practice a little every day.</div>
+        <div class="hero-sub">Keep your streak going — practice a little every day.</div>
       </div>
       <div class="hero-stats">
         <div class="hstat">
@@ -504,15 +355,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div class="goal-row">
       <div class="goal-ring-wrap">
         <svg width="48" height="48" viewBox="0 0 48 48">
-          <circle class="goal-ring-bg" cx="24" cy="24" r="20"/>
+          <circle class="goal-ring-bg"   cx="24" cy="24" r="20"/>
           <circle class="goal-ring-fill" id="goal-ring" cx="24" cy="24" r="20"
             stroke-dasharray="125.7" stroke-dashoffset="125.7"/>
         </svg>
         <div class="goal-ring-label" id="goal-ring-label">0%</div>
       </div>
       <div class="goal-text">
-        <div class="goal-title" id="goal-title">Daily Goal: 5 questions</div>
-        <div class="goal-sub" id="goal-sub">Answer 5 questions today to keep your streak alive.</div>
+        <div class="goal-title" id="goal-title">Daily Goal: 0 / 5 questions</div>
+        <div class="goal-sub"  id="goal-sub">Answer 5 questions today to keep your streak alive.</div>
       </div>
     </div>
   </div>
@@ -525,7 +376,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <button class="test-cta" onclick="openTestModal()">
     <div class="test-cta-left">
       <div class="test-cta-title">Take a Timed Test</div>
-      <div class="test-cta-sub">AI-generated questions • Choose topic, length & time</div>
+      <div class="test-cta-sub">AI-generated questions · Choose topic, length & time · Full test UI</div>
     </div>
     <div class="test-cta-btn"><i class="ti ti-bolt" style="font-size:16px"></i> Start Test</div>
   </button>
@@ -533,9 +384,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <!-- MODULES -->
   <div class="section-label">Learn & Practice</div>
   <div class="module-grid" id="module-grid"></div>
+
 </div>
 
-<!-- ── TEST MODAL ── -->
+<!-- ── TEST CONFIG MODAL ── -->
 <div class="modal-overlay" id="test-modal-overlay" onclick="handleOverlayClick(event)">
   <div class="modal">
     <div class="modal-head">
@@ -543,6 +395,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <button class="modal-close" onclick="closeTestModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">
+
       <div class="form-group">
         <label class="form-label">Topic</label>
         <select class="form-select" id="test-topic" onchange="updateSubtopics()">
@@ -554,13 +407,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <option value="modal">Modals</option>
         </select>
       </div>
+
       <div class="form-group" id="subtopic-group" style="display:none">
-        <label class="form-label">Subtopics <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(select one or more)</span></label>
+        <label class="form-label">
+          Subtopic
+          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);margin-left:4px">(pick one)</span>
+        </label>
         <div class="chip-group" id="subtopic-chips"></div>
       </div>
+
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">No. of Questions</label>
+          <label class="form-label">Questions</label>
           <select class="form-select" id="test-count">
             <option value="5">5 questions</option>
             <option value="10" selected>10 questions</option>
@@ -579,76 +437,72 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           </select>
         </div>
       </div>
+
       <div class="form-group">
         <label class="form-label">AI Model</label>
         <div class="model-pills" id="modal-model-pills">
           <button class="modal-model-pill selected" data-m="claude" onclick="selectModalModel('claude',this)">◆ Claude Sonnet 4</button>
-          <button class="modal-model-pill" data-m="gemini" onclick="selectModalModel('gemini',this)">✦ Gemini 2.5 Flash</button>
-          <button class="modal-model-pill" data-m="grok" onclick="selectModalModel('grok',this)">⬡ Groq Llama 3.3</button>
+          <button class="modal-model-pill"          data-m="gemini" onclick="selectModalModel('gemini',this)">✦ Gemini 2.5 Flash</button>
+          <button class="modal-model-pill"          data-m="grok"   onclick="selectModalModel('grok',this)">⬡ Groq Llama 3.3</button>
         </div>
       </div>
+
     </div>
     <div class="modal-foot">
-      <button class="start-btn" id="start-test-btn" onclick="startTest()" disabled>
+      <button class="start-btn" id="start-test-btn" onclick="launchTest()" disabled>
         <i class="ti ti-bolt" style="font-size:16px"></i> Generate & Start Test
       </button>
     </div>
   </div>
 </div>
 
-<!-- ── TEST VIEW ── -->
-<div class="test-overlay" id="test-overlay">
-  <div class="test-nav">
-    <div class="test-progress-info">
-      <div class="test-qcount" id="test-qcount">Q 0 / 0</div>
-      <div class="test-score-live" id="test-score-live">Score: 0</div>
-    </div>
-    <div class="timer-wrap">
-      <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
-      <div class="timer-display" id="timer-display">--:--</div>
-    </div>
-  </div>
-  <div id="test-body"></div>
-</div>
-
 <script>
 /* ════════════════════════════════
-   MODULES CONFIG
+   CONFIG
 ════════════════════════════════ */
 const MODULES = [
-  { key:'phrasal',    name:'Phrasal Verbs', desc:'Master verb + particle combos',       icon:'⚡', cls:'m-pv',  file:'app.html?m=phrasal',    total:50  },
-  { key:'preposition',name:'Prepositions',  desc:'Correct preposition with every word',  icon:'🔗', cls:'m-pre', file:'app.html?m=preposition', total:45  },
-  { key:'idiom',      name:'Idioms',        desc:'200 common idioms with Hindi meanings', icon:'💡', cls:'m-id',  file:'app.html?m=idiom',      total:60  },
-  { key:'grammar',    name:'Grammar Rules', desc:'12 essential grammar rules',           icon:'📖', cls:'m-gr',  file:'app.html?m=grammar',    total:36  },
-  { key:'modal',      name:'Modals',        desc:'Can, could, should, must & more',      icon:'🎯', cls:'m-mo',  file:'app.html?m=modal',      total:40  },
-  { key:'calc',       name:'Calculations',  desc:'Arithmetic, percentages & reasoning',  icon:'🔢', cls:'m-ca',  file:'app.html?m=calc',       total:50  },
+  { key:'phrasal',     name:'Phrasal Verbs', desc:'Master verb + particle combos',        icon:'⚡', cls:'m-pv',  url:'app.html?m=phrasal',     total:50 },
+  { key:'preposition', name:'Prepositions',  desc:'Correct preposition with every word',   icon:'🔗', cls:'m-pre', url:'app.html?m=preposition',  total:45 },
+  { key:'idiom',       name:'Idioms',        desc:'200 common idioms with Hindi meanings',  icon:'💡', cls:'m-id',  url:'app.html?m=idiom',       total:60 },
+  { key:'grammar',     name:'Grammar Rules', desc:'12 essential grammar rules',            icon:'📖', cls:'m-gr',  url:'app.html?m=grammar',     total:36 },
+  { key:'modal',       name:'Modals',        desc:'Can, could, should, must & more',       icon:'🎯', cls:'m-mo',  url:'app.html?m=modal',       total:40 },
+  { key:'calc',        name:'Calculations',  desc:'Arithmetic, percentages & reasoning',   icon:'🔢', cls:'m-ca',  url:'app.html?m=calc',        total:50 },
 ];
 
+/* Maps topic → subtopic keys that match the actual DB keys used in mod files */
 const SUBTOPICS = {
   phrasal:     ['Break','Bring','Call','Catch','Come','Cut','Get','Give','Go','Keep','Look','Make','Put','Run','Set','Take','Turn'],
   preposition: ['FROM_Prevention','TO_Attachment','IN_Location','AT_Time','ON_Surface','WITH_Association','FOR_Purpose','BY_Agent','OF_Belonging','ABOUT_Topic'],
   idiom:       ['Set 1 (1–20)','Set 2 (21–40)','Set 3 (41–60)','Set 4 (61–80)','Set 5 (81–100)'],
-  grammar:     ['Rule 1: Subject-Verb Agreement','Rule 2: Tense Consistency','Rule 3: Articles (A/An/The)','Rule 4: Prepositions','Rule 5: Pronouns','Rule 6: Adjectives & Adverbs','Rule 7: Active vs Passive','Rule 8: Direct vs Indirect Speech','Rule 9: Conditionals','Rule 10: Modal Verbs','Rule 11: Gerunds & Infinitives','Rule 12: Conjunctions'],
-  modal:       ['Can / Could','May / Might','Will / Would','Shall / Should','Must / Ought to','Need / Dare','Used to / Would (past habits)'],
+  grammar:     ['Rule_01_Each_vs_Every','Rule_02_Tense_Consistency','Rule_03_Articles','Rule_04_Prepositions','Rule_05_Pronouns','Rule_06_Adjectives_Adverbs','Rule_07_Active_Passive','Rule_08_Direct_Indirect','Rule_09_Conditionals','Rule_10_Modal_Verbs','Rule_11_Gerunds_Infinitives','Rule_12_Conjunctions'],
+  modal:       ['Can / Could','May / Might','Will / Would','Shall / Should','Must / Ought to','Need / Dare','Used to / Would'],
+};
+
+/* Display labels for grammar rules */
+const GRAMMAR_LABELS = {
+  'Rule_01_Each_vs_Every':       'Rule 1: Each vs Every',
+  'Rule_02_Tense_Consistency':   'Rule 2: Tense Consistency',
+  'Rule_03_Articles':            'Rule 3: Articles (A/An/The)',
+  'Rule_04_Prepositions':        'Rule 4: Prepositions',
+  'Rule_05_Pronouns':            'Rule 5: Pronouns',
+  'Rule_06_Adjectives_Adverbs':  'Rule 6: Adjectives & Adverbs',
+  'Rule_07_Active_Passive':      'Rule 7: Active vs Passive',
+  'Rule_08_Direct_Indirect':     'Rule 8: Direct vs Indirect Speech',
+  'Rule_09_Conditionals':        'Rule 9: Conditionals',
+  'Rule_10_Modal_Verbs':         'Rule 10: Modal Verbs',
+  'Rule_11_Gerunds_Infinitives': 'Rule 11: Gerunds & Infinitives',
+  'Rule_12_Conjunctions':        'Rule 12: Conjunctions',
 };
 
 /* ════════════════════════════════
    STATE
 ════════════════════════════════ */
-let currentUser = null;
-let progressData = [];
-let selectedSubtopics = new Set();
-let modalModel = getActiveModel();
-let testQuestions = [];
-let testAnswers   = {};
-let testTimerInterval = null;
-let testTimeLeft  = 0;
-let testTimeTotal = 0;
-let qStartTimes   = {};
-let testScore     = 0;
+let currentUser    = null;
+let selectedChip   = null; // currently selected subtopic key
+let modalModel     = 'claude';
 
 /* ════════════════════════════════
-   INIT & DASHBOARD
+   INIT
 ════════════════════════════════ */
 (async () => {
   const session = await sbGetSession();
@@ -657,59 +511,72 @@ let testScore     = 0;
   currentUser = await sbGetUser();
   await sbUpsertProfile(currentUser);
 
+  /* Sync active model */
   const m = getActiveModel();
-  document.querySelectorAll('.model-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.model === m);
-  });
-  document.querySelectorAll('.modal-model-pill').forEach(p => {
-    p.classList.toggle('selected', p.dataset.m === m);
-  });
   modalModel = m;
+  syncModelPills(m);
+
+  /* Expose getDB globally for mod_practice_test.js PT.open() */
+  window.getDB = function(mod) {
+    const map = {
+      phrasal:     typeof DB         !== 'undefined' ? DB         : null,
+      preposition: typeof DB_FP      !== 'undefined' ? DB_FP      : null,
+      idiom:       typeof DB_IDIOMS  !== 'undefined' ? DB_IDIOMS  : null,
+      grammar:     typeof DB_GRAMMAR !== 'undefined' ? DB_GRAMMAR : null,
+      modal:       typeof DB_MOD     !== 'undefined' ? DB_MOD     : null,
+    };
+    return map[mod] || null;
+  };
 
   await loadDashboard();
   document.getElementById('page-loading').style.display = 'none';
 })();
 
+/* ════════════════════════════════
+   DASHBOARD
+════════════════════════════════ */
 async function loadDashboard() {
   const [profile, streakData, progress] = await Promise.all([
     sbGetProfile(currentUser.id),
     sbGetStreak(currentUser.id),
-    sbGetProgress(currentUser.id) // now includes created_at field
+    sbGetProgress(currentUser.id),
   ]);
 
-  progressData = progress;
-
-  const hr = new Date().getHours();
+  /* Greeting */
+  const hr    = new Date().getHours();
   const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-  const name = (profile?.name || currentUser.email).split(' ')[0];
+  const name  = (profile?.name || currentUser.email || 'there').split(' ')[0];
   document.getElementById('greeting').textContent = `${greet}, ${name} 👋`;
 
-  document.getElementById('hero-streak').textContent = streakData.current;
-  document.getElementById('hero-total').textContent  = streakData.total;
+  /* Streak + total */
+  document.getElementById('hero-streak').textContent  = streakData.current;
+  document.getElementById('hero-total').textContent   = streakData.total;
   document.getElementById('streak-count').textContent = streakData.current;
 
+  /* Avatar */
   const av = document.getElementById('user-avatar');
   if (profile?.avatar_url) {
-    av.innerHTML = `<img src="${profile.avatar_url}" alt="">`;
+    av.innerHTML = `<img src="${profile.avatar_url}" alt="${name}">`;
   } else {
     av.textContent = name[0].toUpperCase();
   }
   document.getElementById('dd-name').textContent = name;
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  /* Daily goal ring */
+  const todayStr  = new Date().toISOString().split('T')[0];
   const todayDone = progress.filter(p => {
     if (!p.created_at) return false;
-    const d = new Date(p.created_at).toISOString().split('T')[0];
-    return d === todayStr;
+    return new Date(p.created_at).toISOString().split('T')[0] === todayStr;
   }).length;
-  const goalPct = Math.min(100, Math.round((todayDone / 5) * 100));
-  const circ = 125.7;
+  const GOAL    = 5;
+  const goalPct = Math.min(100, Math.round((todayDone / GOAL) * 100));
+  const circ    = 125.7;
   document.getElementById('goal-ring').style.strokeDashoffset = circ - (circ * goalPct / 100);
-  document.getElementById('goal-ring-label').textContent = goalPct + '%';
-  document.getElementById('goal-title').textContent = `Daily Goal: ${todayDone} / 5 questions`;
-  document.getElementById('goal-sub').textContent = todayDone >= 5
+  document.getElementById('goal-ring-label').textContent      = goalPct + '%';
+  document.getElementById('goal-title').textContent           = `Daily Goal: ${todayDone} / ${GOAL} questions`;
+  document.getElementById('goal-sub').textContent             = todayDone >= GOAL
     ? '✓ Goal complete! Great work today.'
-    : `${5 - todayDone} more question${5 - todayDone !== 1 ? 's' : ''} to reach today's goal.`;
+    : `${GOAL - todayDone} more question${GOAL - todayDone !== 1 ? 's' : ''} to reach today's goal.`;
 
   renderProgressCards(progress);
   renderModuleGrid();
@@ -718,8 +585,10 @@ async function loadDashboard() {
 function renderProgressCards(progress) {
   const grid = document.getElementById('progress-grid');
   grid.innerHTML = MODULES.map(mod => {
-    const done = new Set(progress.filter(p => p.module === mod.key && p.correct).map(p => p.question_id)).size;
-    const pct  = mod.total > 0 ? Math.round((done / mod.total) * 100) : 0;
+    const done = new Set(
+      progress.filter(p => p.module === mod.key && p.correct).map(p => p.question_id)
+    ).size;
+    const pct = mod.total > 0 ? Math.round((done / mod.total) * 100) : 0;
     return `<div class="prog-card ${mod.cls}">
       <div class="prog-card-top">
         <div class="prog-card-left">
@@ -731,7 +600,7 @@ function renderProgressCards(progress) {
       <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
       <div class="prog-bottom">
         <div class="prog-done">${done} / ${mod.total} correct</div>
-        <button class="prog-continue" onclick="goToModule('${mod.key}')">Continue →</button>
+        <button class="prog-continue" onclick="window.location.href='${mod.url}'">Continue →</button>
       </div>
     </div>`;
   }).join('');
@@ -739,212 +608,119 @@ function renderProgressCards(progress) {
 
 function renderModuleGrid() {
   const grid = document.getElementById('module-grid');
-  grid.innerHTML = MODULES.map(mod => `
-    <a class="mod-card ${mod.cls}" href="${mod.file}">
+  grid.innerHTML = MODULES.map(mod =>
+    `<a class="mod-card ${mod.cls}" href="${mod.url}">
       <div class="mod-card-icon">${mod.icon}</div>
       <div class="mod-card-name">${mod.name}</div>
       <div class="mod-card-desc">${mod.desc}</div>
-    </a>`).join('');
-}
-
-function goToModule(key) {
-  const mod = MODULES.find(m => m.key === key);
-  if (mod) window.location.href = mod.file;
+    </a>`
+  ).join('');
 }
 
 /* ════════════════════════════════
    MODEL SELECTOR
 ════════════════════════════════ */
-function switchModel(key, btn) {
-  setActiveModel(key);
-  document.querySelectorAll('.model-pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-}
-function selectModalModel(key, btn) {
-  modalModel = key;
-  document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.remove('selected'));
-  btn.classList.add('selected');
+function syncModelPills(m) {
+  document.querySelectorAll('.model-pill').forEach(p => p.classList.toggle('active', p.dataset.model === m));
+  document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.toggle('selected', p.dataset.m === m));
 }
 
-function toggleUserMenu() { document.getElementById('user-dropdown').classList.toggle('open'); }
-document.addEventListener('click', e => { if (!e.target.closest('.user-menu')) document.getElementById('user-dropdown').classList.remove('open'); });
+function switchModel(key, btn) {
+  setActiveModel(key);
+  modalModel = key;
+  document.querySelectorAll('.model-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.toggle('selected', p.dataset.m === key));
+}
+
+function selectModalModel(key, btn) {
+  modalModel = key;
+  setActiveModel(key);
+  document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.querySelectorAll('.model-pill').forEach(p => p.classList.toggle('active', p.dataset.model === key));
+}
+
+/* ════════════════════════════════
+   USER MENU
+════════════════════════════════ */
+function toggleUserMenu() {
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.user-menu')) {
+    document.getElementById('user-dropdown').classList.remove('open');
+  }
+});
 
 /* ════════════════════════════════
    TEST MODAL
 ════════════════════════════════ */
-function openTestModal() { document.getElementById('test-modal-overlay').classList.add('open'); }
-function closeTestModal() { document.getElementById('test-modal-overlay').classList.remove('open'); }
-function handleOverlayClick(e) { if (e.target === document.getElementById('test-modal-overlay')) closeTestModal(); }
+function openTestModal() {
+  document.getElementById('test-modal-overlay').classList.add('open');
+}
+
+function closeTestModal() {
+  document.getElementById('test-modal-overlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('test-modal-overlay')) closeTestModal();
+}
 
 function updateSubtopics() {
   const topic = document.getElementById('test-topic').value;
-  selectedSubtopics.clear();
-  const group = document.getElementById('subtopic-group');
-  const chips = document.getElementById('subtopic-chips');
-  if (!topic || !SUBTOPICS[topic]) { group.style.display = 'none'; checkStartBtn(); return; }
+  selectedChip = null;
+  const group  = document.getElementById('subtopic-group');
+  const chips  = document.getElementById('subtopic-chips');
+
+  if (!topic || !SUBTOPICS[topic]) {
+    group.style.display = 'none';
+    checkStartBtn();
+    return;
+  }
+
   group.style.display = 'block';
-  chips.innerHTML = SUBTOPICS[topic].map(s => `<div class="chip" onclick="toggleChip(this,'${s.replace(/'/g,"\\'")}')"><span>${s}</span></div>`).join('');
+  const subs = SUBTOPICS[topic];
+  chips.innerHTML = subs.map(s => {
+    const label = (topic === 'grammar' && GRAMMAR_LABELS[s]) ? GRAMMAR_LABELS[s] : s;
+    return `<div class="chip" data-key="${esc(s)}" onclick="selectChip(this,'${esc(s)}')">${label}</div>`;
+  }).join('');
   checkStartBtn();
 }
 
-function toggleChip(el, val) {
-  el.classList.toggle('selected');
-  if (el.classList.contains('selected')) selectedSubtopics.add(val);
-  else selectedSubtopics.delete(val);
+/* Only one subtopic selected at a time (PT.open takes one key) */
+function selectChip(el, key) {
+  document.querySelectorAll('#subtopic-chips .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedChip = key;
   checkStartBtn();
 }
 
 function checkStartBtn() {
   const topic = document.getElementById('test-topic').value;
-  const ok = topic && selectedSubtopics.size > 0;
-  document.getElementById('start-test-btn').disabled = !ok;
+  document.getElementById('start-test-btn').disabled = !(topic && selectedChip);
 }
 
-async function startTest() {
-  const topic  = document.getElementById('test-topic').value;
-  const count  = parseInt(document.getElementById('test-count').value);
-  const timeSec= parseInt(document.getElementById('test-time').value);
-  const subs   = [...selectedSubtopics];
+/* ════════════════════════════════
+   LAUNCH TEST → PT OVERLAY
+════════════════════════════════ */
+async function launchTest() {
+  const topic   = document.getElementById('test-topic').value;
+  const key     = selectedChip;
+  const timeSec = parseInt(document.getElementById('test-time').value);
+
+  if (!topic || !key) return;
 
   closeTestModal();
-  setActiveModel(modalModel);
 
-  document.getElementById('test-overlay').classList.add('open');
-  document.getElementById('test-body').innerHTML = `<div class="test-wrap"><div class="ai-loading"><div class="spinner"></div><div class="ai-loading-text">Generating ${count} questions using AI…</div></div></div>`;
+  /* Override PT totalSecs before opening */
+  const _open = PT.open.bind(PT);
 
-  try {
-    const prompt = PROMPTS.testBatch(topic, subs, count);
-    const raw    = await aiCall(prompt, modalModel);
-    let qs       = parseAIJson(raw);
-    qs = qs.slice(0, count).map((q, i) => ({ ...q, id: `test_${i}` }));
-    if (currentUser) await sbSaveCachedQuestions(currentUser.id, topic, subs.join('|'), modalModel, qs);
-    testQuestions = qs;
-    testAnswers   = {};
-    testScore     = 0;
-    testTimeTotal = timeSec;
-    testTimeLeft  = timeSec;
-    qStartTimes   = {};
-    renderTestQuestions();
-    startTimer();
-    updateTestNav();
-  } catch (err) {
-    document.getElementById('test-body').innerHTML = `<div class="test-wrap"><div style="padding:3rem 0;text-align:center;color:var(--red)">Failed to generate questions. Please try again.<br><button onclick="document.getElementById('test-overlay').classList.remove('open')" style="margin-top:1rem;padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;">← Back</button></div></div>`;
-  }
+  await PT.open({ mod: topic, key, user: currentUser, timeSecs: timeSec });
 }
 
-function renderTestQuestions() {
-  const wrap = document.getElementById('test-body');
-  const now  = Date.now();
-  wrap.innerHTML = `<div class="test-wrap">` +
-    testQuestions.map((q, i) => {
-      qStartTimes[q.id] = now;
-      return `<div class="test-q-card" id="tqc-${q.id}">
-        <div class="test-q-meta">
-          <div class="test-q-num">Question ${i+1} of ${testQuestions.length}${q.topic ? ' · ' + q.topic : ''}</div>
-          <div class="test-q-timer" id="tqt-${q.id}">—</div>
-        </div>
-        <div class="test-q-sentence">${q.sentence.replace('___', `<span class="test-blank" id="tb-${q.id}">________</span>`)}</div>
-        <div class="test-opts">
-          ${q.options.map(o => `<button class="test-opt" onclick="testAnswer(this,'${esc(q.id)}','${esc(o.verb)}')"><span class="test-opt-verb">${o.verb}</span><span class="test-opt-hint">${o.hint}</span></button>`).join('')}
-        </div>
-        <div class="test-feedback" id="tqf-${q.id}">${q.feedback}</div>
-      </div>`;
-    }).join('') + `</div>`;
-}
-
-function testAnswer(btn, qid, chosen) {
-  if (testAnswers[qid]) return;
-  const q = testQuestions.find(x => x.id === qid);
-  if (!q) return;
-
-  const timeTaken = Math.round((Date.now() - (qStartTimes[qid] || Date.now())) / 1000);
-  const correct   = chosen === q.correct;
-  testAnswers[qid] = { chosen, correct, timeTaken };
-  if (correct) testScore++;
-
-  const tqt = document.getElementById('tqt-' + qid);
-  if (tqt) tqt.textContent = `${timeTaken}s`;
-  btn.closest('.test-opts').querySelectorAll('.test-opt').forEach(t => {
-    t.disabled = true;
-    const v = t.querySelector('.test-opt-verb').textContent.trim();
-    if (v === chosen && correct)  t.classList.add('sel-correct');
-    else if (v === chosen)        t.classList.add('sel-wrong');
-    else if (v === q.correct)     t.classList.add('show-correct');
-  });
-  const tb = document.getElementById('tb-' + qid);
-  if (tb) { tb.textContent = q.correct; if (!correct) tb.style.color = 'var(--green)'; }
-  const fb = document.getElementById('tqf-' + qid);
-  if (fb) fb.classList.add('show');
-  if (currentUser) {
-    const topic = document.getElementById('test-topic')?.value || 'test';
-    sbSaveAnswer({ userId: currentUser.id, module: topic, itemKey: 'test', questionId: qid, chosen, correct, source: 'ai' });
-  }
-  updateTestNav();
-  if (Object.keys(testAnswers).length === testQuestions.length) setTimeout(submitTest, 800);
-}
-
-function updateTestNav() {
-  document.getElementById('test-qcount').textContent = `${Object.keys(testAnswers).length} / ${testQuestions.length} answered`;
-  document.getElementById('test-score-live').textContent = `Score: ${testScore}`;
-}
-
-function startTimer() {
-  clearInterval(testTimerInterval);
-  updateTimerDisplay();
-  testTimerInterval = setInterval(() => {
-    testTimeLeft--;
-    updateTimerDisplay();
-    if (testTimeLeft <= 0) { clearInterval(testTimerInterval); submitTest(); }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(testTimeLeft / 60);
-  const s = testTimeLeft % 60;
-  document.getElementById('timer-display').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  const pct = (testTimeLeft / testTimeTotal) * 100;
-  const bar = document.getElementById('timer-bar');
-  bar.style.width = pct + '%';
-  bar.className = 'timer-bar-fill' + (pct < 20 ? ' danger' : pct < 40 ? ' warn' : '');
-}
-
-async function submitTest() {
-  clearInterval(testTimerInterval);
-  const timeTaken = testTimeTotal - testTimeLeft;
-  const total     = testQuestions.length;
-  const pct       = Math.round((testScore / total) * 100);
-
-  if (currentUser) {
-    const topic = document.getElementById('test-topic')?.value || 'test';
-    const subs  = [...selectedSubtopics];
-    await sbSaveTestSession({
-      userId: currentUser.id, module: topic, subtopics: subs,
-      model: modalModel, totalQuestions: total,
-      timeAllocated: testTimeTotal, timeTaken, score: testScore, results: testQuestions.map(q => ({ qid: q.id, ...testAnswers[q.id] }))
-    });
-  }
-
-  // === RESULTS SCREEN with proper format ===
-  document.getElementById('test-body').innerHTML = `
-    <div class="results-wrap">
-      <div class="results-hero">
-        <div class="results-score">${testScore}<span> / ${total}</span></div>
-        <div class="results-label">${pct}% correct · ${Math.floor(timeTaken/60)}m ${timeTaken%60}s taken</div>
-        <div class="results-stats">
-          <div class="rstat"><div class="rstat-num">${testScore}</div><div class="rstat-lbl">Correct</div></div>
-          <div class="rstat"><div class="rstat-num">${total - testScore}</div><div class="rstat-lbl">Wrong</div></div>
-          <div class="rstat"><div class="rstat-num">${pct}%</div><div class="rstat-lbl">Score</div></div>
-        </div>
-      </div>
-      <div class="results-btn-row">
-        <button class="results-btn" onclick="document.getElementById('test-overlay').classList.remove('open'); loadDashboard();">← Dashboard</button>
-        <button class="results-btn primary" onclick="openTestModal(); document.getElementById('test-overlay').classList.remove('open');">Try Again</button>
-      </div>
-    </div>`;
-  await loadDashboard();
-}
-
-function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>
