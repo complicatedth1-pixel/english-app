@@ -16,6 +16,7 @@
 <script src="db_grammar.js"></script>
 <script src="db_modals.js"></script>
 <script src="db_calculations.js"></script>
+<script src="mod_practice_test.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -152,9 +153,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .gr-word-prep { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
 
 /* ── PRACTICE ── */
-.score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 10px; }
+.score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 10px; flex-wrap: wrap; }
 .score-pill { font-size: 13px; color: var(--text2); background: var(--surface); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-.practice-actions { display: flex; gap: 8px; }
+.practice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .reset-btn, .ai-practice-btn {
   font-size: 13px; padding: 6px 14px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: transparent;
@@ -164,6 +165,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .reset-btn:hover { background: var(--bg2); border-color: var(--border2); color: var(--text1); }
 .ai-practice-btn { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
 .ai-practice-btn:hover { background: #fae3dc; }
+
+/* practice test button — green tint */
+.pt-launch-btn {
+  font-size: 13px; padding: 6px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--green-border); background: var(--green-bg);
+  color: var(--green); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+}
+.pt-launch-btn:hover { background: #d6edde; border-color: var(--green); }
 
 .fib-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
 .q-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; }
@@ -310,7 +320,6 @@ const MOD_META = {
   modal:       { label:'Modals',        badge:'MOD',   badgeCls:'mo',  tabCls:'t-mo',  pfCls:'pf-mo',  blankCls:'mo',  tagCls:'static-mo'  },
 };
 
-/* module → section id map used in Bug A fix */
 const MOD_TO_SECTION = {
   phrasal:     'home-pv-section',
   preposition: 'home-pre-section',
@@ -321,11 +330,11 @@ const MOD_TO_SECTION = {
 
 function getDB(mod) {
   const map = {
-    phrasal:     typeof DB       !== 'undefined' ? DB       : null,
-    preposition: typeof DB_FP    !== 'undefined' ? DB_FP    : null,
-    idiom:       typeof DB_IDIOMS!== 'undefined' ? DB_IDIOMS: null,
-    grammar:     typeof DB_GRAMMAR!=='undefined' ? DB_GRAMMAR: null,
-    modal:       typeof DB_MOD   !== 'undefined' ? DB_MOD   : null,
+    phrasal:     typeof DB        !== 'undefined' ? DB        : null,
+    preposition: typeof DB_FP     !== 'undefined' ? DB_FP     : null,
+    idiom:       typeof DB_IDIOMS !== 'undefined' ? DB_IDIOMS : null,
+    grammar:     typeof DB_GRAMMAR!== 'undefined' ? DB_GRAMMAR: null,
+    modal:       typeof DB_MOD    !== 'undefined' ? DB_MOD    : null,
   };
   return map[mod] || null;
 }
@@ -354,7 +363,6 @@ function getDB(mod) {
 
   buildHome();
 
-  /* ── BUG A FIX: if ?m= param present, hide all other module sections ── */
   if (mod && MOD_META[mod]) {
     Object.entries(MOD_TO_SECTION).forEach(([m, sectionId]) => {
       document.getElementById(sectionId).style.display = m === mod ? 'block' : 'none';
@@ -447,7 +455,6 @@ function openModule(mod, key) {
   updateProgress(key);
   setLastVisited(mod, key);
 
-  /* ── BUG B FIX: auto-load cached AI questions on module open ── */
   if (currentUser) loadCachedAIQuestions(mod, key);
 }
 
@@ -466,14 +473,13 @@ function switchTab(tab, btn) {
 }
 
 /* ════════════════════════════════
-   BUG B FIX: load cached AI questions from Supabase
+   LOAD CACHED AI QUESTIONS
 ════════════════════════════════ */
 async function loadCachedAIQuestions(mod, key) {
   const cached = await sbGetCachedQuestions(currentUser.id, mod, key, getActiveModel());
   if (!cached || !cached.length) return;
   aiQuestions[key] = cached;
   aiStatus[key]    = 'ready';
-  /* if practice tab is already visible, re-render to show the cached questions */
   if (document.getElementById('sec-practice').classList.contains('active')) {
     buildPractice(mod, key);
   }
@@ -525,17 +531,32 @@ function buildPractice(mod, key) {
   const qs = db?.[key]?.questions || [];
   const sc = scores[key];
 
-  let html = `<div class="score-row"><span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span><div class="practice-actions">${qs.length ? `<button class="reset-btn" onclick="resetQuiz('${esc(key)}')"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Reset</button>` : ''}<button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')"><i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>AI Practice (5 Qs)</button></div></div>`;
+  // ── score row + action buttons ──
+  let html = `<div class="score-row">
+    <span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span>
+    <div class="practice-actions">
+      ${qs.length ? `<button class="reset-btn" onclick="resetQuiz('${esc(key)}')">
+        <i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px"></i> Reset
+      </button>` : ''}
+      <button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')">
+        <i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px"></i> AI Practice (5 Qs)
+      </button>
+      <button class="pt-launch-btn" onclick="PT.open({ mod: '${esc(mod)}', key: '${esc(key)}', user: currentUser })">
+        <i class="ti ti-device-gamepad-2" style="font-size:13px;vertical-align:-1px"></i> Practice Test
+      </button>
+    </div>
+  </div>`;
 
+  // ── static questions ──
   if (qs.length) {
     qs.forEach((q, idx) => {
       html += mod === 'grammar' ? renderGrammarCard(q, key, idx) : renderFibCard(q, key, mod, false);
     });
   } else {
-    html += `<div class="empty">No static questions yet. Use AI Practice to generate questions.</div>`;
+    html += `<div class="empty">No static questions yet. Use AI Practice to generate questions, or launch a Practice Test.</div>`;
   }
 
-  /* append any already-loaded AI questions */
+  // ── cached AI questions ──
   if (aiQuestions[key] && aiQuestions[key].length) {
     aiQuestions[key].forEach(q => { html += renderFibCard(q, key, mod, true); });
   }
@@ -550,18 +571,34 @@ function renderFibCard(q, key, mod, isAI) {
   const tagCls = isAI ? 'ai-tag' : meta.tagCls;
   const tagLbl = isAI ? '✦ AI Question' : 'Practice';
   const blCls  = meta.blankCls;
-  return `<div class="fib-card" id="fc-${q.id}"><span class="q-tag ${tagCls}">${tagLbl}</span><div class="fib-sentence">${q.sentence.replace('_____', `<span class="blank ${blCls}" id="bl-${q.id}">________</span>`)}</div><div class="opts-grid">${q.options.map(o => `<button class="opt-tile" onclick="fibAns(this,'${esc(key)}','${esc(mod)}','${esc(q.id)}','${esc(o.verb)}')"><span class="opt-tile-verb">${o.verb}</span><span class="opt-tile-hint">${o.hint}</span></button>`).join('')}</div><div class="fib-feedback" id="fb-${q.id}">${q.feedback}</div></div>`;
+  return `<div class="fib-card" id="fc-${q.id}">
+    <span class="q-tag ${tagCls}">${tagLbl}</span>
+    <div class="fib-sentence">${q.sentence.replace('_____', `<span class="blank ${blCls}" id="bl-${q.id}">________</span>`)}</div>
+    <div class="opts-grid">${q.options.map(o => `<button class="opt-tile" onclick="fibAns(this,'${esc(key)}','${esc(mod)}','${esc(q.id)}','${esc(o.verb)}')">
+      <span class="opt-tile-verb">${o.verb}</span>
+      <span class="opt-tile-hint">${o.hint}</span>
+    </button>`).join('')}</div>
+    <div class="fib-feedback" id="fb-${q.id}">${q.feedback}</div>
+  </div>`;
 }
 
 function renderGrammarCard(q, key, idx) {
   const qid = q.id ?? `gr_${key}_${idx}`;
   q.id = qid;
   const letters = ['A','B','C','D'];
-  return `<div class="fib-card" id="fc-${qid}"><span class="q-tag static-gr">Grammar</span><span class="q-type-badge">${q.type}</span><div class="fib-sentence" style="font-size:14px;font-weight:400">${q.q}</div><div class="opts-grid">${q.opts.map((opt, i) => `<button class="opt-tile" onclick="grammarAns(this,'${esc(key)}','${esc(qid)}',${i},${q.ans})"><span class="opt-tile-verb">${letters[i]}. ${opt}</span></button>`).join('')}</div><div class="fib-feedback" id="fb-${qid}">${q.exp}</div></div>`;
+  return `<div class="fib-card" id="fc-${qid}">
+    <span class="q-tag static-gr">Grammar</span>
+    <span class="q-type-badge">${q.type}</span>
+    <div class="fib-sentence" style="font-size:14px;font-weight:400">${q.q}</div>
+    <div class="opts-grid">${q.opts.map((opt, i) => `<button class="opt-tile" onclick="grammarAns(this,'${esc(key)}','${esc(qid)}',${i},${q.ans})">
+      <span class="opt-tile-verb">${letters[i]}. ${opt}</span>
+    </button>`).join('')}</div>
+    <div class="fib-feedback" id="fb-${qid}">${q.exp}</div>
+  </div>`;
 }
 
 /* ════════════════════════════════
-   AI PRACTICE
+   AI PRACTICE (inline, existing flow)
 ════════════════════════════════ */
 async function loadAIPractice(key) {
   const mod   = currentMod;
@@ -569,7 +606,6 @@ async function loadAIPractice(key) {
   const entry = db?.[key];
   if (!entry) return;
 
-  /* if already loaded (cached in memory), don't regenerate */
   if (aiStatus[key] === 'ready' && aiQuestions[key]?.length) {
     alert('AI questions for this section are already loaded below.');
     return;
@@ -591,7 +627,8 @@ async function loadAIPractice(key) {
   }
 
   const loaderId = 'ai-loader-' + Date.now();
-  document.getElementById('sec-practice').innerHTML += `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
+  document.getElementById('sec-practice').innerHTML +=
+    `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
 
   await generateAndCache({
     userId: currentUser?.id,
@@ -611,7 +648,10 @@ async function loadAIPractice(key) {
     },
     onError: () => {
       const loader = document.getElementById(loaderId);
-      if (loader) loader.innerHTML = `<div style="color:var(--red);font-size:13px;text-align:center;padding:1rem">Failed to generate questions. <button onclick="loadAIPractice('${esc(key)}')" style="color:var(--accent);border:none;background:transparent;cursor:pointer;font-family:DM Sans,sans-serif">Retry</button></div>`;
+      if (loader) loader.innerHTML = `<div style="color:var(--red);font-size:13px;text-align:center;padding:1rem">
+        Failed to generate questions.
+        <button onclick="loadAIPractice('${esc(key)}')" style="color:var(--accent);border:none;background:transparent;cursor:pointer;font-family:DM Sans,sans-serif">Retry</button>
+      </div>`;
     }
   });
 }
@@ -755,7 +795,11 @@ function buildReview(mod, key) {
     const sentDisplay = (mod === 'grammar' && q.q)
       ? q.q
       : (a ? q.sentence.replace('_____', `<strong style="color:var(--text1)">${q.correct}</strong>`) : q.sentence);
-    html += `<div class="rv-card"><div class="rv-head"><div class="rv-sent">${sentDisplay}</div>${badge}</div><div class="rv-ans-row">${ansHtml}</div>${a ? `<div class="rv-fb">${q.exp || q.feedback || ''}</div>` : ''}</div>`;
+    html += `<div class="rv-card">
+      <div class="rv-head"><div class="rv-sent">${sentDisplay}</div>${badge}</div>
+      <div class="rv-ans-row">${ansHtml}</div>
+      ${a ? `<div class="rv-fb">${q.exp || q.feedback || ''}</div>` : ''}
+    </div>`;
   });
   document.getElementById('sec-review').innerHTML = html;
 }
