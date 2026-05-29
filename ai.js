@@ -4,38 +4,26 @@
 
 const AI_CFG = {
   claude: {
-    label: 'Claude Sonnet 4',
-    icon: '◆',
-    url: 'https://api.anthropic.com/v1/messages',
-    model: 'claude-sonnet-4-20250514',
-    maxTok: 8000
+    label: 'Claude Sonnet 4', icon: '◆',
+    url:   'https://api.anthropic.com/v1/messages',
+    model: 'claude-sonnet-4-20250514', maxTok: 8000
   },
   gemini: {
-    label: 'Gemini 2.5 Flash',
-    icon: '✦',
-    key: 'AIzaSyCqx0Vs0l1RM6EKZrb5UcAMAScJcrNgK_0',
+    label: 'Gemini 2.5 Flash', icon: '✦',
+    key:   'AIzaSyCqx0Vs0l1RM6EKZrb5UcAMAScJcrNgK_0',
     model: 'gemini-2.5-flash',
-    get url() {
-      return `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.key}`;
-    }
+    get url() { return `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.key}`; }
   },
   grok: {
-    label: 'Groq Llama 3.3',
-    icon: '⬡',
-    key: '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',
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.3-70b-versatile',
-    maxTok: 8000
+    label: 'Groq Llama 3.3', icon: '⬡',
+    key:   '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',
+    url:   'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.3-70b-versatile', maxTok: 8000
   }
 };
 
-/* Active model — persisted in localStorage */
-function getActiveModel() {
-  return localStorage.getItem('aiModel') || 'gemini';
-}
-function setActiveModel(key) {
-  localStorage.setItem('aiModel', key);
-}
+function getActiveModel() { return localStorage.getItem('aiModel') || 'gemini'; }
+function setActiveModel(k) { localStorage.setItem('aiModel', k); }
 
 /* ── CORE CALL ── */
 async function aiCall(prompt, modelKey) {
@@ -47,36 +35,22 @@ async function aiCall(prompt, modelKey) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        /* Required header for direct browser → Anthropic API calls */
         'anthropic-dangerous-direct-browser-access': 'true',
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({
-        model: cfg.model,
-        max_tokens: cfg.maxTok,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      body: JSON.stringify({ model: cfg.model, max_tokens: cfg.maxTok, messages: [{ role: 'user', content: prompt }] })
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Claude API error:', res.status, errText);
-      throw Object.assign(new Error('Claude API error: ' + res.status), { status: res.status, body: errText });
-    }
+    if (!res.ok) { const t = await res.text(); throw Object.assign(new Error('Claude ' + res.status), { status: res.status, body: t }); }
     const d = await res.json();
     return d.content.map(c => c.text || '').join('');
   }
 
   if (key === 'gemini') {
     const res = await fetch(cfg.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Gemini API error:', res.status, errText);
-      throw Object.assign(new Error('Gemini API error: ' + res.status), { status: res.status, body: errText });
-    }
+    if (!res.ok) { const t = await res.text(); throw Object.assign(new Error('Gemini ' + res.status), { status: res.status, body: t }); }
     const d = await res.json();
     return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
@@ -84,136 +58,116 @@ async function aiCall(prompt, modelKey) {
   if (key === 'grok') {
     const res = await fetch(cfg.url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${cfg.key}`
-      },
-      body: JSON.stringify({
-        model: cfg.model,
-        max_tokens: cfg.maxTok,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.key}` },
+      body: JSON.stringify({ model: cfg.model, max_tokens: cfg.maxTok, messages: [{ role: 'user', content: prompt }] })
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Groq API error:', res.status, errText);
-      throw Object.assign(new Error('Groq API error: ' + res.status), { status: res.status, body: errText });
-    }
+    if (!res.ok) { const t = await res.text(); throw Object.assign(new Error('Groq ' + res.status), { status: res.status, body: t }); }
     const d = await res.json();
     return d.choices?.[0]?.message?.content || '';
   }
 }
 
-/* ── PARSE JSON FROM AI RESPONSE ── */
+/* ── PARSE JSON ── */
 function parseAIJson(raw) {
   const clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-  try {
-    return JSON.parse(clean);
-  } catch (e) {
-    /* Try to extract a JSON array if extra text surrounds it */
-    const match = clean.match(/\[[\s\S]*\]/);
-    if (match) return JSON.parse(match[0]);
+  try { return JSON.parse(clean); }
+  catch (e) {
+    const m = clean.match(/\[[\s\S]*\]/);
+    if (m) return JSON.parse(m[0]);
     throw e;
   }
 }
 
-/* ── PROMPT BUILDERS ── */
+/* ── PROMPTS ── */
 const PROMPTS = {
   phrasal(baseVerb, verbs) {
     return `Generate 5 fill-in-the-blank questions testing phrasal verbs with base verb "${baseVerb}".
 Phrasal verbs to test: ${verbs.join(', ')}
-Difficulty: SSC CGL / CHSL exam level — tough, no trivial questions.
-Rules:
+Difficulty: SSC CGL/CHSL exam level — tough, no trivial questions.
 - Each sentence must be natural, exam-style English
 - 4 options per question, all from the same base verb group
-- Each option has a "verb" (the phrasal verb) and a "hint" (Hindi meaning, max 5 words)
-- Include "feedback" explaining why correct answer is right and distractors are wrong
-- Questions must be RANDOM — do not reuse example sentences from training data
-
-Respond ONLY with a JSON array. No markdown, no preamble:
+- Each option: "verb" (phrasal verb) and "hint" (Hindi meaning, max 5 words)
+- "feedback" explaining why correct answer is right and distractors are wrong
+- RANDOM questions — do not reuse example sentences
+Respond ONLY with JSON array, no markdown:
 [{"id":"q1","sentence":"...___...","correct":"exact phrasal verb","options":[{"verb":"...","hint":"..."}],"feedback":"..."}]`;
   },
 
   preposition(group, words) {
-    return `Generate 5 fill-in-the-blank questions testing preposition usage for this group: "${group}".
-Words to test: ${words.join(', ')} — all take the same preposition.
+    return `Generate 5 fill-in-the-blank questions testing preposition usage for group: "${group}".
+Words to test: ${words.join(', ')}
 Difficulty: SSC CGL level — tough, vocabulary-focused.
-Rules:
-- Sentence must contextualise which specific word fits (not just the preposition)
-- 4 options per question (the words themselves, not the prepositions)
-- "hint" = brief Hindi meaning or usage clue, max 5 words
+- Sentence must contextualise which specific word fits
+- 4 options (the words themselves, not prepositions)
+- "hint" = Hindi meaning or usage clue, max 5 words
 - "feedback" = why correct word fits and others don't
-
-Respond ONLY with a JSON array. No markdown:
+Respond ONLY with JSON array, no markdown:
 [{"id":"q1","sentence":"...___...","correct":"word","options":[{"verb":"word","hint":"..."}],"feedback":"..."}]`;
   },
 
   idiom(setName, idioms) {
     return `Generate 5 fill-in-the-blank questions testing idioms from "${setName}".
-Idioms to test (pick 5 randomly): ${idioms.map(i => i.phrase).join(', ')}
+Idioms (pick 5 randomly): ${idioms.map(i => i.phrase).join(', ')}
 Difficulty: SSC level — contextual, no giveaways.
-Rules:
 - Sentence must make the idiom meaningful in context
-- 4 options per question (idiom phrases)
-- "hint" = Hindi meaning, max 6 words
-- Include "feedback" explaining correct answer and distractors
-- IMPORTANT: Tag each question with which idiom phrase it primarily tests, using field "idiom_tested"
-
-Respond ONLY with a JSON array. No markdown:
-[{"id":"q1","idiom_tested":"the exact idiom phrase being tested","sentence":"...___...","correct":"idiom phrase","options":[{"verb":"phrase","hint":"..."}],"feedback":"..."}]`;
+- 4 options (idiom phrases), "hint" = Hindi meaning max 6 words
+- "feedback" explaining correct answer and distractors
+- "idiom_tested" field: the exact idiom phrase this question tests
+Respond ONLY with JSON array, no markdown:
+[{"id":"q1","idiom_tested":"exact idiom phrase","sentence":"...___...","correct":"idiom phrase","options":[{"verb":"phrase","hint":"..."}],"feedback":"..."}]`;
   },
 
   grammar(ruleName, ruleDesc) {
-    return `Generate 5 error-spotting or fill-in-the-blank questions testing this English grammar rule:
-Rule: "${ruleName}"
+    return `Generate 5 error-spotting or fill-in-the-blank questions for grammar rule: "${ruleName}".
 Description: ${ruleDesc}
-Difficulty: SSC CGL level — subtle errors, not obvious mistakes.
-Rules:
-- Mix of fill-in-the-blank and error-identification question types
-- For fill-in-blank: 4 options, correct vs near-correct alternatives
-- "hint" = very brief clue
+Difficulty: SSC CGL level — subtle errors, not obvious.
+- Mix of fill-in-blank and error-identification
+- 4 options, "hint" = brief clue
 - "feedback" = clear grammar explanation referencing the rule
-
-Respond ONLY with a JSON array. No markdown:
+Respond ONLY with JSON array, no markdown:
 [{"id":"q1","sentence":"...___...","correct":"answer","options":[{"verb":"...","hint":"..."}],"feedback":"..."}]`;
   },
 
   modal(modalName, uses) {
-    return `Generate 5 fill-in-the-blank questions testing the modal verb "${modalName}".
+    return `Generate 5 fill-in-the-blank questions testing modal verb "${modalName}".
 Uses to cover: ${uses.join(', ')}
 Difficulty: SSC CGL level — nuanced modal distinctions.
-Rules:
-- Each question should test a specific use of the modal
+- Each question tests a specific use of the modal
 - 4 options: different modals or modal forms
-- "hint" = usage label (e.g. "possibility", "obligation", "sambhavna")
+- "hint" = usage label (e.g. "possibility", "obligation")
 - "feedback" = why this modal and not the others
-
-Respond ONLY with a JSON array. No markdown:
+Respond ONLY with JSON array, no markdown:
 [{"id":"q1","sentence":"...___...","correct":"modal","options":[{"verb":"...","hint":"..."}],"feedback":"..."}]`;
   },
 
+  /* Homepage multi-subtopic batch — tags each question with mod+itemKey for splitting */
   testBatch(module, subtopics, count) {
-    return `Generate ${count} mixed fill-in-the-blank questions for an English test.
-Module: ${module}
-Topics/subtopics to cover: ${subtopics.join(', ')}
-Difficulty: SSC CGL / CHSL competitive exam level — challenging questions.
-Rules:
+    return `Generate ${count} fill-in-the-blank questions for an English test.
+Module: ${module}. Topics: ${subtopics.join(', ')}
+Difficulty: SSC CGL/CHSL competitive exam level.
 - Distribute questions evenly across all subtopics
 - 4 options per question with Hindi hints
 - Detailed feedback for each
-- Questions must be varied and non-repetitive
-- Tag each question with which subtopic it belongs to using "topic" field
-
-Respond ONLY with a JSON array. No markdown:
-[{"id":"q1","topic":"subtopic name","sentence":"...___...","correct":"answer","options":[{"verb":"...","hint":"..."}],"feedback":"..."}]`;
+- IMPORTANT: "item_key" field = exact subtopic name this question belongs to (must match one of: ${subtopics.join(', ')})
+- "topic" field = same as item_key
+Respond ONLY with JSON array, no markdown:
+[{"id":"q1","topic":"subtopic name","item_key":"subtopic name","sentence":"...___...","correct":"answer","options":[{"verb":"...","hint":"..."}],"feedback":"..."}]`;
   }
 };
 
-/* ── GENERATE + CACHE ── */
+/* ══════════════════════════════════════════════════════════
+   GENERATE + CACHE
+   
+   Per-subtopic cache: always cached under (module, itemKey).
+   
+   Batch (homepage): generates once, then SPLITS questions by
+   item_key and saves each slice to its own cache entry so
+   app.html practice pages can find them.
+══════════════════════════════════════════════════════════ */
 async function generateAndCache({ userId, module, itemKey, promptText, onLoad, onReady, onError }) {
   const modelKey = getActiveModel();
 
-  /* Check Supabase cache first */
+  /* ── Cache check ── */
   if (userId) {
     try {
       const cached = await sbGetCachedQuestions(userId, module, itemKey, modelKey);
@@ -221,35 +175,46 @@ async function generateAndCache({ userId, module, itemKey, promptText, onLoad, o
         onReady(cached, 'cache');
         return;
       }
-    } catch (cacheErr) {
-      console.warn('Cache check failed, proceeding to generate:', cacheErr);
-    }
+    } catch (e) { console.warn('Cache check failed:', e); }
   }
 
+  /* ── Generate ── */
   onLoad();
-
   try {
     const raw = await aiCall(promptText, modelKey);
     const qs  = parseAIJson(raw);
 
     /* Assign stable IDs */
     qs.forEach((q, i) => {
-      q.id = q.id || `${itemKey.replace(/\s+/g, '_')}_${modelKey}_${i}`;
+      q.id = q.id || `${itemKey.replace(/\s+/g,'_')}_${modelKey}_${i}`;
     });
 
-    /* Save to cache */
+    /* ── Save & split ──
+       If questions have an item_key field (batch mode), save each
+       subtopic slice to its own cache entry as well as the full batch. */
     if (userId) {
-      try {
-        await sbSaveCachedQuestions(userId, module, itemKey, modelKey, qs);
-      } catch (saveErr) {
-        console.error('Failed to save questions to cache:', saveErr);
-        /* Still deliver the questions even if cache save fails */
+      /* Always save the full batch under itemKey */
+      try { await sbSaveCachedQuestions(userId, module, itemKey, modelKey, qs); }
+      catch (e) { console.error('Cache save failed (batch):', e); }
+
+      /* Split by item_key and save each subtopic slice */
+      const byKey = {};
+      qs.forEach(q => {
+        const k = q.item_key || q.topic;
+        if (k && k !== itemKey) {
+          if (!byKey[k]) byKey[k] = [];
+          byKey[k].push(q);
+        }
+      });
+      for (const [subKey, subQs] of Object.entries(byKey)) {
+        try { await sbSaveCachedQuestions(userId, module, subKey, modelKey, subQs); }
+        catch (e) { console.error('Cache save failed for subtopic', subKey, e); }
       }
     }
 
     onReady(qs, 'fresh');
   } catch (err) {
-    console.error('AI generation error:', err);
+    console.error('AI error:', err);
     onError(err);
   }
 }
