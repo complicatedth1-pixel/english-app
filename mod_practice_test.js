@@ -1,15 +1,9 @@
 /* ═══════════════════════════════════════════════════════
    mod_practice_test.js  —  Practice Test Screen
-   Integrates into app.html via openPracticeTest()
+   Depends on: ai.js (generateAndCache, PROMPTS, getActiveModel)
+               supabase.js (sbSaveAnswer, sbSaveTestSession)
+               app.html (getDB exposed globally)
 ═══════════════════════════════════════════════════════ */
-
-/* ── PUBLIC ENTRY POINT ──────────────────────────────
-   Call this from anywhere in app.html:
-   openPracticeTest({ mod, key, user })
-   mod  = 'phrasal' | 'preposition' | 'idiom' | 'grammar' | 'modal'
-   key  = item key e.g. 'Catch', 'Set 1 (1–20)', 'Rule 3'
-   user = currentUser object from app.html
-─────────────────────────────────────────────────────── */
 
 const PT = (() => {
 
@@ -21,10 +15,10 @@ const PT = (() => {
       mod, key, user,
       questions,
       cur:          0,
-      answers:      {},   // qi → option string
+      answers:      {},
       visited:      new Set(),
       marked:       new Set(),
-      qTimers:      {},   // qi → seconds
+      qTimers:      {},
       qStart:       Date.now(),
       totalSecs:    20 * 60,
       totalElapsed: 0,
@@ -48,7 +42,6 @@ const PT = (() => {
   background: var(--bg); display: flex; flex-direction: column;
   font-family: 'DM Sans', sans-serif;
 }
-/* header */
 .pt-hdr {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 18px; height: 52px; background: var(--surface);
@@ -78,12 +71,9 @@ const PT = (() => {
   font-family: 'DM Sans', sans-serif; transition: all .15s;
 }
 .pt-close-btn:hover { background: var(--bg2); color: var(--text1); }
-/* progress strip */
 .pt-prog-strip { height: 3px; background: var(--border); flex-shrink: 0; }
 .pt-prog-fill  { height: 100%; background: var(--accent); transition: width .35s ease; }
-/* body */
 .pt-body { display: flex; flex: 1; overflow: hidden; }
-/* question panel */
 .pt-qpanel {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; min-width: 0;
@@ -125,7 +115,6 @@ const PT = (() => {
 .pt-option.pt-sel .pt-opt-key { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
 .pt-opt-text { font-size: 14px; color: var(--text1); line-height: 1.5; padding-top: 2px; }
 .pt-opt-hint { font-size: 12px; color: var(--text3); margin-top: 2px; }
-/* footer */
 .pt-footer {
   padding: 10px 20px; border-top: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
@@ -142,9 +131,8 @@ const PT = (() => {
 .pt-btn:hover { background: var(--bg3); color: var(--text1); border-color: var(--border2); }
 .pt-btn-accent { background: var(--accent-bg); color: var(--accent); border-color: var(--accent-border); }
 .pt-btn-accent:hover { background: #fae0d8; }
-.pt-btn-idiom  { background: var(--idiom-bg);   color: var(--idiom);   border-color: var(--idiom-border);   }
+.pt-btn-idiom  { background: var(--idiom-bg);   color: var(--idiom);   border-color: var(--idiom-border); }
 .pt-btn-idiom:hover  { background: #ead9f8; }
-/* palette */
 .pt-palette {
   width: 192px; flex-shrink: 0; background: var(--surface);
   border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
@@ -157,10 +145,6 @@ const PT = (() => {
 .pt-pal-body { flex: 1; overflow-y: auto; padding: 8px 10px 0; }
 .pt-pal-body::-webkit-scrollbar { width: 3px; }
 .pt-pal-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-.pt-sec-lbl {
-  font-size: 11px; color: var(--text3); text-transform: uppercase;
-  letter-spacing: .4px; padding: 4px 3px 5px; font-weight: 500;
-}
 .pt-dot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
 .pt-dot {
   aspect-ratio: 1; border-radius: 5px; display: flex; align-items: center;
@@ -256,6 +240,10 @@ const PT = (() => {
   border-radius: var(--radius-sm); font-size: 12px; color: var(--text2);
   line-height: 1.55; border-left: 2px solid var(--accent);
 }
+@media (max-width: 600px) {
+  .pt-palette { display: none; }
+  .pt-score-stats { grid-template-columns: repeat(2,1fr); }
+}
     `;
     document.head.appendChild(st);
   }
@@ -265,18 +253,16 @@ const PT = (() => {
     const div = document.createElement('div');
     div.id = 'pt-overlay';
     div.innerHTML = `
-      <!-- loading screen -->
       <div class="pt-loading-screen" id="pt-loading">
         <div class="pt-spinner"></div>
         <div class="pt-load-title">Generating questions…</div>
         <div class="pt-load-sub" id="pt-load-sub">Asking AI for SSC-level questions</div>
       </div>
 
-      <!-- header -->
       <div class="pt-hdr">
         <div class="pt-hdr-left">
           <div>
-            <div class="pt-title">Practice</div>
+            <div class="pt-title">Timed Practice</div>
             <div class="pt-meta" id="pt-meta">Loading…</div>
           </div>
         </div>
@@ -299,13 +285,9 @@ const PT = (() => {
         </div>
       </div>
 
-      <!-- progress strip -->
       <div class="pt-prog-strip"><div class="pt-prog-fill" id="pt-prog-fill" style="width:0%"></div></div>
 
-      <!-- body -->
       <div class="pt-body">
-
-        <!-- question panel -->
         <div class="pt-qpanel">
           <div class="pt-qhdr">
             <div class="pt-qhdr-l">
@@ -333,7 +315,6 @@ const PT = (() => {
           </div>
         </div>
 
-        <!-- palette -->
         <div class="pt-palette">
           <div class="pt-pal-hdr">Question Palette</div>
           <div class="pt-pal-body" id="pt-pal-body"></div>
@@ -348,10 +329,8 @@ const PT = (() => {
             <div class="pt-pal-note" id="pt-pal-note"></div>
           </div>
         </div>
+      </div>
 
-      </div><!-- /body -->
-
-      <!-- results screen -->
       <div class="pt-results" id="pt-results">
         <div class="pt-res-hdr">
           <div>
@@ -366,7 +345,7 @@ const PT = (() => {
           <div class="pt-score-hero">
             <div class="pt-score-ring" id="pt-score-ring">—</div>
             <div class="pt-score-stats">
-              <div class="pt-sc-stat"><div class="pt-sc-val" id="pt-res-score"  style="color:var(--accent)">—</div><div class="pt-sc-lab">Score</div></div>
+              <div class="pt-sc-stat"><div class="pt-sc-val" id="pt-res-score"   style="color:var(--accent)">—</div><div class="pt-sc-lab">Score</div></div>
               <div class="pt-sc-stat"><div class="pt-sc-val" id="pt-res-correct" style="color:var(--green)">—</div><div class="pt-sc-lab">Correct</div></div>
               <div class="pt-sc-stat"><div class="pt-sc-val" id="pt-res-wrong"   style="color:var(--red)">—</div><div class="pt-sc-lab">Wrong</div></div>
               <div class="pt-sc-stat"><div class="pt-sc-val" id="pt-res-skipped" style="color:var(--text3)">—</div><div class="pt-sc-lab">Skipped</div></div>
@@ -376,7 +355,6 @@ const PT = (() => {
           <div class="pt-rv-list" id="pt-rv-list"></div>
         </div>
       </div>
-
     `;
     document.body.appendChild(div);
   }
@@ -403,9 +381,9 @@ const PT = (() => {
   function dotCls(qi) {
     let c = 'pt-dot';
     if (qi === S.cur) c += ' pt-active';
-    if (S.answers[qi] !== undefined)  return c + ' pt-attempted' + (S.marked.has(qi) ? ' pt-marked' : '');
-    if (S.marked.has(qi))             return c + ' pt-marked';
-    if (S.visited.has(qi))            return c + ' pt-seen';
+    if (S.answers[qi] !== undefined) return c + ' pt-attempted' + (S.marked.has(qi) ? ' pt-marked' : '');
+    if (S.marked.has(qi))            return c + ' pt-marked';
+    if (S.visited.has(qi))           return c + ' pt-seen';
     return c;
   }
 
@@ -414,9 +392,7 @@ const PT = (() => {
     if (el) el.className = dotCls(qi);
   }
 
-  function updateAllDots() {
-    S.questions.forEach((_, i) => updateDot(i));
-  }
+  function updateAllDots() { S.questions.forEach((_, i) => updateDot(i)); }
 
   function updatePalNote() {
     const left = S.questions.length - Object.keys(S.answers).length;
@@ -430,21 +406,36 @@ const PT = (() => {
     S.visited.add(qi);
 
     document.getElementById('pt-qnum').textContent = `Question ${qi + 1} of ${S.questions.length}`;
-    document.getElementById('pt-qtext').innerHTML  = q.sentence.replace('_____', '<span style="display:inline-block;min-width:100px;border-bottom:2px solid var(--accent);color:var(--accent);font-weight:500;text-align:center;padding:0 4px">________</span>');
+
+    /* handle both FIB (sentence) and grammar (q.q) formats */
+    let questionHtml = '';
+    if (q.sentence) {
+      questionHtml = q.sentence.replace('_____',
+        '<span style="display:inline-block;min-width:100px;border-bottom:2px solid var(--accent);color:var(--accent);font-weight:500;text-align:center;padding:0 4px">________</span>');
+    } else if (q.q) {
+      questionHtml = q.q;
+    }
+    document.getElementById('pt-qtext').innerHTML = questionHtml;
 
     const ol = document.getElementById('pt-options');
     ol.innerHTML = '';
     const keys = ['A', 'B', 'C', 'D', 'E'];
-    q.options.forEach((opt, i) => {
+
+    /* handle both options:[{verb,hint}] and opts:[] formats */
+    const opts = q.options || q.opts?.map(o => ({ verb: o, hint: '' })) || [];
+
+    opts.forEach((opt, i) => {
       const div = document.createElement('div');
-      div.className = 'pt-option' + (S.answers[qi] === opt.verb ? ' pt-sel' : '');
+      const verb = typeof opt === 'string' ? opt : opt.verb;
+      const hint = typeof opt === 'string' ? '' : (opt.hint || '');
+      const isSel = S.answers[qi] === verb;
+      div.className = 'pt-option' + (isSel ? ' pt-sel' : '');
       div.innerHTML = `<div class="pt-opt-key">${keys[i]}</div>
-        <div class="pt-opt-text">${opt.verb}${opt.hint ? `<div class="pt-opt-hint">${opt.hint}</div>` : ''}</div>`;
-      div.onclick = () => selectAns(qi, opt.verb, div);
+        <div class="pt-opt-text">${verb}${hint ? `<div class="pt-opt-hint">${hint}</div>` : ''}</div>`;
+      div.onclick = () => selectAns(qi, verb, div);
       ol.appendChild(div);
     });
 
-    // progress strip = how far through the test
     document.getElementById('pt-prog-fill').style.width = ((qi + 1) / S.questions.length * 100) + '%';
     S.qStart = Date.now();
     const el = document.getElementById('pt-qtimer-live');
@@ -459,7 +450,6 @@ const PT = (() => {
     el.classList.add('pt-sel');
     updateDot(qi);
     updatePalNote();
-    autoSave(qi);
   }
 
   /* ── NAV ── */
@@ -501,33 +491,20 @@ const PT = (() => {
     if (ql) ql.textContent = qSec + 's';
   }
 
-  /* ── AUTO-SAVE each answer ── */
-  function autoSave(qi) {
-    if (!S.user) return;
-    const q = S.questions[qi];
-    const chosen = S.answers[qi];
-    const correct = chosen === q.correct;
-    // Save to progress table immediately
-    sbSaveAnswer({
-      userId:     S.user.id,
-      module:     S.mod,
-      itemKey:    S.key,
-      questionId: q.id,
-      chosen,
-      correct,
-      source:     'ai'
-    }).catch(e => console.warn('autoSave error', e));
-  }
-
   /* ── SAVE SESSION ── */
   async function saveSession() {
     if (!S.user) return;
-    const results = S.questions.map((q, i) => ({
-      qid:        q.id,
-      chosen:     S.answers[i] !== undefined ? S.answers[i] : null,
-      correct:    S.answers[i] === q.correct,
-      time_taken: S.qTimers[i] || 0,
-    }));
+    const results = S.questions.map((q, i) => {
+      const chosen  = S.answers[i] !== undefined ? S.answers[i] : null;
+      /* correct answer: q.correct for FIB, q.opts[q.ans] for grammar */
+      const correctAns = q.correct || (q.opts ? q.opts[q.ans] : null);
+      return {
+        qid:        q.id,
+        chosen,
+        correct:    chosen === correctAns,
+        time_taken: S.qTimers[i] || 0,
+      };
+    });
     const correct = results.filter(r => r.chosen && r.correct).length;
     const wrong   = results.filter(r => r.chosen && !r.correct).length;
     const score   = correct * S.posMarks - wrong * S.negMarks;
@@ -549,9 +526,10 @@ const PT = (() => {
   function showResults() {
     let correct = 0, wrong = 0, skipped = 0;
     S.questions.forEach((q, i) => {
-      if (S.answers[i] === undefined)      skipped++;
-      else if (S.answers[i] === q.correct) correct++;
-      else                                  wrong++;
+      const correctAns = q.correct || (q.opts ? q.opts[q.ans] : null);
+      if (S.answers[i] === undefined)          skipped++;
+      else if (S.answers[i] === correctAns)    correct++;
+      else                                      wrong++;
     });
     const score = correct * S.posMarks - wrong * S.negMarks;
     const pct   = Math.round((correct / S.questions.length) * 100);
@@ -571,9 +549,10 @@ const PT = (() => {
     const rl = document.getElementById('pt-rv-list');
     rl.innerHTML = '';
     S.questions.forEach((q, i) => {
+      const correctAns = q.correct || (q.opts ? q.opts[q.ans] : null);
       const ans    = S.answers[i];
       const isSkip = ans === undefined;
-      const isRight= ans === q.correct;
+      const isRight= ans === correctAns;
       const cls    = isSkip ? 's' : isRight ? 'c' : 'w';
       const marks  = isSkip ? '—' : isRight ? `+${S.posMarks}` : `−${S.negMarks}`;
       const bdgStyle = isSkip
@@ -586,21 +565,22 @@ const PT = (() => {
         : isRight
           ? `<span class="ca">${ans}</span>`
           : `<span class="wa">${ans}</span>`;
-      const corrAns = `<span class="ca">${q.correct}</span>`;
-      const timeSec = S.qTimers[i] || 0;
-      const cleanQ  = (q.sentence || '').replace(/<[^>]+>/g,'').substring(0, 90);
+      const corrSpan = `<span class="ca">${correctAns}</span>`;
+      const timeSec  = S.qTimers[i] || 0;
+      const rawText  = (q.sentence || q.q || '').replace(/<[^>]+>/g,'');
+      const cleanQ   = rawText.substring(0, 90) + (rawText.length > 90 ? '…' : '');
 
       const item = document.createElement('div');
       item.className = `pt-rv-item ${cls}`;
       item.innerHTML = `
         <div class="pt-rv-top">
           <span class="pt-rv-qnum">Q${i+1}</span>
-          <span class="pt-rv-qtxt">${cleanQ}${q.sentence.length > 90 ? '…' : ''}</span>
+          <span class="pt-rv-qtxt">${cleanQ}</span>
           <span class="pt-rv-bdg" style="${bdgStyle}">${marks}</span>
         </div>
-        <div class="pt-rv-ans">Your answer: ${yourAns}${!isRight && !isSkip ? ` &nbsp;·&nbsp; Correct: ${corrAns}` : ''}</div>
+        <div class="pt-rv-ans">Your answer: ${yourAns}${!isRight && !isSkip ? ` &nbsp;·&nbsp; Correct: ${corrSpan}` : ''}</div>
         <div class="pt-rv-time"><i class="ti ti-clock" style="font-size:11px;margin-right:3px"></i>${timeSec}s spent</div>
-        ${!isRight ? `<div class="pt-rv-fb">${q.feedback || ''}</div>` : ''}
+        ${!isRight ? `<div class="pt-rv-fb">${q.feedback || q.exp || ''}</div>` : ''}
       `;
       rl.appendChild(item);
     });
@@ -623,48 +603,53 @@ const PT = (() => {
   ══════════════════════════════════════ */
   return {
 
-    /* main entry — called from Practice tab "Start Test" button */
-    async open({ mod, key, user, questions }) {
+    async open({ mod, key, user }) {
       injectStyles();
 
-      // remove any old overlay
       const old = document.getElementById('pt-overlay');
       if (old) old.remove();
 
       buildOverlay();
       resetState(mod, key, user, []);
 
-      // show loading while AI generates
       document.getElementById('pt-loading').style.display = 'flex';
-      document.getElementById('pt-load-sub').textContent  = `Asking ${AI_CFG[getActiveModel()]?.label} for questions…`;
+      document.getElementById('pt-load-sub').textContent  =
+        `Asking ${(typeof AI_CFG !== 'undefined' && AI_CFG[getActiveModel()]?.label) || 'AI'} for questions…`;
 
-      let qs = questions || null;
+      /* ── build prompt ── */
+      const db    = (typeof getDB === 'function') ? getDB(mod) : null;
+      const entry = db?.[key];
+      let prompt  = '';
 
-      if (!qs) {
-        // generate via AI
-        const db    = (typeof getDB === 'function') ? getDB(mod) : null;
-        const entry = db?.[key];
-        let prompt  = '';
-
-        if (mod === 'phrasal')     prompt = PROMPTS.phrasal(key, (entry?.verbs || []).map(v => v.pv));
-        else if (mod === 'preposition') prompt = PROMPTS.preposition(key, (entry?.words || []).map(v => v.word));
-        else if (mod === 'idiom')  prompt = PROMPTS.idiom(key, entry?.idioms || []);
-        else if (mod === 'grammar') prompt = PROMPTS.grammar(key, (entry?.words || []).map(v => v.word).join(', '));
-        else if (mod === 'modal')  prompt = PROMPTS.modal(key, (entry?.items || []).map(i => i.use || i.title || ''));
-
-        await generateAndCache({
-          userId:     user?.id,
-          module:     mod,
-          itemKey:    key,
-          promptText: prompt,
-          onLoad:     () => {},
-          onReady:    (generated) => { qs = generated; },
-          onError:    (err) => {
-            document.getElementById('pt-load-sub').textContent = '⚠ Failed to generate. Check console.';
-            console.error(err);
-          }
-        });
+      if (!entry) {
+        document.getElementById('pt-load-sub').textContent = '⚠ Could not find content for this section.';
+        return;
       }
+
+      if      (mod === 'phrasal')     prompt = PROMPTS.phrasal(key, (entry.verbs  || []).map(v => v.pv));
+      else if (mod === 'preposition') prompt = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
+      else if (mod === 'idiom')       prompt = PROMPTS.idiom(key, entry.idioms || []);
+      else if (mod === 'grammar')     prompt = PROMPTS.grammar
+        ? PROMPTS.grammar(key, (entry.words || []).map(v => v.word).join(', '))
+        : `Generate 10 SSC-level fill-in-the-blank questions for: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+      else if (mod === 'modal')       prompt = PROMPTS.modal
+        ? PROMPTS.modal(key, (entry.items || []).map(i => i.use || i.title || ''))
+        : `Generate 10 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+
+      /* ── generate or use cache ── */
+      let qs = null;
+      await generateAndCache({
+        userId:     user?.id,
+        module:     mod,
+        itemKey:    key,
+        promptText: prompt,
+        onLoad:     () => {},
+        onReady:    (generated) => { qs = generated; },
+        onError:    (err) => {
+          document.getElementById('pt-load-sub').textContent = '⚠ Failed to generate. Try again.';
+          console.error('PT generate error:', err);
+        }
+      });
 
       if (!qs || !qs.length) {
         document.getElementById('pt-load-sub').textContent = '⚠ No questions generated. Try again.';
@@ -679,8 +664,8 @@ const PT = (() => {
       buildPalette();
       renderQ(0);
 
-      S.lastTick     = Date.now();
-      S.timerHandle  = setInterval(tick, 500);
+      S.lastTick    = Date.now();
+      S.timerHandle = setInterval(tick, 500);
     },
 
     togglePause() {
@@ -692,28 +677,33 @@ const PT = (() => {
       if (!S.paused) S.lastTick = Date.now();
     },
 
-    prevQ()  { if (S.cur > 0)                   goTo(S.cur - 1); },
+    prevQ()  { if (S.cur > 0) goTo(S.cur - 1); },
+
     saveNext() {
       saveQTimer();
       if (S.cur < S.questions.length - 1) goTo(S.cur + 1);
       else this.confirmSubmit();
     },
+
     markNext() {
       saveQTimer();
       S.marked.has(S.cur) ? S.marked.delete(S.cur) : S.marked.add(S.cur);
       updateDot(S.cur);
       if (S.cur < S.questions.length - 1) goTo(S.cur + 1);
     },
+
     clearResp() {
       delete S.answers[S.cur];
       renderQ(S.cur);
       updatePalNote();
     },
+
     confirmSubmit() {
       const left = S.questions.length - Object.keys(S.answers).length;
       if (left > 0 && !confirm(`${left} question${left > 1 ? 's' : ''} unattempted. Submit anyway?`)) return;
       submitTest();
     },
+
     close() {
       clearInterval(S.timerHandle);
       const ov = document.getElementById('pt-overlay');
@@ -721,4 +711,4 @@ const PT = (() => {
     }
   };
 
-})(); 
+})();

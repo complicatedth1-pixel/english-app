@@ -165,8 +165,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .reset-btn:hover { background: var(--bg2); border-color: var(--border2); color: var(--text1); }
 .ai-practice-btn { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
 .ai-practice-btn:hover { background: #fae3dc; }
-
-/* practice test button — green tint */
 .pt-launch-btn {
   font-size: 13px; padding: 6px 14px; border-radius: var(--radius-sm);
   border: 1px solid var(--green-border); background: var(--green-bg);
@@ -339,6 +337,11 @@ function getDB(mod) {
   return map[mod] || null;
 }
 
+/* Strips Rule_01_ prefix and replaces underscores with spaces */
+function displayKey(k) {
+  return k.replace(/^Rule_\d+_/, '').replace(/_/g, ' ');
+}
+
 /* ════════════════════════════════
    INIT
 ════════════════════════════════ */
@@ -363,6 +366,7 @@ function getDB(mod) {
 
   buildHome();
 
+  /* BUG A FIX: if ?m= param present, hide all other module sections */
   if (mod && MOD_META[mod]) {
     Object.entries(MOD_TO_SECTION).forEach(([m, sectionId]) => {
       document.getElementById(sectionId).style.display = m === mod ? 'block' : 'none';
@@ -411,8 +415,10 @@ function buildGrid(gridId, mod, cardCls) {
       const name = v.pv || v.word || v.phrase || v.modal || '';
       return `<span class="base-chip">${name}</span>`;
     }).join('');
+    /* use cleaned display name for grammar cards */
+    const label = mod === 'grammar' ? displayKey(k) : k;
     return `<button class="base-card ${cardCls}" onclick="openModule('${mod}','${esc(k)}')">
-      <div class="base-verb">${k}</div>
+      <div class="base-verb">${label}</div>
       <div class="base-count">${items.length} items · ${qs.length} questions</div>
       <div class="base-chips">${chips}</div>
     </button>`;
@@ -439,7 +445,8 @@ function openModule(mod, key) {
 
   document.getElementById('view-home').style.display = 'none';
   document.getElementById('view-module').style.display = 'block';
-  document.getElementById('mod-title').textContent = key;
+  /* show cleaned title for grammar, raw key for everything else */
+  document.getElementById('mod-title').textContent = mod === 'grammar' ? displayKey(key) : key;
   document.getElementById('nav-module-name').textContent = meta.label;
 
   const badge = document.getElementById('mod-badge');
@@ -455,6 +462,7 @@ function openModule(mod, key) {
   updateProgress(key);
   setLastVisited(mod, key);
 
+  /* BUG B FIX: auto-load cached AI questions */
   if (currentUser) loadCachedAIQuestions(mod, key);
 }
 
@@ -531,7 +539,6 @@ function buildPractice(mod, key) {
   const qs = db?.[key]?.questions || [];
   const sc = scores[key];
 
-  // ── score row + action buttons ──
   let html = `<div class="score-row">
     <span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span>
     <div class="practice-actions">
@@ -541,22 +548,21 @@ function buildPractice(mod, key) {
       <button class="ai-practice-btn" onclick="loadAIPractice('${esc(key)}')">
         <i class="ti ti-sparkles" style="font-size:13px;vertical-align:-1px"></i> AI Practice (5 Qs)
       </button>
-      <button class="pt-launch-btn" onclick="PT.open({ mod: '${esc(mod)}', key: '${esc(key)}', user: currentUser })">
-        <i class="ti ti-device-gamepad-2" style="font-size:13px;vertical-align:-1px"></i> Practice Test
+      <button class="pt-launch-btn" onclick="launchPracticeTest()">
+        <i class="ti ti-device-gamepad-2" style="font-size:13px;vertical-align:-1px"></i> Timed Test
       </button>
     </div>
   </div>`;
 
-  // ── static questions ──
   if (qs.length) {
     qs.forEach((q, idx) => {
       html += mod === 'grammar' ? renderGrammarCard(q, key, idx) : renderFibCard(q, key, mod, false);
     });
   } else {
-    html += `<div class="empty">No static questions yet. Use AI Practice to generate questions, or launch a Practice Test.</div>`;
+    html += `<div class="empty">No static questions yet — use AI Practice or launch a Timed Test.</div>`;
   }
 
-  // ── cached AI questions ──
+  /* append cached AI questions */
   if (aiQuestions[key] && aiQuestions[key].length) {
     aiQuestions[key].forEach(q => { html += renderFibCard(q, key, mod, true); });
   }
@@ -564,6 +570,11 @@ function buildPractice(mod, key) {
   document.getElementById('sec-practice').innerHTML = html;
   reapplyAttempts(key, qs, mod);
   if (aiQuestions[key]) reapplyAttempts(key, aiQuestions[key], mod);
+}
+
+/* called by the Timed Test button — launches PT overlay */
+function launchPracticeTest() {
+  PT.open({ mod: currentMod, key: currentKey, user: currentUser });
 }
 
 function renderFibCard(q, key, mod, isAI) {
@@ -598,7 +609,7 @@ function renderGrammarCard(q, key, idx) {
 }
 
 /* ════════════════════════════════
-   AI PRACTICE (inline, existing flow)
+   AI PRACTICE (inline)
 ════════════════════════════════ */
 async function loadAIPractice(key) {
   const mod   = currentMod;
@@ -612,13 +623,10 @@ async function loadAIPractice(key) {
   }
 
   let promptText;
-  if (mod === 'phrasal') {
-    promptText = PROMPTS.phrasal(key, (entry.verbs || []).map(v => v.pv));
-  } else if (mod === 'preposition') {
-    promptText = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
-  } else if (mod === 'idiom') {
-    promptText = PROMPTS.idiom(key, entry.idioms || []);
-  } else if (mod === 'grammar') {
+  if (mod === 'phrasal')      promptText = PROMPTS.phrasal(key, (entry.verbs  || []).map(v => v.pv));
+  else if (mod === 'preposition') promptText = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
+  else if (mod === 'idiom')   promptText = PROMPTS.idiom(key, entry.idioms || []);
+  else if (mod === 'grammar') {
     const wordList = (entry.words || []).map(v => v.word).join(', ');
     promptText = PROMPTS.grammar ? PROMPTS.grammar(key, wordList) : `Generate 5 SSC-level fill-in-the-blank questions testing: ${wordList}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   } else if (mod === 'modal') {
