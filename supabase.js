@@ -67,9 +67,17 @@ async function sbSaveAnswer({ userId, module, itemKey, questionId, chosen, corre
 
 async function sbGetProgress(userId) {
   const { data } = await SB.from('progress')
-    .select('module, item_key, question_id, correct, source')
-    .eq('user_id', userId);
-  return data || [];
+    .select('module, item_key, question_id, correct, source, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (!data) return [];
+  /* Deduplicate: keep latest per (module, item_key, question_id) */
+  const seen = new Map();
+  data.forEach(r => {
+    const k = r.module + '|' + r.item_key + '|' + r.question_id;
+    seen.set(k, r); // later rows overwrite earlier ones (ascending order = last wins)
+  });
+  return Array.from(seen.values());
 }
 
 async function sbGetModuleProgress(userId, module) {
