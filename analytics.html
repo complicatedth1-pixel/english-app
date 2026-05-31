@@ -485,23 +485,30 @@ function buildAllQuestionsMap() {
    SUMMARY
 ══════════════════════════════════════════ */
 function renderSummary() {
-  const total   = allProgress.length;
-  const correct = allProgress.filter(r => r.correct).length;
+  /* Deduplicate: keep latest attempt per (module, item_key, question_id) */
+  const seen = new Map();
+  allProgress.forEach(r => {
+    const k = r.module + '|' + r.item_key + '|' + r.question_id;
+    if (!seen.has(k) || r.created_at > seen.get(k).created_at) seen.set(k, r);
+  });
+  const deduped = Array.from(seen.values());
+
+  const total   = deduped.length;
+  const correct = deduped.filter(r => r.correct).length;
   const wrong   = total - correct;
   const pct     = total ? Math.round((correct / total) * 100) : 0;
 
   /* Count total questions in all DBs */
   let totalQs = 0;
   for (const qs of Object.values(allQuestions)) totalQs += qs.length;
-  const attempted = new Set(allProgress.map(r => r.module + '|' + r.item_key + '|' + r.question_id)).size;
-  const unattempted = Math.max(0, totalQs - attempted);
+  const unattempted = Math.max(0, totalQs - total);
 
-  document.getElementById('s-total').textContent    = total.toLocaleString();
-  document.getElementById('s-correct').textContent  = correct.toLocaleString();
-  document.getElementById('s-pct').textContent      = pct + '% accuracy';
-  document.getElementById('s-wrong').textContent    = wrong.toLocaleString();
+  document.getElementById('s-total').textContent         = total.toLocaleString();
+  document.getElementById('s-correct').textContent       = correct.toLocaleString();
+  document.getElementById('s-pct').textContent           = pct + '% accuracy';
+  document.getElementById('s-wrong').textContent         = wrong.toLocaleString();
   document.getElementById('s-unattempted-stat').textContent = unattempted.toLocaleString() + ' unattempted';
-  document.getElementById('s-weak').textContent     = countWeakItems(allProgress);
+  document.getElementById('s-weak').textContent          = countWeakItems(deduped);
 }
 
 function countWeakItems(rows) {
@@ -609,9 +616,15 @@ function renderModuleGrid(filterMod) {
 
   grid.innerHTML = mods.map(mod => {
     const info  = MOD_INFO[mod];
-    const rows  = allProgress.filter(r => r.module === mod);
-    const total = rows.length;
-    const correct = rows.filter(r => r.correct).length;
+const rawRows = allProgress.filter(r => r.module === mod);
+const seenM   = new Map();
+rawRows.forEach(r => {
+  const k = r.item_key + '|' + r.question_id;
+  if (!seenM.has(k) || r.created_at > seenM.get(k).created_at) seenM.set(k, r);
+});
+const rows    = Array.from(seenM.values());
+const total   = rows.length;
+const correct = rows.filter(r => r.correct).length;
     const wrong   = total - correct;
     const pct   = total ? Math.round((correct / total) * 100) : 0;
 
@@ -679,9 +692,15 @@ function renderSubtopicList(mod) {
   const color  = modColor(mod);
 
   const items = Object.keys(db).map(key => {
-    const keyRows  = rows.filter(r => r.item_key === key);
-    const total    = keyRows.length;
-    const correct  = keyRows.filter(r => r.correct).length;
+const rawKey  = rows.filter(r => r.item_key === key);
+const seenK   = new Map();
+rawKey.forEach(r => {
+  if (!seenK.has(r.question_id) || r.created_at > seenK.get(r.question_id).created_at)
+    seenK.set(r.question_id, r);
+});
+const keyRows = Array.from(seenK.values());
+const total   = keyRows.length;
+const correct = keyRows.filter(r => r.correct).length;
     const pct      = total ? Math.round((correct / total) * 100) : -1;
     const totalQs  = allQuestions[mod+'|'+key]?.length || 0;
     const attempted = new Set(keyRows.map(r => r.question_id)).size;
