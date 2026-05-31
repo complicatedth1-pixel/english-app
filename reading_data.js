@@ -112,13 +112,18 @@ function rdComputeVars(sessions) {
 /* ── ADMIN: ALL USERS ── */
 // AFTER — includes all signed-up users
 async function rdGetAllUsers() {
-  const { data } = await SB.from('profiles')
-    .select('id, name, avatar_url, created_at, reading_user_state(current_day, current_week, updated_at)');
-  if (!data) return [];
+  const [{ data: profiles }, { data: states }] = await Promise.all([
+    SB.from('profiles').select('id, name, avatar_url, created_at'),
+    SB.from('reading_user_state').select('user_id, current_day, current_week, updated_at')
+  ]);
 
-  // Normalize shape to match what reading_admin.html expects
-  return data.map(p => {
-    const state = p.reading_user_state?.[0] || {};
+  if (!profiles) return [];
+
+  const stateMap = {};
+  (states || []).forEach(s => { stateMap[s.user_id] = s; });
+
+  return profiles.map(p => {
+    const state = stateMap[p.id] || {};
     return {
       user_id:      p.id,
       current_day:  state.current_day  || 1,
