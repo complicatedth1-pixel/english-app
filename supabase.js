@@ -25,6 +25,7 @@ async function sbSignOut() {
 
 async function sbGetUser() {
   const { data: { user } } = await SB.auth.getUser();
+  if (user) await sbUpsertProfile(user);
   return user;
 }
 
