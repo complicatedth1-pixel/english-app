@@ -19,6 +19,7 @@
 <script src="mod_practice_test.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 :root {
   --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
   --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
@@ -55,6 +56,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   padding: 4px 0; transition: color 0.12s;
 }
 .nav-back:hover { color: var(--text1); }
+.nav-link {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 13px; color: var(--text2); text-decoration: none;
+  padding: 5px 8px; border-radius: var(--radius-sm); transition: all 0.12s;
+}
+.nav-link:hover { background: var(--bg2); color: var(--text1); }
 .nav-model-pill {
   font-size: 12px; padding: 4px 12px; border-radius: 20px;
   border: 1px solid var(--border); background: var(--bg2);
@@ -81,7 +88,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .base-count { font-size: 11.5px; color: var(--text3); }
 .base-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .base-chip { font-size: 11px; padding: 2px 7px; border-radius: 20px; background: var(--bg2); color: var(--text2); }
-
 .base-card.pv-card  { border-top-color: var(--accent); }
 .base-card.pv-card  .base-verb { color: var(--accent); }
 .base-card.pv-card  .base-chip { background: var(--accent-bg); color: var(--accent); }
@@ -122,7 +128,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .tab-btn.active.t-id  { border-bottom-color: var(--idiom); }
 .tab-btn.active.t-gr  { border-bottom-color: var(--grammar); }
 .tab-btn.active.t-mo  { border-bottom-color: var(--modal-c); }
-
 .sec { display: none; } .sec.active { display: block; }
 
 /* ── PROGRESS BAR ── */
@@ -172,37 +177,35 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   transition: all 0.15s; display: flex; align-items: center; gap: 5px;
 }
 .pt-launch-btn:hover { background: #d6edde; border-color: var(--green); }
-
 .fib-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+/* Answered state: subtle background shift */
+.fib-card.answered { background: var(--bg); }
 .q-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; }
 .q-tag.static-pv  { background: var(--accent-bg); color: var(--accent); }
 .q-tag.static-pre { background: var(--blue-bg); color: var(--blue); }
 .q-tag.static-id  { background: var(--idiom-bg); color: var(--idiom); }
 .q-tag.static-gr  { background: var(--grammar-bg); color: var(--grammar); }
 .q-tag.static-mo  { background: var(--modal-bg); color: var(--modal-c); }
-.q-tag.ai-tag { background: #FFF8E6; color: #9A6700; border: 1px solid #F0D898; }
+.q-tag.ai-tag     { background: #FFF8E6; color: #9A6700; border: 1px solid #F0D898; }
 .q-type-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; background: var(--grammar-bg); color: var(--grammar); border: 1px solid var(--grammar-border); margin-left: 6px; }
-
 .fib-sentence { font-size: 15px; color: var(--text1); line-height: 1.75; margin-bottom: 1rem; font-weight: 500; }
 .blank { display: inline-block; min-width: 110px; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 500; text-align: center; padding: 0 4px; }
 .blank.pre { border-bottom-color: var(--blue); color: var(--blue); }
 .blank.id  { border-bottom-color: var(--idiom); color: var(--idiom); }
 .blank.gr  { border-bottom-color: var(--grammar); color: var(--grammar); }
 .blank.mo  { border-bottom-color: var(--modal-c); color: var(--modal-c); }
-
 .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .opt-tile { text-align: left; padding: 10px 13px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: all 0.15s; width: 100%; font-family: 'DM Sans', sans-serif; }
 .opt-tile:hover:not(:disabled) { background: var(--bg2); border-color: var(--border2); }
 .opt-tile-verb { font-size: 13.5px; font-weight: 500; color: var(--text1); display: block; margin-bottom: 2px; }
 .opt-tile-hint { font-size: 12px; color: var(--text3); display: block; line-height: 1.4; }
-.opt-tile.sel-correct { background: var(--green-bg); border-color: var(--green-border); }
-.opt-tile.sel-correct .opt-tile-verb, .opt-tile.sel-correct .opt-tile-hint { color: var(--green); }
-.opt-tile.sel-wrong   { background: var(--red-bg); border-color: var(--red-border); }
-.opt-tile.sel-wrong   .opt-tile-verb, .opt-tile.sel-wrong .opt-tile-hint { color: var(--red); }
+.opt-tile.sel-correct  { background: var(--green-bg); border-color: var(--green-border); }
+.opt-tile.sel-correct  .opt-tile-verb, .opt-tile.sel-correct  .opt-tile-hint { color: var(--green); }
+.opt-tile.sel-wrong    { background: var(--red-bg); border-color: var(--red-border); }
+.opt-tile.sel-wrong    .opt-tile-verb, .opt-tile.sel-wrong    .opt-tile-hint { color: var(--red); }
 .opt-tile.show-correct { background: var(--green-bg); border-color: var(--green-border); }
 .opt-tile.show-correct .opt-tile-verb, .opt-tile.show-correct .opt-tile-hint { color: var(--green); }
 .opt-tile:disabled { cursor: default; }
-
 .fib-feedback { font-size: 13px; color: var(--text2); line-height: 1.7; padding: 10px 13px; background: var(--bg2); border-radius: var(--radius-sm); display: none; margin-top: 4px; }
 .fib-feedback.show { display: block; }
 
@@ -221,17 +224,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .rv-ok { font-weight: 500; color: var(--green); }
 .rv-div { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
 .rv-fb { font-size: 13px; color: var(--text2); line-height: 1.7; padding: 10px 12px; background: var(--bg2); border-radius: var(--radius-sm); margin-bottom: 8px; }
-
 .ai-loading { display: flex; flex-direction: column; align-items: center; padding: 3rem 1rem; gap: 12px; }
 .ai-spinner { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .ai-loading-text { font-size: 13.5px; color: var(--text3); }
-
 .empty { font-size: 13.5px; color: var(--text3); text-align: center; padding: 2.5rem 0; }
 .page-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
 .page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
 .page-loading-brand span { color: var(--accent); }
 .spinner-lg { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
 @media (max-width: 520px) {
   .opts-grid { grid-template-columns: 1fr; }
   .base-grid { grid-template-columns: repeat(2, 1fr); }
@@ -253,11 +255,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <button class="nav-model-pill" id="nav-model-pill" onclick="cycleModel()">◆ Gemini</button>
   <button class="nav-back" onclick="goHome()"><i class="ti ti-home" style="font-size:15px"></i> Home</button>
   <a href="analytics.html" class="nav-link"><i class="ti ti-chart-bar" style="font-size:15px"></i> Analytics</a>
-<a href="tests.html" class="nav-link"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
+  <a href="tests.html" class="nav-link"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
 </nav>
 
 <div class="app-wrap">
-
   <div id="view-home">
     <div class="home-section" id="home-pv-section">
       <div class="section-label">Phrasal Verbs</div>
@@ -298,48 +299,43 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div class="sec"        id="sec-practice"></div>
     <div class="sec"        id="sec-review"></div>
   </div>
-
 </div>
 
 <script>
 let currentUser  = null;
 let currentMod   = null;
 let currentKey   = null;
-let scores       = {};
-let attempts     = {};
+let scores       = {};   // { key: { c, a } }         — in-memory session score display
+let attempts     = {};   // { key: { qid: { chosen, correct } } } — loaded from Supabase + in-session
 let aiStatus     = {};
-let aiQuestions  = {};
-let modProgress  = {};
+let aiQuestions  = {};   // { key: [q, ...] } — loaded from Supabase cache
+let modProgress  = {};   // full progress rows for current module
 let tabClass     = 't-pv';
 
 const MOD_META = {
-  phrasal:     { label:'Phrasal Verbs', badge:'PV',   badgeCls:'pv',  tabCls:'t-pv',  pfCls:'pf-pv',  blankCls:'',    tagCls:'static-pv'  },
-  preposition: { label:'Prepositions',  badge:'PREP',  badgeCls:'pre', tabCls:'t-pre', pfCls:'pf-pre', blankCls:'pre', tagCls:'static-pre' },
-  idiom:       { label:'Idioms',        badge:'IDIOM', badgeCls:'id',  tabCls:'t-id',  pfCls:'pf-id',  blankCls:'id',  tagCls:'static-id'  },
-  grammar:     { label:'Grammar',       badge:'GRAM',  badgeCls:'gr',  tabCls:'t-gr',  pfCls:'pf-gr',  blankCls:'gr',  tagCls:'static-gr'  },
-  modal:       { label:'Modals',        badge:'MOD',   badgeCls:'mo',  tabCls:'t-mo',  pfCls:'pf-mo',  blankCls:'mo',  tagCls:'static-mo'  },
+  phrasal:     { label:'Phrasal Verbs', badge:'PV',   badgeCls:'pv',  tabCls:'t-pv',  pfCls:'pf-pv',  blankCls:'',      tagCls:'static-pv'  },
+  preposition: { label:'Prepositions',  badge:'PREP', badgeCls:'pre', tabCls:'t-pre', pfCls:'pf-pre', blankCls:'pre',   tagCls:'static-pre' },
+  idiom:       { label:'Idioms',        badge:'IDIOM',badgeCls:'id',  tabCls:'t-id',  pfCls:'pf-id',  blankCls:'id',    tagCls:'static-id'  },
+  grammar:     { label:'Grammar',       badge:'GRAM', badgeCls:'gr',  tabCls:'t-gr',  pfCls:'pf-gr',  blankCls:'gr',    tagCls:'static-gr'  },
+  modal:       { label:'Modals',        badge:'MOD',  badgeCls:'mo',  tabCls:'t-mo',  pfCls:'pf-mo',  blankCls:'mo',    tagCls:'static-mo'  },
 };
 
 const MOD_TO_SECTION = {
-  phrasal:     'home-pv-section',
-  preposition: 'home-pre-section',
-  idiom:       'home-id-section',
-  grammar:     'home-gr-section',
-  modal:       'home-mo-section',
+  phrasal:'home-pv-section', preposition:'home-pre-section',
+  idiom:'home-id-section',   grammar:'home-gr-section', modal:'home-mo-section',
 };
 
 function getDB(mod) {
   const map = {
-    phrasal:     typeof DB        !== 'undefined' ? DB        : null,
-    preposition: typeof DB_FP     !== 'undefined' ? DB_FP     : null,
-    idiom:       typeof DB_IDIOMS !== 'undefined' ? DB_IDIOMS : null,
-    grammar:     typeof DB_GRAMMAR!== 'undefined' ? DB_GRAMMAR: null,
-    modal:       typeof DB_MOD    !== 'undefined' ? DB_MOD    : null,
+    phrasal:     typeof DB       !== 'undefined' ? DB       : null,
+    preposition: typeof DB_FP    !== 'undefined' ? DB_FP    : null,
+    idiom:       typeof DB_IDIOMS!== 'undefined' ? DB_IDIOMS: null,
+    grammar:     typeof DB_GRAMMAR!=='undefined' ? DB_GRAMMAR: null,
+    modal:       typeof DB_MOD   !== 'undefined' ? DB_MOD   : null,
   };
   return map[mod] || null;
 }
 
-/* Strips Rule_01_ prefix and replaces underscores with spaces */
 function displayKey(k) {
   return k.replace(/^Rule_\d+_/, '').replace(/_/g, ' ');
 }
@@ -354,21 +350,16 @@ function displayKey(k) {
   updateModelPill();
 
   const params = new URLSearchParams(window.location.search);
-  const mod = params.get('m');
+  const mod    = params.get('m');
 
   if (mod && MOD_META[mod]) {
     currentMod = mod;
-    modProgress = {};
-    const prog = await sbGetModuleProgress(currentUser.id, mod);
-    prog.forEach(p => {
-      if (!modProgress[p.item_key]) modProgress[p.item_key] = { attempts:{}, scores:{c:0,a:0} };
-      modProgress[p.item_key].attempts[p.question_id] = { chosen: p.chosen, correct: p.correct };
-    });
+    /* FIX 1: Load ALL progress for this module and populate attempts{} immediately */
+    await loadModuleProgress(mod);
   }
 
   buildHome();
 
-  /* BUG A FIX: if ?m= param present, hide all other module sections */
   if (mod && MOD_META[mod]) {
     Object.entries(MOD_TO_SECTION).forEach(([m, sectionId]) => {
       document.getElementById(sectionId).style.display = m === mod ? 'block' : 'none';
@@ -379,6 +370,32 @@ function displayKey(k) {
   showHomeView();
   document.getElementById('page-loading').style.display = 'none';
 })();
+
+/* ════════════════════════════════
+   LOAD MODULE PROGRESS FROM SUPABASE
+   Populates attempts{} so questions render locked on reload
+════════════════════════════════ */
+async function loadModuleProgress(mod) {
+  if (!currentUser) return;
+  const prog = await sbGetModuleProgress(currentUser.id, mod);
+  prog.forEach(p => {
+    /* Build attempts map: key → { qid: { chosen, correct } } */
+    if (!attempts[p.item_key]) attempts[p.item_key] = {};
+    /* Only record first attempt per question (one-time lock) */
+    if (!attempts[p.item_key][p.question_id]) {
+      attempts[p.item_key][p.question_id] = { chosen: p.chosen, correct: p.correct };
+    }
+
+    /* Also rebuild scores display counts */
+    if (!scores[p.item_key]) scores[p.item_key] = { c: 0, a: 0 };
+    scores[p.item_key].a++;
+    if (p.correct) scores[p.item_key].c++;
+
+    /* Build modProgress for progress bar */
+    if (!modProgress[p.item_key]) modProgress[p.item_key] = {};
+    modProgress[p.item_key][p.question_id] = p.correct;
+  });
+}
 
 /* ════════════════════════════════
    HOME
@@ -417,7 +434,6 @@ function buildGrid(gridId, mod, cardCls) {
       const name = v.pv || v.word || v.phrase || v.modal || '';
       return `<span class="base-chip">${name}</span>`;
     }).join('');
-    /* use cleaned display name for grammar cards */
     const label = mod === 'grammar' ? displayKey(k) : k;
     return `<button class="base-card ${cardCls}" onclick="openModule('${mod}','${esc(k)}')">
       <div class="base-verb">${label}</div>
@@ -431,45 +447,62 @@ function buildGrid(gridId, mod, cardCls) {
    NAVIGATION
 ════════════════════════════════ */
 function showHomeView() {
-  document.getElementById('view-home').style.display = 'block';
+  document.getElementById('view-home').style.display   = 'block';
   document.getElementById('view-module').style.display = 'none';
   document.getElementById('nav-module-name').textContent = currentMod ? MOD_META[currentMod]?.label : 'All Modules';
 }
 
-function openModule(mod, key) {
-  currentMod  = mod;
-  currentKey  = key;
-  if (!scores[key])   scores[key]   = { c:0, a:0 };
+async function openModule(mod, key) {
+  currentMod = mod;
+  currentKey = key;
+
+  /* Ensure scores bucket exists */
+  if (!scores[key])   scores[key]   = { c: 0, a: 0 };
   if (!attempts[key]) attempts[key] = {};
+
+  /* FIX 2: Load progress for this specific module+key if not already loaded */
+  if (!_progressLoadedFor[mod + '|' + key]) {
+    await loadModuleProgress(mod);
+    _progressLoadedFor[mod + '|' + key] = true;
+  }
+
+  /* FIX 3: Load cached AI questions from Supabase before rendering */
+  if (currentUser) {
+    const cached = await sbGetCachedQuestions(currentUser.id, mod, key, getActiveModel());
+    if (cached && cached.length) {
+      aiQuestions[key] = cached;
+      aiStatus[key]    = 'ready';
+    }
+  }
 
   const meta = MOD_META[mod];
   tabClass   = meta.tabCls;
 
-  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-home').style.display   = 'none';
   document.getElementById('view-module').style.display = 'block';
-  /* show cleaned title for grammar, raw key for everything else */
-  document.getElementById('mod-title').textContent = mod === 'grammar' ? displayKey(key) : key;
+  document.getElementById('mod-title').textContent     = mod === 'grammar' ? displayKey(key) : key;
   document.getElementById('nav-module-name').textContent = meta.label;
 
   const badge = document.getElementById('mod-badge');
-  badge.textContent = meta.badge;
-  badge.className   = `mod-badge ${meta.badgeCls}`;
+  badge.textContent  = meta.badge;
+  badge.className    = `mod-badge ${meta.badgeCls}`;
 
   document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
   document.getElementById('tab-learn').className = `tab-btn active ${tabClass}`;
+
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-learn').classList.add('active');
 
   buildLearn(mod, key);
   updateProgress(key);
   setLastVisited(mod, key);
-
-  /* BUG B FIX: auto-load cached AI questions */
-  if (currentUser) loadCachedAIQuestions(mod, key);
 }
 
+/* Track which mod|key combos have had their progress loaded */
+const _progressLoadedFor = {};
+
 function goHome() {
-  document.getElementById('view-home').style.display = 'block';
+  document.getElementById('view-home').style.display   = 'block';
   document.getElementById('view-module').style.display = 'none';
 }
 
@@ -480,19 +513,6 @@ function switchTab(tab, btn) {
   document.getElementById('sec-' + tab).classList.add('active');
   if (tab === 'practice') buildPractice(currentMod, currentKey);
   if (tab === 'review')   buildReview(currentMod, currentKey);
-}
-
-/* ════════════════════════════════
-   LOAD CACHED AI QUESTIONS
-════════════════════════════════ */
-async function loadCachedAIQuestions(mod, key) {
-  const cached = await sbGetCachedQuestions(currentUser.id, mod, key, getActiveModel());
-  if (!cached || !cached.length) return;
-  aiQuestions[key] = cached;
-  aiStatus[key]    = 'ready';
-  if (document.getElementById('sec-practice').classList.contains('active')) {
-    buildPractice(mod, key);
-  }
 }
 
 /* ════════════════════════════════
@@ -539,7 +559,7 @@ function buildLearn(mod, key) {
 function buildPractice(mod, key) {
   const db = getDB(mod);
   const qs = db?.[key]?.questions || [];
-  const sc = scores[key];
+  const sc = scores[key] || { c: 0, a: 0 };
 
   let html = `<div class="score-row">
     <span class="score-pill">Score: <span id="sp-${key}">${sc.c} / ${sc.a}</span></span>
@@ -564,17 +584,19 @@ function buildPractice(mod, key) {
     html += `<div class="empty">No static questions yet — use AI Practice or launch a Timed Test.</div>`;
   }
 
-  /* append cached AI questions */
+  /* FIX 4: Always append cached AI questions — they are permanent once fetched */
   if (aiQuestions[key] && aiQuestions[key].length) {
+    html += `<div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:1.5rem 0 0.75rem">AI Practice Questions</div>`;
     aiQuestions[key].forEach(q => { html += renderFibCard(q, key, mod, true); });
   }
 
   document.getElementById('sec-practice').innerHTML = html;
+
+  /* FIX 5: Reapply all known attempts so previously answered questions are locked */
   reapplyAttempts(key, qs, mod);
   if (aiQuestions[key]) reapplyAttempts(key, aiQuestions[key], mod);
 }
 
-/* called by the Timed Test button — launches PT overlay */
 function launchPracticeTest() {
   PT.open({ mod: currentMod, key: currentKey, user: currentUser });
 }
@@ -596,8 +618,8 @@ function renderFibCard(q, key, mod, isAI) {
 }
 
 function renderGrammarCard(q, key, idx) {
-  const qid = q.id ?? `gr_${key}_${idx}`;
-  q.id = qid;
+  const qid     = q.id ?? `gr_${key}_${idx}`;
+  q.id          = qid;
   const letters = ['A','B','C','D'];
   return `<div class="fib-card" id="fc-${qid}">
     <span class="q-tag static-gr">Grammar</span>
@@ -619,21 +641,31 @@ async function loadAIPractice(key) {
   const entry = db?.[key];
   if (!entry) return;
 
+  /* FIX 6: If AI questions already loaded (from cache or previous generation), just scroll to them */
   if (aiStatus[key] === 'ready' && aiQuestions[key]?.length) {
-    alert('AI questions for this section are already loaded below.');
+    const firstAI = document.getElementById('fc-' + aiQuestions[key][0]?.id);
+    if (firstAI) firstAI.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else buildPractice(mod, key); /* re-render to show them */
     return;
   }
 
   let promptText;
-  if (mod === 'phrasal')      promptText = PROMPTS.phrasal(key, (entry.verbs  || []).map(v => v.pv));
-  else if (mod === 'preposition') promptText = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
-  else if (mod === 'idiom')   promptText = PROMPTS.idiom(key, entry.idioms || []);
+  if (mod === 'phrasal')
+    promptText = PROMPTS.phrasal(key, (entry.verbs || []).map(v => v.pv));
+  else if (mod === 'preposition')
+    promptText = PROMPTS.preposition(key, (entry.words || []).map(v => v.word));
+  else if (mod === 'idiom')
+    promptText = PROMPTS.idiom(key, entry.idioms || []);
   else if (mod === 'grammar') {
     const wordList = (entry.words || []).map(v => v.word).join(', ');
-    promptText = PROMPTS.grammar ? PROMPTS.grammar(key, wordList) : `Generate 5 SSC-level fill-in-the-blank questions testing: ${wordList}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+    promptText = PROMPTS.grammar
+      ? PROMPTS.grammar(key, wordList)
+      : `Generate 5 SSC-level fill-in-the-blank questions testing: ${wordList}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   } else if (mod === 'modal') {
     const uses = (entry.items || []).map(i => i.use || i.title || '');
-    promptText = PROMPTS.modal ? PROMPTS.modal(key, uses) : `Generate 5 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
+    promptText = PROMPTS.modal
+      ? PROMPTS.modal(key, uses)
+      : `Generate 5 SSC-level questions for modals: ${key}. Return JSON array: [{id,sentence,correct,options:[{verb,hint}],feedback}]`;
   }
 
   const loaderId = 'ai-loader-' + Date.now();
@@ -641,19 +673,30 @@ async function loadAIPractice(key) {
     `<div id="${loaderId}" class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">Generating 5 AI questions…</div></div>`;
 
   await generateAndCache({
-    userId: currentUser?.id,
-    module: mod,
-    itemKey: key,
+    userId:     currentUser?.id,
+    module:     mod,
+    itemKey:    key,
     promptText,
-    onLoad: () => {},
-    onReady: (qs) => {
+    onLoad:     () => {},
+    onReady:    (qs) => {
       const loader = document.getElementById(loaderId);
       if (loader) loader.remove();
+
       aiQuestions[key] = qs;
       aiStatus[key]    = 'ready';
+
+      /* Append AI section header + cards */
+      const section = document.getElementById('sec-practice');
+      const hdr     = document.createElement('div');
+      hdr.style.cssText = 'font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:1.5rem 0 0.75rem';
+      hdr.textContent   = 'AI Practice Questions';
+      section.appendChild(hdr);
+
       let html = '';
       qs.forEach(q => { html += renderFibCard(q, key, mod, true); });
-      document.getElementById('sec-practice').innerHTML += html;
+      section.insertAdjacentHTML('beforeend', html);
+
+      /* Lock any AI questions already answered in a previous session */
       reapplyAttempts(key, qs, mod);
     },
     onError: () => {
@@ -671,71 +714,112 @@ async function loadAIPractice(key) {
 ════════════════════════════════ */
 function fibAns(btn, key, mod, qid, chosen) {
   const att = attempts[key] || (attempts[key] = {});
+  /* FIX 7: Strict one-time lock — if already attempted, do nothing */
   if (att[qid]) return;
+
   const allQs = [...(getDB(mod)?.[key]?.questions || []), ...(aiQuestions[key] || [])];
   const q     = allQs.find(x => x.id === qid);
   if (!q) return;
+
   const isCorrect = chosen === q.correct;
-  _recordAnswer(key, mod, qid, chosen, isCorrect, 'static');
+
+  /* FIX 8: Pass correct source — 'ai' if the question is an AI question */
+  const isAIQ  = !!(aiQuestions[key] || []).find(x => x.id === qid);
+  _recordAnswer(key, mod, qid, chosen, isCorrect, isAIQ ? 'ai' : 'static');
+
   btn.closest('.opts-grid').querySelectorAll('.opt-tile').forEach(t => {
     t.disabled = true;
     const v = t.querySelector('.opt-tile-verb').textContent.trim();
-    if (v === chosen && isCorrect)  t.classList.add('sel-correct');
-    else if (v === chosen)          t.classList.add('sel-wrong');
-    else if (v === q.correct)       t.classList.add('show-correct');
+    if (v === chosen && isCorrect) t.classList.add('sel-correct');
+    else if (v === chosen)         t.classList.add('sel-wrong');
+    else if (v === q.correct)      t.classList.add('show-correct');
   });
+
   const bl = document.getElementById('bl-' + qid);
   if (bl) { bl.textContent = q.correct; if (!isCorrect) bl.style.color = 'var(--green)'; }
+
   const fb = document.getElementById('fb-' + qid);
   if (fb) fb.classList.add('show');
+
+  /* Mark card as answered */
+  const fc = document.getElementById('fc-' + qid);
+  if (fc) fc.classList.add('answered');
+
   const sp = document.getElementById('sp-' + key);
   if (sp) sp.textContent = scores[key].c + ' / ' + scores[key].a;
+
   updateProgress(key);
 }
 
 function grammarAns(btn, key, qid, chosenIdx, correctIdx) {
   const att = attempts[key] || (attempts[key] = {});
   if (att[qid]) return;
+
   const isCorrect = chosenIdx === correctIdx;
   _recordAnswer(key, currentMod, qid, String(chosenIdx), isCorrect, 'static');
+
   btn.closest('.opts-grid').querySelectorAll('.opt-tile').forEach((t, i) => {
     t.disabled = true;
     if (i === chosenIdx && isCorrect)  t.classList.add('sel-correct');
     else if (i === chosenIdx)          t.classList.add('sel-wrong');
     else if (i === correctIdx)         t.classList.add('show-correct');
   });
+
   const fb = document.getElementById('fb-' + qid);
   if (fb) fb.classList.add('show');
+
+  const fc = document.getElementById('fc-' + qid);
+  if (fc) fc.classList.add('answered');
+
   const sp = document.getElementById('sp-' + key);
   if (sp) sp.textContent = scores[key].c + ' / ' + scores[key].a;
+
   updateProgress(key);
 }
 
 function _recordAnswer(key, mod, qid, chosen, isCorrect, source) {
+  /* Record in-memory */
+  if (!attempts[key]) attempts[key] = {};
   attempts[key][qid] = { chosen, correct: isCorrect };
-  const sc = scores[key] || (scores[key] = {c:0, a:0});
-  sc.a++; if (isCorrect) sc.c++;
+
+  const sc = scores[key] || (scores[key] = { c:0, a:0 });
+  sc.a++;
+  if (isCorrect) sc.c++;
+
+  /* Persist to Supabase */
   if (currentUser) {
-    const src = (aiQuestions[key] || []).find(x => x.id === qid) ? 'ai' : source;
-    sbSaveAnswer({ userId: currentUser.id, module: mod, itemKey: key, questionId: qid, chosen, correct: isCorrect, source: src });
-    sbUpsertStreak(currentUser.id);
+    sbSaveAnswer({
+      userId:     currentUser.id,
+      module:     mod,
+      itemKey:    key,
+      questionId: qid,
+      chosen,
+      correct:    isCorrect,
+      source
+    }).catch(console.error);
   }
 }
 
+/* FIX 9: reapplyAttempts reads from attempts{} (which is now populated from Supabase on load)
+   so previously answered questions are rendered locked immediately */
 function reapplyAttempts(key, qs, mod) {
   const att = attempts[key] || {};
   qs.forEach(q => {
-    const a = att[q.id];
+    const a  = att[q.id];
     if (!a) return;
-    const fc = document.getElementById('fc-' + q.id); if (!fc) return;
+    const fc = document.getElementById('fc-' + q.id);
+    if (!fc) return;
+
+    fc.classList.add('answered');
+
     if (mod === 'grammar' && q.opts) {
       const chosenIdx  = parseInt(a.chosen);
       const correctIdx = q.ans;
       fc.querySelectorAll('.opt-tile').forEach((t, i) => {
         t.disabled = true;
-        if (i === chosenIdx && a.correct)  t.classList.add('sel-correct');
-        else if (i === chosenIdx)          t.classList.add('sel-wrong');
-        else if (i === correctIdx)         t.classList.add('show-correct');
+        if (i === chosenIdx && a.correct)   t.classList.add('sel-correct');
+        else if (i === chosenIdx)            t.classList.add('sel-wrong');
+        else if (i === correctIdx)           t.classList.add('show-correct');
       });
     } else {
       fc.querySelectorAll('.opt-tile').forEach(t => {
@@ -748,16 +832,20 @@ function reapplyAttempts(key, qs, mod) {
       const bl = document.getElementById('bl-' + q.id);
       if (bl) { bl.textContent = q.correct; if (!a.correct) bl.style.color = 'var(--green)'; }
     }
+
     const fb = document.getElementById('fb-' + q.id);
     if (fb) fb.classList.add('show');
   });
 }
 
 function resetQuiz(key) {
-  scores[key]      = { c:0, a:0 };
-  attempts[key]    = {};
+  /* NOTE: Reset only clears in-memory state and AI cache, does NOT delete Supabase rows.
+     Progress in Supabase is permanent (by design). This just lets you re-see the UI fresh. */
+  scores[key]     = { c:0, a:0 };
+  attempts[key]   = {};
   aiQuestions[key] = null;
-  aiStatus[key]    = null;
+  aiStatus[key]   = null;
+  _progressLoadedFor[currentMod + '|' + key] = false;
   buildPractice(currentMod, key);
 }
 
@@ -767,30 +855,37 @@ function resetQuiz(key) {
 function buildReview(mod, key) {
   const att = attempts[key] || {};
   const db  = getDB(mod);
+
   if (Object.keys(att).length === 0) {
     document.getElementById('sec-review').innerHTML = '<div class="empty">Practice some questions first — your review will appear here.</div>';
     return;
   }
+
   const staticQs = db?.[key]?.questions || [];
   if (mod === 'grammar') {
     staticQs.forEach((q, i) => { q.id = q.id ?? `gr_${key}_${i}`; });
   }
   const allQs = [...staticQs, ...(aiQuestions[key] || [])];
+
   if (!allQs.length) {
     document.getElementById('sec-review').innerHTML = '<div class="empty">No questions loaded yet.</div>';
     return;
   }
+
   const letters = ['A','B','C','D'];
   let html = '';
   allQs.forEach(q => {
     const a = att[q.id];
     let badge, ansHtml;
+
     if (!a) {
       badge   = '<span class="rv-badge u">Not attempted</span>';
       ansHtml = '<span class="rv-lbl">Answer:</span> <span style="color:var(--text3);font-size:13px">—</span>';
     } else if (a.correct) {
       badge   = '<span class="rv-badge c">✓ Correct</span>';
-      const displayAns = (mod === 'grammar' && q.opts) ? letters[parseInt(a.chosen)] + '. ' + q.opts[parseInt(a.chosen)] : a.chosen;
+      const displayAns = (mod === 'grammar' && q.opts)
+        ? letters[parseInt(a.chosen)] + '. ' + q.opts[parseInt(a.chosen)]
+        : a.chosen;
       ansHtml = `<span class="rv-lbl">Answer:</span> <span class="rv-ans">${displayAns}</span>`;
     } else {
       badge = '<span class="rv-badge w">✗ Incorrect</span>';
@@ -802,15 +897,18 @@ function buildReview(mod, key) {
         ansHtml = `<span class="rv-lbl">You chose:</span> <span class="rv-ans x">${a.chosen}</span><div class="rv-div"></div><span class="rv-lbl">Correct:</span> <span class="rv-ok">${q.correct}</span>`;
       }
     }
+
     const sentDisplay = (mod === 'grammar' && q.q)
       ? q.q
       : (a ? q.sentence.replace('_____', `<strong style="color:var(--text1)">${q.correct}</strong>`) : q.sentence);
+
     html += `<div class="rv-card">
       <div class="rv-head"><div class="rv-sent">${sentDisplay}</div>${badge}</div>
       <div class="rv-ans-row">${ansHtml}</div>
       ${a ? `<div class="rv-fb">${q.exp || q.feedback || ''}</div>` : ''}
     </div>`;
   });
+
   document.getElementById('sec-review').innerHTML = html;
 }
 
@@ -833,10 +931,11 @@ function updateProgress(key) {
    MODEL CYCLING
 ════════════════════════════════ */
 function updateModelPill() {
-  const m = getActiveModel();
+  const m      = getActiveModel();
   const labels = { claude:'◆ Claude', gemini:'✦ Gemini', grok:'⬡ Groq' };
   document.getElementById('nav-model-pill').textContent = labels[m] || '✦ Gemini';
 }
+
 function cycleModel() {
   const order = ['gemini','claude','grok'];
   const cur   = getActiveModel();
@@ -848,7 +947,9 @@ function cycleModel() {
 /* ════════════════════════════════
    UTILS
 ════════════════════════════════ */
-function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function esc(s) {
+  return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
 </script>
 </body>
 </html>
