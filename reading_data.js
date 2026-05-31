@@ -110,9 +110,21 @@ function rdComputeVars(sessions) {
 }
 
 /* ── ADMIN: ALL USERS ── */
+// AFTER — includes all signed-up users
 async function rdGetAllUsers() {
-  const { data } = await SB.from('reading_user_state')
-    .select('*, profiles(name, avatar_url)')
-    .order('updated_at', { ascending: false });
-  return data || [];
+  const { data } = await SB.from('profiles')
+    .select('id, name, avatar_url, created_at, reading_user_state(current_day, current_week, updated_at)');
+  if (!data) return [];
+
+  // Normalize shape to match what reading_admin.html expects
+  return data.map(p => {
+    const state = p.reading_user_state?.[0] || {};
+    return {
+      user_id:      p.id,
+      current_day:  state.current_day  || 1,
+      current_week: state.current_week || 1,
+      updated_at:   state.updated_at   || p.created_at,
+      profiles: { name: p.name, avatar_url: p.avatar_url }
+    };
+  }).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 }
