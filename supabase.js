@@ -52,18 +52,16 @@ async function sbGetProfile(userId) {
 
 /* ── PROGRESS ── */
 async function sbSaveAnswer({ userId, module, itemKey, questionId, chosen, correct, source }) {
-  /* upsert with onConflict so re-saves (e.g. app re-renders) never create duplicate rows.
-     The UNIQUE constraint on (user_id, module, item_key, question_id) must exist in DB — see v2.md SQL. */
   const { error } = await SB.from('progress').upsert({
-    user_id: userId,
+    user_id:     userId,
     module,
-    item_key: itemKey,
+    item_key:    itemKey,
     question_id: questionId,
     chosen,
     correct,
     source
   }, { onConflict: 'user_id,module,item_key,question_id' });
-  if (error) console.error('sbSaveAnswer error:', error.message);
+  if (error) console.error('sbSaveAnswer failed:', error.message, error.details);
   await sbUpsertStreak(userId);
 }
 
@@ -75,15 +73,14 @@ async function sbGetProgress(userId) {
 }
 
 async function sbGetModuleProgress(userId, module) {
-  const { data } = await SB.from('progress')
+  const { data, error } = await SB.from('progress')
     .select('item_key, question_id, chosen, correct, source')
     .eq('user_id', userId)
     .eq('module', module)
-    .order('id', { ascending: true }); /* oldest first so first attempt wins */
-
+    .order('id', { ascending: true });
+  if (error) { console.error('sbGetModuleProgress failed:', error.message); return []; }
   if (!data) return [];
-
-  /* Deduplicate: keep only the first attempt per (item_key, question_id) */
+  /* Deduplicate: keep first attempt per (item_key, question_id) */
   const seen = new Set();
   return data.filter(row => {
     const k = row.item_key + '||' + row.question_id;
@@ -137,14 +134,17 @@ async function sbGetStreak(userId) {
 
 /* ── AI QUESTION CACHE ── */
 async function sbGetCachedQuestions(userId, module, itemKey, model) {
-  const { data } = await SB.from('ai_questions_cache')
-    .select('questions')
+  /* First try the requested model. If not found, try any model —
+     so cached AI questions always show regardless of which model is active. */
+  const { data, error } = await SB.from('ai_questions_cache')
+    .select('questions, model')
     .eq('user_id', userId)
     .eq('module', module)
     .eq('item_key', itemKey)
-    .eq('model', model)
-    .single();
-  return data?.questions || null;
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (error) { console.error('sbGetCachedQuestions failed:', error.message); return null; }
+  return data?.[0]?.questions || null;
 }
 
 async function sbSaveCachedQuestions(userId, module, itemKey, model, questions) {
