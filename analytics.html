@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analytics — VocabMaster</title>
+<title>Analytics — LearnSmart</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="reading_data.js"></script>
 <script src="db_phrasal.js"></script>
 <script src="db_preposition.js"></script>
 <script src="db_idioms.js"></script>
@@ -27,105 +28,139 @@
   --idiom: #6B3FA0; --idiom-bg: #F3EDFC; --idiom-border: #C9AEED;
   --grammar: #B5760A; --grammar-bg: #FDF6E7; --grammar-border: #E8C97A;
   --modal-c: #1A7A6E; --modal-bg: #E8F6F4; --modal-border: #89CECA;
+  --reading-c: #7A3B1E; --reading-bg: #FDF3EE; --reading-border: #E8BBA8;
   --radius: 12px; --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
 }
+
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
 
+/* ── NAV ── */
 .top-nav {
   background: var(--surface); border-bottom: 1px solid var(--border);
   padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
-  height: 54px; position: sticky; top: 0; z-index: 100;
+  height: 54px; position: sticky; top: 0; z-index: 200;
 }
-.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; }
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; text-decoration: none; }
 .nav-brand span { color: var(--accent); }
 .nav-spacer { flex: 1; }
-.nav-link {
-  font-size: 13px; color: var(--text2); text-decoration: none;
-  padding: 5px 10px; border-radius: var(--radius-sm); transition: all 0.12s;
-  display: flex; align-items: center; gap: 5px;
-}
+.nav-link { font-size: 13px; color: var(--text2); text-decoration: none; padding: 5px 10px; border-radius: var(--radius-sm); transition: all 0.12s; display: flex; align-items: center; gap: 5px; }
 .nav-link:hover { background: var(--bg2); color: var(--text1); }
 .nav-link.active { background: var(--bg2); color: var(--text1); font-weight: 500; }
 
-.wrap { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.25rem; }
+/* ── USER SWITCHER (admin only) ── */
+.user-switcher {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 14px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--text1);
+  transition: all 0.15s;
+}
+.user-switcher:hover { background: var(--bg3); }
+.user-switcher-av { width: 22px; height: 22px; border-radius: 50%; background: var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; overflow: hidden; flex-shrink: 0; }
+.user-switcher-av img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── ADMIN USER PICKER MODAL ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 500; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: var(--surface); border-radius: var(--radius); width: 100%; max-width: 480px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.15); margin: 1rem; }
+.modal-head { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 18px; padding: 2px; }
+.modal-close:hover { color: var(--text1); }
+.modal-body { overflow-y: auto; padding: 1rem; flex: 1; }
+.user-pick-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.12s; }
+.user-pick-row:hover { background: var(--bg2); }
+.user-pick-row.selected { background: var(--accent-bg); }
+.user-pick-av { width: 32px; height: 32px; border-radius: 50%; background: var(--bg2); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; overflow: hidden; flex-shrink: 0; }
+.user-pick-av img { width: 100%; height: 100%; object-fit: cover; }
+.user-pick-name { font-size: 14px; font-weight: 500; flex: 1; }
+.user-pick-email { font-size: 12px; color: var(--text3); }
+
+/* ── WRAP ── */
+.wrap { max-width: 820px; margin: 0 auto; padding: 1.75rem 1.25rem; }
 
 /* ── PAGE HEADER ── */
-.page-header { margin-bottom: 2rem; }
-.page-title { font-family: 'Instrument Serif', serif; font-size: 26px; color: var(--text1); margin-bottom: 4px; }
-.page-sub { font-size: 13.5px; color: var(--text3); }
+.page-header { margin-bottom: 1.75rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.page-title { font-family: 'Instrument Serif', serif; font-size: 26px; color: var(--text1); margin-bottom: 3px; }
+.page-sub { font-size: 13px; color: var(--text3); }
 
 /* ── SUMMARY ROW ── */
-.summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 2rem; }
+.summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.75rem; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
 .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
 .stat-val { font-size: 24px; font-weight: 600; color: var(--text1); line-height: 1; margin-bottom: 2px; }
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-val.blue { color: var(--blue); }
 .stat-sub { font-size: 12px; color: var(--text3); }
 
-/* ── BREADCRUMB ── */
-.breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.bc-item { font-size: 13px; color: var(--text3); cursor: pointer; transition: color 0.12s; }
-.bc-item:hover { color: var(--text1); }
-.bc-item.active { color: var(--text1); font-weight: 500; }
-.bc-sep { font-size: 11px; color: var(--text3); }
+/* ── ALERT BAR ── */
+.alert-bar { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius); padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; display: flex; gap: 10px; align-items: flex-start; }
+.alert-icon { color: var(--red); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.alert-text { font-size: 13px; color: var(--red); line-height: 1.6; }
+.alert-text b { font-weight: 600; }
 
-/* ── MODULE FILTER TABS ── */
-.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-.filter-pill {
-  font-size: 12.5px; padding: 5px 13px; border-radius: 20px;
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: all 0.15s; font-weight: 500;
-}
-.filter-pill:hover { background: var(--bg2); }
-.filter-pill.active { color: var(--surface); border-color: transparent; }
-.filter-pill.fp-all    { background: var(--text1); color: var(--surface); border-color: var(--text1); }
-.filter-pill.fp-phrasal.active   { background: var(--accent); border-color: var(--accent); }
-.filter-pill.fp-preposition.active { background: var(--blue); border-color: var(--blue); }
-.filter-pill.fp-idiom.active     { background: var(--idiom); border-color: var(--idiom); }
-.filter-pill.fp-grammar.active   { background: var(--grammar); border-color: var(--grammar); }
-.filter-pill.fp-modal.active     { background: var(--modal-c); border-color: var(--modal-c); }
+/* ── MODULE TABS ── */
+.mod-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.mod-tab { font-size: 12.5px; padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.15s; }
+.mod-tab:hover { background: var(--bg2); }
+.mod-tab.active-all { background: var(--text1); color: #fff; border-color: var(--text1); }
+.mod-tab.active-phrasal { background: var(--accent); color: #fff; border-color: var(--accent); }
+.mod-tab.active-preposition { background: var(--blue); color: #fff; border-color: var(--blue); }
+.mod-tab.active-idiom { background: var(--idiom); color: #fff; border-color: var(--idiom); }
+.mod-tab.active-grammar { background: var(--grammar); color: #fff; border-color: var(--grammar); }
+.mod-tab.active-modal { background: var(--modal-c); color: #fff; border-color: var(--modal-c); }
+.mod-tab.active-reading { background: var(--reading-c); color: #fff; border-color: var(--reading-c); }
 
 /* ── SECTION LABEL ── */
-.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.75rem; }
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.85rem; }
 
-/* ── TOPIC CARDS (Layer 1) ── */
-.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 2rem; }
-.topic-card {
-  background: var(--surface); border: 1px solid var(--border);
+/* ── BREADCRUMB ── */
+.breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.bc-item { font-size: 13px; color: var(--text3); cursor: pointer; transition: color 0.12s; }
+.bc-item:hover { color: var(--text1); }
+.bc-item.active { color: var(--text1); font-weight: 500; cursor: default; }
+.bc-sep { font-size: 11px; color: var(--border2); }
+
+/* ── MODULE OVERVIEW CARDS (Layer 1) ── */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+.module-card {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--border);
   border-radius: var(--radius); padding: 1.1rem 1.25rem;
   cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
-  border-left: 3px solid var(--border);
 }
-.topic-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); border-color: var(--border2); }
-.topic-card.pv    { border-left-color: var(--accent); }
-.topic-card.pre   { border-left-color: var(--blue); }
-.topic-card.id    { border-left-color: var(--idiom); }
-.topic-card.gr    { border-left-color: var(--grammar); }
-.topic-card.mo    { border-left-color: var(--modal-c); }
-.tc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.tc-name { font-size: 15px; font-weight: 600; color: var(--text1); }
-.tc-badge { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
-.tc-badge.pv  { background: var(--accent-bg); color: var(--accent); }
-.tc-badge.pre { background: var(--blue-bg); color: var(--blue); }
-.tc-badge.id  { background: var(--idiom-bg); color: var(--idiom); }
-.tc-badge.gr  { background: var(--grammar-bg); color: var(--grammar); }
-.tc-badge.mo  { background: var(--modal-bg); color: var(--modal-c); }
-.tc-bar-wrap { height: 5px; background: var(--bg2); border-radius: 3px; margin-bottom: 8px; overflow: hidden; }
-.tc-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
-.tc-bar.pv  { background: var(--accent); }
-.tc-bar.pre { background: var(--blue); }
-.tc-bar.id  { background: var(--idiom); }
-.tc-bar.gr  { background: var(--grammar); }
-.tc-bar.mo  { background: var(--modal-c); }
-.tc-stats { display: flex; gap: 12px; font-size: 12px; color: var(--text3); }
-.tc-stat-hi { color: var(--green); font-weight: 500; }
-.tc-stat-lo { color: var(--red); font-weight: 500; }
-.tc-stat-att { color: var(--text2); font-weight: 500; }
+.module-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.module-card.pv    { border-left-color: var(--accent); }
+.module-card.pre   { border-left-color: var(--blue); }
+.module-card.id    { border-left-color: var(--idiom); }
+.module-card.gr    { border-left-color: var(--grammar); }
+.module-card.mo    { border-left-color: var(--modal-c); }
+.module-card.rd    { border-left-color: var(--reading-c); }
+.mc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.mc-name { font-size: 15px; font-weight: 600; }
+.mc-badge { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
+.mc-badge.pv  { background: var(--accent-bg); color: var(--accent); }
+.mc-badge.pre { background: var(--blue-bg); color: var(--blue); }
+.mc-badge.id  { background: var(--idiom-bg); color: var(--idiom); }
+.mc-badge.gr  { background: var(--grammar-bg); color: var(--grammar); }
+.mc-badge.mo  { background: var(--modal-bg); color: var(--modal-c); }
+.mc-badge.rd  { background: var(--reading-bg); color: var(--reading-c); }
+.mc-bar-wrap { height: 5px; background: var(--bg2); border-radius: 3px; margin-bottom: 10px; overflow: hidden; }
+.mc-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.mc-bar.pv  { background: var(--accent); }
+.mc-bar.pre { background: var(--blue); }
+.mc-bar.id  { background: var(--idiom); }
+.mc-bar.gr  { background: var(--grammar); }
+.mc-bar.mo  { background: var(--modal-c); }
+.mc-bar.rd  { background: var(--reading-c); }
+.mc-stats { display: flex; gap: 14px; font-size: 12px; color: var(--text3); flex-wrap: wrap; }
+.mc-stat-ok  { color: var(--green); font-weight: 500; }
+.mc-stat-bad { color: var(--red); font-weight: 500; }
 
 /* ── SUBTOPIC LIST (Layer 2) ── */
-.subtopic-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+.subtopic-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 2rem; }
 .subtopic-row {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1rem 1.25rem;
@@ -133,451 +168,851 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   display: flex; align-items: center; gap: 14px;
 }
 .subtopic-row:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
+.sr-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .sr-info { flex: 1; min-width: 0; }
-.sr-name { font-size: 14px; font-weight: 500; color: var(--text1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-name { font-size: 14px; font-weight: 500; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sr-bar-wrap { height: 4px; background: var(--bg2); border-radius: 2px; overflow: hidden; }
 .sr-bar { height: 100%; border-radius: 2px; }
-.sr-nums { text-align: right; flex-shrink: 0; }
-.sr-pct { font-size: 16px; font-weight: 600; color: var(--text1); line-height: 1; }
+.sr-right { text-align: right; flex-shrink: 0; }
+.sr-pct { font-size: 16px; font-weight: 600; line-height: 1; }
 .sr-count { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.sr-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-great { background: var(--green); }
-.dot-ok    { background: var(--grammar); }
-.dot-weak  { background: var(--red); }
-.dot-none  { background: var(--border2); }
 .sr-arrow { color: var(--text3); font-size: 16px; flex-shrink: 0; }
 
-/* ── MICRO CARDS (Layer 3) ── */
-.micro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
-.micro-sort { display: flex; gap: 6px; }
-.micro-sort-btn {
-  font-size: 12px; padding: 4px 10px; border-radius: 20px;
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
-}
-.micro-sort-btn.active { background: var(--text1); color: var(--surface); border-color: var(--text1); }
-.micro-grid { display: flex; flex-direction: column; gap: 8px; }
-.micro-card {
+/* ── QUESTION LIST (Layer 3) ── */
+.q-filters { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+.q-filter-btn { font-size: 12px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.12s; }
+.q-filter-btn.active { background: var(--text1); color: #fff; border-color: var(--text1); }
+.q-filter-btn.flt-correct.active { background: var(--green); border-color: var(--green); }
+.q-filter-btn.flt-wrong.active { background: var(--red); border-color: var(--red); }
+.q-filter-btn.flt-unattempted.active { background: var(--blue); border-color: var(--blue); }
+
+.q-list { display: flex; flex-direction: column; gap: 10px; }
+.q-card {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 0.9rem 1.1rem;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow); border-left: 3px solid var(--border);
+  transition: all 0.15s;
 }
-.mc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-.mc-phrase { font-size: 14px; font-weight: 500; color: var(--text1); line-height: 1.4; }
-.mc-badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; }
-.mc-badge.great { background: var(--green-bg); color: var(--green); }
-.mc-badge.ok    { background: var(--grammar-bg); color: var(--grammar); }
-.mc-badge.weak  { background: var(--red-bg); color: var(--red); }
-.mc-badge.none  { background: var(--bg2); color: var(--text3); }
-.mc-bar-wrap { height: 4px; background: var(--bg2); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
-.mc-bar { height: 100%; border-radius: 2px; }
-.mc-meta { font-size: 12px; color: var(--text3); display: flex; gap: 10px; }
-.mc-meta span b { font-weight: 500; }
-.mc-wrong-box { margin-top: 8px; padding: 7px 10px; background: var(--red-bg); border-radius: var(--radius-sm); font-size: 12px; color: var(--red); border: 1px solid var(--red-border); }
+.q-card.qc-correct { border-left-color: var(--green); }
+.q-card.qc-wrong   { border-left-color: var(--red); }
+.q-card.qc-unattempted { border-left-color: var(--blue); }
+.q-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.q-sentence { font-size: 14px; font-weight: 500; line-height: 1.6; flex: 1; }
+.q-status-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+.q-status-badge.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.q-status-badge.wrong   { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.q-status-badge.unattempted { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.q-answer-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.q-opt { font-size: 12.5px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; background: var(--bg2); color: var(--text2); }
+.q-opt.opt-correct { background: var(--green-bg); color: var(--green); border-color: var(--green-border); font-weight: 500; }
+.q-opt.opt-wrong   { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+.q-opt.opt-chosen  { font-weight: 600; }
+.q-opt.opt-clickable:hover { background: var(--bg3); border-color: var(--border2); }
+.q-feedback { font-size: 12.5px; color: var(--text2); background: var(--bg2); border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 8px; line-height: 1.6; display: none; }
+.q-feedback.show { display: block; }
+.q-hint { font-size: 11px; color: var(--text3); font-style: italic; }
+.q-attempt-btn { margin-top: 10px; font-size: 13px; padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.15s; }
+.q-attempt-btn:hover { background: var(--blue); color: #fff; }
+
+/* ── READING ANALYTICS ── */
+.reading-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.75rem; }
+.reading-day-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-bottom: 1.75rem; }
+.reading-day-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem; cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+  text-align: center;
+}
+.reading-day-card:hover { box-shadow: var(--shadow-md); border-color: var(--border2); transform: translateY(-1px); }
+.reading-day-card.rd-done  { border-top: 3px solid var(--green); }
+.reading-day-card.rd-miss  { border-top: 3px solid var(--border2); }
+.rdc-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); margin-bottom: 5px; }
+.rdc-score { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); }
+.rdc-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.session-detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); margin-bottom: 1rem; }
+.session-detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+.session-detail-title { font-size: 15px; font-weight: 600; }
+.session-detail-date { font-size: 12px; color: var(--text3); }
+.session-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sm-cell { text-align: center; background: var(--bg2); border-radius: var(--radius-sm); padding: 8px; }
+.sm-val { font-size: 18px; font-weight: 600; color: var(--text1); }
+.sm-lbl { font-size: 11px; color: var(--text3); }
 
 /* ── EMPTY / LOADING ── */
-.empty { font-size: 13.5px; color: var(--text3); text-align: center; padding: 3rem 0; }
+.empty-state { font-size: 13.5px; color: var(--text3); text-align: center; padding: 3rem 0; }
 .page-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
 .page-loading-brand { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--text1); }
 .page-loading-brand span { color: var(--accent); }
 .spinner-lg { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (max-width: 520px) {
-  .summary-row { grid-template-columns: repeat(2, 1fr); }
-  .topic-grid { grid-template-columns: 1fr; }
-}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeUp 0.3s ease both; }
 
-/* ── WEAK ALERT BAR ── */
-.weak-alert { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius); padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; display: flex; gap: 10px; align-items: flex-start; }
-.weak-alert-icon { color: var(--red); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-.weak-alert-text { font-size: 13px; color: var(--red); line-height: 1.6; }
-.weak-alert-text b { font-weight: 600; }
+@media (max-width: 600px) {
+  .summary-row { grid-template-columns: repeat(2, 1fr); }
+  .reading-summary { grid-template-columns: repeat(2, 1fr); }
+  .module-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
 <div class="page-loading" id="page-loading">
-  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="page-loading-brand">Learn<span>Smart</span></div>
   <div class="spinner-lg"></div>
 </div>
 
 <nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">Vocab<span>Master</span></div>
+  <a class="nav-brand" href="index.html">Learn<span>Smart</span></a>
   <div class="nav-spacer"></div>
   <a href="index.html" class="nav-link"><i class="ti ti-home" style="font-size:15px"></i> Home</a>
   <a href="analytics.html" class="nav-link active"><i class="ti ti-chart-bar" style="font-size:15px"></i> Analytics</a>
   <a href="tests.html" class="nav-link"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
+  <!-- Admin user switcher (hidden for non-admins) -->
+  <div class="user-switcher" id="user-switcher" style="display:none" onclick="openUserPicker()">
+    <div class="user-switcher-av" id="switcher-av">?</div>
+    <span id="switcher-name">Me</span>
+    <i class="ti ti-chevron-down" style="font-size:12px;color:var(--text3)"></i>
+  </div>
 </nav>
 
+<!-- Admin user picker modal -->
+<div class="modal-overlay" id="user-picker-modal" onclick="closeUserPicker(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title">View as user</div>
+      <button class="modal-close" onclick="closeUserPicker()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="user-picker-list"></div>
+  </div>
+</div>
+
 <div class="wrap">
+  <!-- Header -->
   <div class="page-header">
-    <div class="page-title">Analytics</div>
-    <div class="page-sub">See where you're strong and where you need more practice</div>
+    <div>
+      <div class="page-title" id="page-title">Analytics</div>
+      <div class="page-sub" id="page-sub">Your performance across all modules</div>
+    </div>
   </div>
 
-  <div class="summary-row" id="summary-row">
-    <div class="stat-card"><div class="stat-label">Total answered</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">questions</div></div>
-    <div class="stat-card"><div class="stat-label">Correct</div><div class="stat-val" id="s-correct" style="color:var(--green)">—</div><div class="stat-sub" id="s-pct">—% accuracy</div></div>
-    <div class="stat-card"><div class="stat-label">Topics started</div><div class="stat-val" id="s-topics">—</div><div class="stat-sub">of 5 modules</div></div>
-    <div class="stat-card"><div class="stat-label">Weak items</div><div class="stat-val" id="s-weak" style="color:var(--red)">—</div><div class="stat-sub">need more work</div></div>
+  <!-- Summary stats -->
+  <div class="summary-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Attempted</div>
+      <div class="stat-val" id="s-total">—</div>
+      <div class="stat-sub">questions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Correct</div>
+      <div class="stat-val green" id="s-correct">—</div>
+      <div class="stat-sub" id="s-pct">—% accuracy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Wrong</div>
+      <div class="stat-val red" id="s-wrong">—</div>
+      <div class="stat-sub" id="s-unattempted-stat">— unattempted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Weak Areas</div>
+      <div class="stat-val red" id="s-weak">—</div>
+      <div class="stat-sub">need revision</div>
+    </div>
   </div>
 
+  <!-- Weak alert -->
   <div id="weak-alert" style="display:none"></div>
 
-  <!-- BREADCRUMB -->
-  <div class="breadcrumb" id="breadcrumb">
-    <span class="bc-item active" onclick="drillTo('home')">All Topics</span>
+  <!-- Module filter tabs -->
+  <div class="mod-tabs" id="mod-tabs">
+    <button class="mod-tab active-all" data-mod="all" onclick="switchModTab('all',this)">All</button>
+    <button class="mod-tab" data-mod="phrasal" onclick="switchModTab('phrasal',this)">Phrasal Verbs</button>
+    <button class="mod-tab" data-mod="preposition" onclick="switchModTab('preposition',this)">Prepositions</button>
+    <button class="mod-tab" data-mod="idiom" onclick="switchModTab('idiom',this)">Idioms</button>
+    <button class="mod-tab" data-mod="grammar" onclick="switchModTab('grammar',this)">Grammar</button>
+    <button class="mod-tab" data-mod="modal" onclick="switchModTab('modal',this)">Modals</button>
+    <button class="mod-tab" data-mod="reading" onclick="switchModTab('reading',this)">Reading</button>
   </div>
 
-  <!-- LAYER 1: topic overview -->
-  <div id="layer-home">
-    <div class="filter-row" id="filter-row">
-      <button class="filter-pill fp-all active" onclick="filterMod(null,this)">All</button>
-      <button class="filter-pill fp-phrasal" onclick="filterMod('phrasal',this)">Phrasal Verbs</button>
-      <button class="filter-pill fp-preposition" onclick="filterMod('preposition',this)">Prepositions</button>
-      <button class="filter-pill fp-idiom" onclick="filterMod('idiom',this)">Idioms</button>
-      <button class="filter-pill fp-grammar" onclick="filterMod('grammar',this)">Grammar</button>
-      <button class="filter-pill fp-modal" onclick="filterMod('modal',this)">Modals</button>
-    </div>
-    <div class="section-label" id="topic-section-label">Topics overview</div>
-    <div class="topic-grid" id="topic-grid"></div>
+  <!-- Breadcrumb -->
+  <div class="breadcrumb" id="breadcrumb"></div>
+
+  <!-- LAYER 1: Module overview -->
+  <div id="layer-modules">
+    <div class="section-label" id="layer1-label">Module Overview</div>
+    <div class="module-grid" id="module-grid"></div>
   </div>
 
-  <!-- LAYER 2: subtopics for one module -->
-  <div id="layer-subtopic" style="display:none">
+  <!-- LAYER 2: Subtopics for one module -->
+  <div id="layer-subtopics" style="display:none">
+    <div class="section-label" id="layer2-label">Subtopics</div>
     <div class="subtopic-list" id="subtopic-list"></div>
   </div>
 
-  <!-- LAYER 3: micro items for one subtopic -->
-  <div id="layer-micro" style="display:none">
-    <div class="micro-header">
-      <div class="section-label" style="margin:0">Items in this subtopic</div>
-      <div class="micro-sort">
-        <button class="micro-sort-btn active" onclick="sortMicro('weak',this)">Weakest first</button>
-        <button class="micro-sort-btn" onclick="sortMicro('alpha',this)">A–Z</button>
-        <button class="micro-sort-btn" onclick="sortMicro('attempts',this)">Most attempted</button>
-      </div>
+  <!-- LAYER 3: Questions for one subtopic -->
+  <div id="layer-questions" style="display:none">
+    <div class="q-filters">
+      <button class="q-filter-btn active" data-f="all" onclick="filterQuestions('all',this)">All</button>
+      <button class="q-filter-btn flt-correct" data-f="correct" onclick="filterQuestions('correct',this)">✓ Correct</button>
+      <button class="q-filter-btn flt-wrong" data-f="wrong" onclick="filterQuestions('wrong',this)">✗ Wrong</button>
+      <button class="q-filter-btn flt-unattempted" data-f="unattempted" onclick="filterQuestions('unattempted',this)">◯ Unattempted</button>
     </div>
-    <div class="micro-grid" id="micro-grid"></div>
+    <div class="q-list" id="q-list"></div>
+  </div>
+
+  <!-- LAYER: Reading analytics (special) -->
+  <div id="layer-reading" style="display:none">
+    <div class="section-label">Overall Reading Performance</div>
+    <div class="reading-summary" id="reading-summary"></div>
+    <div class="section-label">Session History by Day</div>
+    <div class="reading-day-grid" id="reading-day-grid"></div>
+    <div id="reading-session-detail" style="display:none"></div>
   </div>
 </div>
 
 <script>
-/* ════════════════ DATA ════════════════ */
-let currentUser = null;
-let allProgress = [];   /* raw rows from progress table */
-let activeFilter = null;
-let drillMod = null;
-let drillKey = null;
-let microSort = 'weak';
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let currentUser   = null;
+let viewingUser   = null;   // user whose data we're viewing
+let isAdmin       = false;
+let allUsers      = [];     // admin only
+let allProgress   = [];     // progress rows for viewingUser
+let readingSessions = [];   // reading sessions for viewingUser
+let allQuestions  = {};     // { module|itemKey: [q, ...] } — all questions from DB
+let activeModTab  = 'all';
+let drillMod      = null;
+let drillKey      = null;
+let qFilter       = 'all';
+let currentQs     = [];     // questions for current layer-3 view
 
-/* Map module names to DB and CSS classes */
+/* ══════════════════════════════════════════
+   MODULE DEFINITIONS
+══════════════════════════════════════════ */
 const MOD_INFO = {
-  phrasal:     { label:'Phrasal Verbs', cls:'pv',  getDB: () => typeof DB         !== 'undefined' ? DB         : {} },
-  preposition: { label:'Prepositions',  cls:'pre', getDB: () => typeof DB_FP      !== 'undefined' ? DB_FP      : {} },
-  idiom:       { label:'Idioms',        cls:'id',  getDB: () => typeof DB_IDIOMS  !== 'undefined' ? DB_IDIOMS  : {} },
-  grammar:     { label:'Grammar Rules', cls:'gr',  getDB: () => typeof DB_GRAMMAR !== 'undefined' ? DB_GRAMMAR : {} },
-  modal:       { label:'Modals',        cls:'mo',  getDB: () => typeof DB_MOD     !== 'undefined' ? DB_MOD     : {} },
+  phrasal:     { label: 'Phrasal Verbs', cls: 'pv',  accentVar: '--accent',    getDB: () => typeof DB         !== 'undefined' ? DB         : {} },
+  preposition: { label: 'Prepositions',  cls: 'pre', accentVar: '--blue',      getDB: () => typeof DB_FP      !== 'undefined' ? DB_FP      : {} },
+  idiom:       { label: 'Idioms',        cls: 'id',  accentVar: '--idiom',     getDB: () => typeof DB_IDIOMS  !== 'undefined' ? DB_IDIOMS  : {} },
+  grammar:     { label: 'Grammar Rules', cls: 'gr',  accentVar: '--grammar',   getDB: () => typeof DB_GRAMMAR !== 'undefined' ? DB_GRAMMAR : {} },
+  modal:       { label: 'Modals',        cls: 'mo',  accentVar: '--modal-c',   getDB: () => typeof DB_MOD     !== 'undefined' ? DB_MOD     : {} },
 };
 
-function displayKey(k) {
-  return k.replace(/^Rule_\d+_/, '').replace(/_/g, ' ');
-}
+function displayKey(k) { return k.replace(/^Rule_\d+_/, '').replace(/_/g, ' '); }
+function modColor(mod) { const v = MOD_INFO[mod]?.accentVar; return v ? `var(${v})` : 'var(--text3)'; }
 
-/* ════════════════ INIT ════════════════ */
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
 (async () => {
   const { data: { session } } = await SB.auth.getSession();
   if (!session) { window.location.href = 'auth.html'; return; }
-  currentUser = session.user;
+  currentUser  = session.user;
+  viewingUser  = currentUser;
 
-  const { data } = await SB.from('progress')
-    .select('module, item_key, question_id, chosen, correct, source, created_at')
-    .eq('user_id', currentUser.id);
-  allProgress = data || [];
+  /* Check admin */
+  const { data: adminRow } = await SB.from('reading_admins').select('user_id').eq('user_id', currentUser.id).single();
+  isAdmin = !!adminRow;
 
-  renderSummary();
-  renderWeakAlert();
-  renderTopicGrid(null);
+  if (isAdmin) {
+    const [{ data: profiles }, { data: states }] = await Promise.all([
+      SB.from('profiles').select('id, name, avatar_url, email, created_at'),
+      SB.from('reading_user_state').select('user_id, current_day, current_week')
+    ]);
+    const stateMap = {};
+    (states || []).forEach(s => stateMap[s.user_id] = s);
+    allUsers = (profiles || []).map(p => ({
+      user_id: p.id,
+      name: p.name || p.email || p.id.slice(0,8),
+      avatar_url: p.avatar_url,
+      email: p.email,
+      ...stateMap[p.id]
+    }));
+    document.getElementById('user-switcher').style.display = 'flex';
+  }
+
+  await loadForUser(viewingUser.id);
   document.getElementById('page-loading').style.display = 'none';
 })();
 
-/* ════════════════ SUMMARY ════════════════ */
+async function loadForUser(uid) {
+  const [{ data: prog }, { data: rSessions }, { data: profile }] = await Promise.all([
+    SB.from('progress').select('module, item_key, question_id, chosen, correct, source, created_at').eq('user_id', uid),
+    SB.from('reading_sessions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    SB.from('profiles').select('name, avatar_url').eq('id', uid).single()
+  ]);
+
+  allProgress    = prog || [];
+  readingSessions = rSessions || [];
+
+  /* Update switcher display */
+  if (isAdmin) {
+    const name   = profile?.name || uid.slice(0,8);
+    const avatar = profile?.avatar_url;
+    const avEl   = document.getElementById('switcher-av');
+    avEl.innerHTML = avatar ? `<img src="${avatar}" alt="${name}">` : (name[0]||'?').toUpperCase();
+    document.getElementById('switcher-name').textContent = uid === currentUser.id ? 'Me' : name;
+    document.getElementById('page-sub').textContent = uid === currentUser.id
+      ? 'Your performance across all modules'
+      : `Viewing: ${name}`;
+  }
+
+  buildAllQuestionsMap();
+  renderSummary();
+  renderWeakAlert();
+  renderBreadcrumb();
+  showLayer('modules');
+  renderModuleGrid();
+}
+
+/* ══════════════════════════════════════════
+   BUILD ALL QUESTIONS MAP
+   Extracts every question from every DB
+══════════════════════════════════════════ */
+function buildAllQuestionsMap() {
+  allQuestions = {};
+  for (const [mod, info] of Object.entries(MOD_INFO)) {
+    const db = info.getDB();
+    for (const [key, entry] of Object.entries(db)) {
+      const qs = entry.questions || [];
+      const mapKey = mod + '|' + key;
+      allQuestions[mapKey] = qs.map(q => ({ ...q, _mod: mod, _key: key, _source: 'static' }));
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   SUMMARY
+══════════════════════════════════════════ */
 function renderSummary() {
   const total   = allProgress.length;
   const correct = allProgress.filter(r => r.correct).length;
+  const wrong   = total - correct;
   const pct     = total ? Math.round((correct / total) * 100) : 0;
-  const topics  = new Set(allProgress.map(r => r.module)).size;
 
-  /* Count weak items: attempted ≥2 times with accuracy < 50% */
-  const weakCount = countWeakItems(allProgress);
+  /* Count total questions in all DBs */
+  let totalQs = 0;
+  for (const qs of Object.values(allQuestions)) totalQs += qs.length;
+  const attempted = new Set(allProgress.map(r => r.module + '|' + r.item_key + '|' + r.question_id)).size;
+  const unattempted = Math.max(0, totalQs - attempted);
 
-  document.getElementById('s-total').textContent   = total.toLocaleString();
-  document.getElementById('s-correct').textContent = correct.toLocaleString();
-  document.getElementById('s-pct').textContent     = pct + '% accuracy';
-  document.getElementById('s-topics').textContent  = topics;
-  document.getElementById('s-weak').textContent    = weakCount;
+  document.getElementById('s-total').textContent    = total.toLocaleString();
+  document.getElementById('s-correct').textContent  = correct.toLocaleString();
+  document.getElementById('s-pct').textContent      = pct + '% accuracy';
+  document.getElementById('s-wrong').textContent    = wrong.toLocaleString();
+  document.getElementById('s-unattempted-stat').textContent = unattempted.toLocaleString() + ' unattempted';
+  document.getElementById('s-weak').textContent     = countWeakItems(allProgress);
 }
 
 function countWeakItems(rows) {
-  /* Group by (module + item_key + question_id) */
   const qMap = {};
   rows.forEach(r => {
     const k = r.module + '|' + r.item_key + '|' + r.question_id;
-    if (!qMap[k]) qMap[k] = { total: 0, correct: 0 };
-    qMap[k].total++;
-    if (r.correct) qMap[k].correct++;
+    if (!qMap[k]) qMap[k] = { t: 0, c: 0 };
+    qMap[k].t++;
+    if (r.correct) qMap[k].c++;
   });
-  return Object.values(qMap).filter(v => v.total >= 2 && (v.correct / v.total) < 0.5).length;
+  return Object.values(qMap).filter(v => v.t >= 2 && (v.c / v.t) < 0.5).length;
 }
 
 function renderWeakAlert() {
-  const weakMods = getWeakModules();
-  if (!weakMods.length) return;
-  const names = weakMods.map(m => MOD_INFO[m]?.label || m).join(', ');
-  document.getElementById('weak-alert').style.display = 'flex';
-  document.getElementById('weak-alert').innerHTML = `
-    <i class="ti ti-alert-triangle weak-alert-icon"></i>
-    <div class="weak-alert-text"><b>Focus areas:</b> You have low accuracy in ${names}. Click a topic below to drill down and see exactly what to revise.</div>`;
-}
-
-function getWeakModules() {
   const modStats = {};
   allProgress.forEach(r => {
     if (!modStats[r.module]) modStats[r.module] = { c: 0, t: 0 };
     modStats[r.module].t++;
     if (r.correct) modStats[r.module].c++;
   });
-  return Object.entries(modStats)
+  const weakMods = Object.entries(modStats)
     .filter(([, v]) => v.t >= 5 && (v.c / v.t) < 0.5)
-    .map(([k]) => k);
+    .map(([k]) => MOD_INFO[k]?.label || k);
+
+  const el = document.getElementById('weak-alert');
+  if (!weakMods.length) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  el.className = 'alert-bar';
+  el.innerHTML = `<i class="ti ti-alert-triangle alert-icon"></i>
+    <div class="alert-text"><b>Focus areas:</b> Low accuracy in ${weakMods.join(', ')}. Click a module below to drill down.</div>`;
 }
 
-/* ════════════════ LAYER 1 — TOPIC GRID ════════════════ */
-function filterMod(mod, btn) {
-  activeFilter = mod;
-  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active', 'fp-all'));
-  btn.classList.add('active');
-  if (!mod) btn.classList.add('fp-all');
-  renderTopicGrid(mod);
+/* ══════════════════════════════════════════
+   MODULE TAB FILTER
+══════════════════════════════════════════ */
+function switchModTab(mod, btn) {
+  activeModTab = mod;
+  document.querySelectorAll('.mod-tab').forEach(t => {
+    t.className = 'mod-tab';
+    if (t.dataset.mod === mod) t.classList.add('active-' + mod);
+  });
+  drillMod = null; drillKey = null;
+  renderBreadcrumb();
+  if (mod === 'reading') {
+    showLayer('reading');
+    renderReadingAnalytics();
+  } else {
+    showLayer('modules');
+    renderModuleGrid(mod === 'all' ? null : mod);
+  }
 }
 
-function renderTopicGrid(filterMod) {
-  const grid = document.getElementById('topic-grid');
+/* ══════════════════════════════════════════
+   LAYER MANAGEMENT
+══════════════════════════════════════════ */
+function showLayer(name) {
+  ['modules','subtopics','questions','reading'].forEach(l => {
+    document.getElementById('layer-' + l).style.display = l === name ? 'block' : 'none';
+  });
+  if (name !== 'reading') document.getElementById('reading-session-detail').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════
+   BREADCRUMB
+══════════════════════════════════════════ */
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  let html = `<span class="bc-item ${!drillMod ? 'active' : ''}" onclick="navHome()">
+    ${activeModTab === 'all' ? 'All Modules' : (MOD_INFO[activeModTab]?.label || 'Reading')}
+  </span>`;
+  if (drillMod) {
+    html += `<span class="bc-sep">›</span>
+      <span class="bc-item ${!drillKey ? 'active' : ''}" onclick="navSubtopic('${drillMod}')">
+        ${MOD_INFO[drillMod]?.label || drillMod}
+      </span>`;
+  }
+  if (drillKey) {
+    const label = drillMod === 'grammar' ? displayKey(drillKey) : drillKey;
+    html += `<span class="bc-sep">›</span><span class="bc-item active">${label}</span>`;
+  }
+  bc.innerHTML = html;
+}
+
+function navHome() {
+  drillMod = null; drillKey = null;
+  renderBreadcrumb();
+  if (activeModTab === 'reading') { showLayer('reading'); renderReadingAnalytics(); return; }
+  showLayer('modules');
+  renderModuleGrid(activeModTab === 'all' ? null : activeModTab);
+}
+
+function navSubtopic(mod) {
+  drillKey = null;
+  renderBreadcrumb();
+  showLayer('subtopics');
+  renderSubtopicList(mod);
+}
+
+/* ══════════════════════════════════════════
+   LAYER 1 — MODULE GRID
+══════════════════════════════════════════ */
+function renderModuleGrid(filterMod) {
+  const grid = document.getElementById('module-grid');
   const mods = filterMod ? [filterMod] : Object.keys(MOD_INFO);
-  document.getElementById('topic-section-label').textContent =
-    filterMod ? MOD_INFO[filterMod].label + ' — subtopics' : 'Topics overview';
 
   grid.innerHTML = mods.map(mod => {
-    const info = MOD_INFO[mod];
-    const rows = allProgress.filter(r => r.module === mod);
-    const total   = rows.length;
+    const info  = MOD_INFO[mod];
+    const rows  = allProgress.filter(r => r.module === mod);
+    const total = rows.length;
     const correct = rows.filter(r => r.correct).length;
-    const pct     = total ? Math.round((correct / total) * 100) : 0;
+    const wrong   = total - correct;
+    const pct   = total ? Math.round((correct / total) * 100) : 0;
+
+    /* Count total questions in DB */
+    const dbKeys  = Object.keys(info.getDB());
+    const totalQs = dbKeys.reduce((s, k) => s + (allQuestions[mod+'|'+k]?.length || 0), 0);
+    const attemptedQs = new Set(rows.map(r => r.question_id)).size;
+    const unattempted = Math.max(0, totalQs - attemptedQs);
     const subtopicsDone = new Set(rows.map(r => r.item_key)).size;
-    const totalSubtopics = Object.keys(info.getDB()).length;
     const weakItems = countWeakItems(rows);
 
-    return `<div class="topic-card ${info.cls}" onclick="drillTo('subtopic','${mod}')">
-      <div class="tc-header">
-        <div class="tc-name">${info.label}</div>
-        <span class="tc-badge ${info.cls}">${info.cls.toUpperCase()}</span>
+    const barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : pct > 0 ? 'var(--red)' : 'var(--border2)';
+
+    return `<div class="module-card ${info.cls}" onclick="drillToSubtopics('${mod}')">
+      <div class="mc-head">
+        <div class="mc-name">${info.label}</div>
+        <span class="mc-badge ${info.cls}">${pct}%</span>
       </div>
-      <div class="tc-bar-wrap"><div class="tc-bar ${info.cls}" style="width:${pct}%"></div></div>
-      <div class="tc-stats">
-        <span>${total ? pct + '% accuracy' : 'Not started'}</span>
-        <span>${subtopicsDone}/${totalSubtopics} subtopics</span>
-        ${weakItems ? `<span class="tc-stat-lo">⚠ ${weakItems} weak</span>` : (total ? `<span class="tc-stat-hi">✓ Good</span>` : '')}
+      <div class="mc-bar-wrap"><div class="mc-bar ${info.cls}" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="mc-stats">
+        <span>${total} attempted</span>
+        <span class="mc-stat-ok">✓ ${correct}</span>
+        <span class="mc-stat-bad">✗ ${wrong}</span>
+        ${unattempted ? `<span style="color:var(--blue)">◯ ${unattempted} left</span>` : ''}
+        ${weakItems ? `<span class="mc-stat-bad">⚠ ${weakItems} weak</span>` : ''}
       </div>
     </div>`;
   }).join('');
+
+  /* Reading card */
+  if (!filterMod) {
+    const totalRSessions = readingSessions.length;
+    const totalRQs = readingSessions.reduce((s, se) => s + (se.ex1_total||0) + (se.ex2_total||0), 0);
+    const correctRQs = readingSessions.reduce((s, se) => s + (se.ex1_correct||0) + (se.ex2_correct||0), 0);
+    const rPct = totalRQs ? Math.round((correctRQs / totalRQs) * 100) : 0;
+    grid.innerHTML += `<div class="module-card rd" onclick="switchModTab('reading', document.querySelector('[data-mod=reading]'))">
+      <div class="mc-head">
+        <div class="mc-name">Reading</div>
+        <span class="mc-badge rd">${rPct || '—'}%</span>
+      </div>
+      <div class="mc-bar-wrap"><div class="mc-bar rd" style="width:${rPct}%"></div></div>
+      <div class="mc-stats">
+        <span>${totalRSessions} sessions</span>
+        <span class="mc-stat-ok">✓ ${correctRQs}</span>
+        <span class="mc-stat-bad">✗ ${totalRQs - correctRQs}</span>
+      </div>
+    </div>`;
+  }
 }
 
-/* ════════════════ LAYER 2 — SUBTOPICS ════════════════ */
+function drillToSubtopics(mod) {
+  drillMod = mod; drillKey = null;
+  renderBreadcrumb();
+  showLayer('subtopics');
+  renderSubtopicList(mod);
+}
+
+/* ══════════════════════════════════════════
+   LAYER 2 — SUBTOPIC LIST
+══════════════════════════════════════════ */
 function renderSubtopicList(mod) {
-  const info = MOD_INFO[mod];
-  const db   = info.getDB();
-  const rows = allProgress.filter(r => r.module === mod);
+  const info   = MOD_INFO[mod];
+  const db     = info.getDB();
+  const rows   = allProgress.filter(r => r.module === mod);
+  const color  = modColor(mod);
 
-  const keys = Object.keys(db);
-  const items = keys.map(key => {
-    const keyRows = rows.filter(r => r.item_key === key);
-    const total   = keyRows.length;
-    const correct = keyRows.filter(r => r.correct).length;
-    const pct     = total ? Math.round((correct / total) * 100) : -1;
-    return { key, total, correct, pct };
-  });
-
-  /* Sort: weakest first (attempted ones), then unattempted */
-  items.sort((a, b) => {
+  const items = Object.keys(db).map(key => {
+    const keyRows  = rows.filter(r => r.item_key === key);
+    const total    = keyRows.length;
+    const correct  = keyRows.filter(r => r.correct).length;
+    const pct      = total ? Math.round((correct / total) * 100) : -1;
+    const totalQs  = allQuestions[mod+'|'+key]?.length || 0;
+    const attempted = new Set(keyRows.map(r => r.question_id)).size;
+    return { key, total, correct, pct, totalQs, attempted };
+  }).sort((a,b) => {
     if (a.pct === -1 && b.pct === -1) return 0;
     if (a.pct === -1) return 1;
     if (b.pct === -1) return -1;
     return a.pct - b.pct;
   });
 
+  document.getElementById('layer2-label').textContent = info.label + ' — Subtopics';
   const list = document.getElementById('subtopic-list');
-  list.innerHTML = items.map(({ key, total, correct, pct }) => {
-    const label = mod === 'grammar' ? displayKey(key) : key;
-    const dotCls = pct === -1 ? 'dot-none' : pct >= 70 ? 'dot-great' : pct >= 40 ? 'dot-ok' : 'dot-weak';
-    const barCol = pct === -1 ? 'var(--border)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)';
-    const pctTxt = pct === -1 ? '—' : pct + '%';
-    return `<div class="subtopic-row" onclick="drillTo('micro','${mod}','${esc(key)}')">
-      <div class="sr-dot ${dotCls}"></div>
+  list.innerHTML = items.map(({ key, total, correct, pct, totalQs, attempted }) => {
+    const label   = mod === 'grammar' ? displayKey(key) : key;
+    const dotCls  = pct === -1 ? 'dot-none' : pct >= 70 ? 'dot-great' : pct >= 40 ? 'dot-ok' : 'dot-weak';
+    const barCol  = pct === -1 ? 'var(--border2)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)';
+    const pctTxt  = pct === -1 ? '—' : pct + '%';
+    const unattempted = Math.max(0, totalQs - attempted);
+    return `<div class="subtopic-row" onclick="drillToQuestions('${esc(mod)}','${esc(key)}')">
+      <div class="sr-dot" style="background:${pct===-1?'var(--border2)':pct>=70?'var(--green)':pct>=40?'var(--grammar)':'var(--red)'}"></div>
       <div class="sr-info">
         <div class="sr-name">${label}</div>
         <div class="sr-bar-wrap"><div class="sr-bar" style="width:${Math.max(pct,0)}%;background:${barCol}"></div></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;display:flex;gap:10px">
+          <span>✓ ${correct} correct</span>
+          <span>✗ ${total - correct} wrong</span>
+          ${unattempted ? `<span style="color:var(--blue)">◯ ${unattempted} left</span>` : ''}
+        </div>
       </div>
-      <div class="sr-nums">
-        <div class="sr-pct" style="color:${pct === -1 ? 'var(--text3)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)'}">${pctTxt}</div>
-        <div class="sr-count">${total ? correct + '/' + total : 'Not started'}</div>
+      <div class="sr-right">
+        <div class="sr-pct" style="color:${pct===-1?'var(--text3)':pct>=70?'var(--green)':pct>=40?'var(--grammar)':'var(--red)'}">${pctTxt}</div>
+        <div class="sr-count">${total}/${totalQs} qs</div>
       </div>
       <i class="ti ti-chevron-right sr-arrow"></i>
     </div>`;
   }).join('');
+  list.classList.add('fade-up');
 }
 
-/* ════════════════ LAYER 3 — MICRO ITEMS ════════════════ */
-function renderMicro(mod, key) {
-  const info  = MOD_INFO[mod];
-  const db    = info.getDB();
-  const entry = db[key];
-  if (!entry) { document.getElementById('micro-grid').innerHTML = '<div class="empty">No data for this subtopic.</div>'; return; }
+/* ══════════════════════════════════════════
+   LAYER 3 — QUESTION LIST
+══════════════════════════════════════════ */
+function drillToQuestions(mod, key) {
+  drillMod = mod; drillKey = key;
+  renderBreadcrumb();
+  qFilter = 'all';
+  document.querySelectorAll('.q-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.f === 'all'));
+  showLayer('questions');
+  buildQuestionList(mod, key);
+}
 
-  /* Get all items in this subtopic */
-  const items = getItemsForEntry(mod, entry);
+function buildQuestionList(mod, key) {
+  const staticQs   = allQuestions[mod+'|'+key] || [];
+  const progRows   = allProgress.filter(r => r.module === mod && r.item_key === key);
 
-  /* Build question-level stats from progress rows */
-  const rows = allProgress.filter(r => r.module === mod && r.item_key === key);
-  /* Map: question_id → { total, correct, chosen[] } */
-  const qStats = {};
-  rows.forEach(r => {
-    if (!qStats[r.question_id]) qStats[r.question_id] = { total: 0, correct: 0, wrongChosen: [] };
-    qStats[r.question_id].total++;
-    if (r.correct) qStats[r.question_id].correct++;
-    else if (r.chosen) qStats[r.question_id].wrongChosen.push(r.chosen);
+  /* Map question_id → latest attempt */
+  const attemptMap = {};
+  progRows.forEach(r => {
+    if (!attemptMap[r.question_id] || r.created_at > attemptMap[r.question_id].created_at) {
+      attemptMap[r.question_id] = r;
+    }
   });
 
-  /* Map each item to its question attempts.
-     For idioms/phrasal verbs, question_ids should contain the phrase/verb.
-     We also check if the ai question was tagged with idiom_tested. */
-  const microItems = items.map(item => {
-    const phrase = item.phrase || item.pv || item.word || item.modal || item.title || item.id || '';
-    /* Find matching question stats — question_id may contain the phrase or be tagged */
-    const matchingRows = rows.filter(r => {
-      const qid = r.question_id || '';
-      return qid.toLowerCase().includes(phrase.toLowerCase().replace(/\s+/g,'_'))
-          || qid.toLowerCase().includes(phrase.toLowerCase().substring(0,8));
-    });
-    const total   = matchingRows.length;
-    const correct = matchingRows.filter(r => r.correct).length;
-    const pct     = total ? Math.round((correct / total) * 100) : -1;
-    const wrongChosen = matchingRows.filter(r => !r.correct && r.chosen).map(r => r.chosen);
-    return { phrase, def: item.def_en || item.meaning_en || '', total, correct, pct, wrongChosen };
+  /* Build question objects with status */
+  currentQs = staticQs.map(q => {
+    const attempt = attemptMap[q.id];
+    return {
+      ...q,
+      status: attempt ? (attempt.correct ? 'correct' : 'wrong') : 'unattempted',
+      chosen: attempt?.chosen || null,
+    };
   });
 
-  sortAndRenderMicro(microItems, mod, key);
+  /* Also include AI-generated questions that have been attempted */
+  const aiAttempted = progRows.filter(r => r.source === 'ai' && !staticQs.find(q => q.id === r.question_id));
+  aiAttempted.forEach(r => {
+    if (!currentQs.find(q => q.id === r.question_id)) {
+      currentQs.push({
+        id: r.question_id,
+        sentence: '(AI question — text not stored)',
+        correct: r.chosen, // we know chosen but not the full Q
+        options: [],
+        feedback: '',
+        status: r.correct ? 'correct' : 'wrong',
+        chosen: r.chosen,
+        _source: 'ai'
+      });
+    }
+  });
+
+  renderQuestionList();
 }
 
-function getItemsForEntry(mod, entry) {
-  if (mod === 'phrasal')     return entry.verbs   || [];
-  if (mod === 'preposition') return entry.words   || [];
-  if (mod === 'idiom')       return entry.idioms  || [];
-  if (mod === 'grammar')     return entry.words   || [];
-  if (mod === 'modal')       return entry.items   || [];
-  return [];
-}
+function renderQuestionList() {
+  const filtered = qFilter === 'all' ? currentQs : currentQs.filter(q => q.status === qFilter);
+  const list = document.getElementById('q-list');
 
-function sortAndRenderMicro(items, mod, key) {
-  const sorted = [...items];
-  if (microSort === 'weak') {
-    sorted.sort((a, b) => {
-      if (a.pct === -1 && b.pct === -1) return 0;
-      if (a.pct === -1) return 1;
-      if (b.pct === -1) return -1;
-      return a.pct - b.pct;
-    });
-  } else if (microSort === 'alpha') {
-    sorted.sort((a, b) => a.phrase.localeCompare(b.phrase));
-  } else if (microSort === 'attempts') {
-    sorted.sort((a, b) => b.total - a.total);
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">No questions in this category.</div>`;
+    return;
   }
 
-  const grid = document.getElementById('micro-grid');
-  if (!sorted.length) { grid.innerHTML = '<div class="empty">No items found for this subtopic.</div>'; return; }
+  list.innerHTML = filtered.map((q, idx) => {
+    const { sentence, options, correct, feedback, status, chosen } = q;
+    const statusLabel = status === 'correct' ? '✓ Correct' : status === 'wrong' ? '✗ Wrong' : '◯ Unattempted';
 
-  const info = MOD_INFO[mod];
-  grid.innerHTML = sorted.map(item => {
-    const { phrase, def, total, correct, pct, wrongChosen } = item;
-    const badgeCls = pct === -1 ? 'none' : pct >= 70 ? 'great' : pct >= 40 ? 'ok' : 'weak';
-    const badgeTxt = pct === -1 ? 'Not attempted' : pct >= 70 ? 'Strong' : pct >= 40 ? 'Needs work' : 'Weak';
-    const barCol   = pct === -1 ? 'var(--border2)' : pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--grammar)' : 'var(--red)';
-    const barPct   = pct === -1 ? 0 : pct;
-    const uniqueWrong = [...new Set(wrongChosen)].slice(0, 3);
-    return `<div class="micro-card">
-      <div class="mc-top">
-        <div>
-          <div class="mc-phrase" style="color:var(--${info.cls === 'pv' ? 'accent' : info.cls === 'pre' ? 'blue' : info.cls === 'id' ? 'idiom' : info.cls === 'gr' ? 'grammar' : 'modal-c'})">${phrase}</div>
-          ${def ? `<div style="font-size:12px;color:var(--text3);margin-top:2px">${def.substring(0,100)}${def.length > 100 ? '…' : ''}</div>` : ''}
-        </div>
-        <span class="mc-badge ${badgeCls}">${badgeTxt}</span>
+    let optionsHtml = '';
+    if (options && options.length) {
+      optionsHtml = `<div class="q-answer-row">` + options.map(o => {
+        const verb = o.verb || o;
+        let cls = 'q-opt';
+        if (status !== 'unattempted') {
+          if (verb === correct) cls += ' opt-correct';
+          else if (verb === chosen) cls += ' opt-wrong opt-chosen';
+        } else {
+          cls += ' opt-clickable';
+        }
+        return `<span class="${cls}" onclick="handleOptionClick(this, ${idx}, '${esc(verb)}')" title="${o.hint||''}">${verb}${o.hint ? ` <span class="q-hint">(${o.hint})</span>` : ''}</span>`;
+      }).join('') + `</div>`;
+    }
+
+    const feedbackHtml = feedback
+      ? `<div class="q-feedback ${status !== 'unattempted' ? 'show' : ''}" id="fb-${idx}">${feedback}</div>`
+      : '';
+
+    const attemptBtn = status === 'unattempted'
+      ? `<button class="q-attempt-btn" onclick="expandQuestion(${idx})">Attempt this question</button>`
+      : '';
+
+    return `<div class="q-card qc-${status}" id="qcard-${idx}">
+      <div class="q-card-head">
+        <div class="q-sentence">${sentence.replace('___', '<b style="border-bottom:2px solid currentColor;padding:0 4px">___</b>')}</div>
+        <span class="q-status-badge ${status}">${statusLabel}</span>
       </div>
-      <div class="mc-bar-wrap"><div class="mc-bar" style="width:${barPct}%;background:${barCol}"></div></div>
-      <div class="mc-meta">
-        <span><b>${total}</b> attempts</span>
-        <span><b style="color:var(--green)">${correct}</b> correct</span>
-        ${total ? `<span><b>${pct}%</b> accuracy</span>` : ''}
-      </div>
-      ${uniqueWrong.length ? `<div class="mc-wrong-box">Common wrong answers: ${uniqueWrong.map(w => `<b>${w}</b>`).join(', ')}</div>` : ''}
+      ${optionsHtml}
+      ${feedbackHtml}
+      ${attemptBtn}
     </div>`;
   }).join('');
 }
 
-function sortMicro(type, btn) {
-  microSort = type;
-  document.querySelectorAll('.micro-sort-btn').forEach(b => b.classList.remove('active'));
+function filterQuestions(f, btn) {
+  qFilter = f;
+  document.querySelectorAll('.q-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (drillMod && drillKey) renderMicro(drillMod, drillKey);
+  renderQuestionList();
 }
 
-/* ════════════════ DRILL NAVIGATION ════════════════ */
-function drillTo(layer, mod, key) {
-  /* Update state */
-  if (layer === 'home') { drillMod = null; drillKey = null; }
-  if (layer === 'subtopic') { drillMod = mod; drillKey = null; }
-  if (layer === 'micro') { drillMod = mod; drillKey = key; }
-
-  /* Show/hide layers */
-  document.getElementById('layer-home').style.display     = layer === 'home' ? 'block' : 'none';
-  document.getElementById('layer-subtopic').style.display = layer === 'subtopic' ? 'block' : 'none';
-  document.getElementById('layer-micro').style.display    = layer === 'micro' ? 'block' : 'none';
-
-  /* Breadcrumb */
-  updateBreadcrumb(layer, mod, key);
-
-  if (layer === 'subtopic') renderSubtopicList(mod);
-  if (layer === 'micro')    renderMicro(mod, key);
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function expandQuestion(idx) {
+  /* Show options for unattempted question inline */
+  const card = document.getElementById('qcard-' + idx);
+  card.querySelector('.q-attempt-btn')?.remove();
+  const row = card.querySelector('.q-answer-row');
+  if (row) row.querySelectorAll('.q-opt').forEach(o => o.classList.add('opt-clickable'));
 }
 
-function updateBreadcrumb(layer, mod, key) {
-  const bc = document.getElementById('breadcrumb');
-  const modLabel = mod ? MOD_INFO[mod]?.label : '';
-  const keyLabel = key ? (drillMod === 'grammar' ? displayKey(key) : key) : '';
+function handleOptionClick(el, idx, chosen) {
+  const q = currentQs[idx];
+  if (q.status !== 'unattempted') return; /* already answered */
 
-  let html = `<span class="bc-item ${layer === 'home' ? 'active' : ''}" onclick="drillTo('home')">All Topics</span>`;
-  if (mod) {
-    html += `<span class="bc-sep">›</span>
-             <span class="bc-item ${layer === 'subtopic' ? 'active' : ''}" onclick="drillTo('subtopic','${mod}')">${modLabel}</span>`;
+  const correct = q.correct === chosen;
+  q.status  = correct ? 'correct' : 'wrong';
+  q.chosen  = chosen;
+
+  /* Update UI immediately */
+  const card = document.getElementById('qcard-' + idx);
+  card.className = 'q-card qc-' + q.status;
+  card.querySelector('.q-status-badge').className = 'q-status-badge ' + q.status;
+  card.querySelector('.q-status-badge').textContent = correct ? '✓ Correct' : '✗ Wrong';
+
+  /* Highlight options */
+  card.querySelectorAll('.q-opt').forEach(o => {
+    const v = o.textContent.trim().split('(')[0].trim();
+    o.classList.remove('opt-clickable');
+    if (v === q.correct) o.classList.add('opt-correct');
+    else if (v === chosen) o.classList.add('opt-wrong', 'opt-chosen');
+  });
+
+  /* Show feedback */
+  const fb = card.querySelector('.q-feedback');
+  if (fb) fb.classList.add('show');
+
+  /* Save to Supabase */
+  sbSaveAnswer({
+    userId: viewingUser.id,
+    module: q._mod || drillMod,
+    itemKey: q._key || drillKey,
+    questionId: q.id,
+    chosen,
+    correct,
+    source: q._source || 'static'
+  }).catch(console.error);
+
+  /* Update summary */
+  allProgress.push({ module: drillMod, item_key: drillKey, question_id: q.id, chosen, correct, source: 'static', created_at: new Date().toISOString() });
+  renderSummary();
+}
+
+/* ══════════════════════════════════════════
+   READING ANALYTICS
+══════════════════════════════════════════ */
+function renderReadingAnalytics() {
+  const sessions = readingSessions;
+
+  /* Overall stats */
+  const totalQs    = sessions.reduce((s, se) => s + (se.ex1_total||0) + (se.ex2_total||0), 0);
+  const correctQs  = sessions.reduce((s, se) => s + (se.ex1_correct||0) + (se.ex2_correct||0), 0);
+  const wrongQs    = totalQs - correctQs;
+  const ex1Avg     = sessions.filter(s => s.ex1_total > 0).length
+    ? Math.round(sessions.filter(s=>s.ex1_total>0).reduce((a,s)=>a+(s.ex1_score||0),0) / sessions.filter(s=>s.ex1_total>0).length)
+    : null;
+  const ex2Avg     = sessions.filter(s => s.ex2_total > 0).length
+    ? Math.round(sessions.filter(s=>s.ex2_total>0).reduce((a,s)=>a+(s.ex2_score||0),0) / sessions.filter(s=>s.ex2_total>0).length)
+    : null;
+
+  document.getElementById('reading-summary').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total Questions</div>
+      <div class="stat-val">${totalQs}</div>
+      <div class="stat-sub">${correctQs} correct · ${wrongQs} wrong</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ex1 Avg Score</div>
+      <div class="stat-val ${ex1Avg !== null ? (ex1Avg>=70?'green':'red') : ''}">${ex1Avg !== null ? ex1Avg+'%' : '—'}</div>
+      <div class="stat-sub">Vocabulary recall</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ex2 Avg Score</div>
+      <div class="stat-val ${ex2Avg !== null ? (ex2Avg>=70?'green':'red') : ''}">${ex2Avg !== null ? ex2Avg+'%' : '—'}</div>
+      <div class="stat-sub">Comprehension</div>
+    </div>`;
+
+  /* Per-day cards */
+  if (!sessions.length) {
+    document.getElementById('reading-day-grid').innerHTML = '<div class="empty-state">No reading sessions yet.</div>';
+    return;
   }
-  if (key) {
-    html += `<span class="bc-sep">›</span>
-             <span class="bc-item active">${keyLabel}</span>`;
-  }
-  bc.innerHTML = html;
+
+  const grid = document.getElementById('reading-day-grid');
+  grid.innerHTML = sessions.map((s, i) => {
+    const date  = new Date(s.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+    const score = s.ex2_score !== null ? s.ex2_score : (s.ex1_score !== null ? s.ex1_score : null);
+    return `<div class="reading-day-card rd-done" onclick="showSessionDetail(${i})">
+      <div class="rdc-label">W${s.week}·D${s.day}</div>
+      <div class="rdc-score">${score !== null ? score+'%' : '—'}</div>
+      <div class="rdc-sub">${date}</div>
+    </div>`;
+  }).join('');
 }
 
-function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function showSessionDetail(idx) {
+  const s = readingSessions[idx];
+  if (!s) return;
+  const date = new Date(s.created_at).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const fmt  = sec => sec ? Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0') : '—';
+
+  const detail = document.getElementById('reading-session-detail');
+  detail.style.display = 'block';
+  detail.innerHTML = `
+    <div class="session-detail fade-up">
+      <div class="session-detail-head">
+        <div class="session-detail-title">Week ${s.week} · Day ${s.day}</div>
+        <div class="session-detail-date">${date}</div>
+      </div>
+      <div class="section-label" style="margin-bottom:8px">Exercise 1 — Vocabulary Recall</div>
+      <div class="session-metrics" style="margin-bottom:1.25rem">
+        <div class="sm-cell"><div class="sm-val" style="color:${s.ex1_score>=70?'var(--green)':'var(--red)'}">${s.ex1_score !== null ? s.ex1_score+'%' : '—'}</div><div class="sm-lbl">Score</div></div>
+        <div class="sm-cell"><div class="sm-val">${s.ex1_correct||0}/${s.ex1_total||0}</div><div class="sm-lbl">Correct</div></div>
+        <div class="sm-cell"><div class="sm-val">${fmt(s.ex1_read_time)}</div><div class="sm-lbl">Read time</div></div>
+      </div>
+      <div class="section-label" style="margin-bottom:8px">Exercise 2 — Comprehension</div>
+      <div class="session-metrics">
+        <div class="sm-cell"><div class="sm-val" style="color:${s.ex2_score>=70?'var(--green)':'var(--red)'}">${s.ex2_score !== null ? s.ex2_score+'%' : '—'}</div><div class="sm-lbl">Score</div></div>
+        <div class="sm-cell"><div class="sm-val">${s.ex2_correct||0}/${s.ex2_total||0}</div><div class="sm-lbl">Correct</div></div>
+        <div class="sm-cell"><div class="sm-val">${s.ex2_interp_correct||0}/${s.ex2_interp_total||0}</div><div class="sm-lbl">Interpret.</div></div>
+        <div class="sm-cell"><div class="sm-val">${s.ex2_infer_correct||0}/${s.ex2_infer_total||0}</div><div class="sm-lbl">Inference</div></div>
+        <div class="sm-cell"><div class="sm-val">${fmt(s.ex2_time)}</div><div class="sm-lbl">Time taken</div></div>
+        <div class="sm-cell"><div class="sm-val">${fmt(s.total_time)}</div><div class="sm-lbl">Total time</div></div>
+      </div>
+    </div>`;
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ══════════════════════════════════════════
+   ADMIN USER PICKER
+══════════════════════════════════════════ */
+function openUserPicker() {
+  const list = document.getElementById('user-picker-list');
+  list.innerHTML = allUsers.map(u => {
+    const isSelf = u.user_id === currentUser.id;
+    const isViewing = u.user_id === viewingUser.id;
+    const avHtml = u.avatar_url
+      ? `<img src="${u.avatar_url}" alt="${u.name}">`
+      : (u.name||'?')[0].toUpperCase();
+    return `<div class="user-pick-row ${isViewing?'selected':''}" onclick="selectUser('${u.user_id}')">
+      <div class="user-pick-av">${avHtml}</div>
+      <div>
+        <div class="user-pick-name">${u.name || u.user_id.slice(0,8)} ${isSelf?'(me)':''}</div>
+        <div class="user-pick-email">${u.email || ''}</div>
+      </div>
+      ${isViewing ? '<i class="ti ti-check" style="color:var(--accent);margin-left:auto"></i>' : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('user-picker-modal').classList.add('open');
+}
+
+function closeUserPicker(e) {
+  if (!e || e.target === document.getElementById('user-picker-modal')) {
+    document.getElementById('user-picker-modal').classList.remove('open');
+  }
+}
+
+async function selectUser(uid) {
+  closeUserPicker();
+  viewingUser = { id: uid };
+  drillMod = null; drillKey = null;
+  activeModTab = 'all';
+  document.querySelectorAll('.mod-tab').forEach(t => {
+    t.className = 'mod-tab';
+    if (t.dataset.mod === 'all') t.classList.add('active-all');
+  });
+  document.getElementById('page-loading').style.display = 'flex';
+  await loadForUser(uid);
+  document.getElementById('page-loading').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 </script>
 </body>
 </html>
