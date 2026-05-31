@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Admin — LearnSmart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="reading_data.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
+  --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
+  --text1: #1A1714; --text2: #5C5751; --text3: #9C9590;
+  --accent: #C84B2F; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
+  --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
+  --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --chain-pill-bg: #EEEDFE; --chain-pill-text: #3C3489;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
+
+.top-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; gap: 10px; height: 54px; position: sticky; top: 0; z-index: 200; }
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; text-decoration: none; }
+.nav-brand span { color: var(--accent); }
+.nav-divider { width: 1px; height: 20px; background: var(--border); }
+.nav-label { font-size: 13px; color: var(--text2); font-weight: 500; }
+.admin-badge { font-size: 11px; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); border-radius: 20px; padding: 2px 9px; font-weight: 500; }
+.nav-spacer { flex: 1; }
+.nav-btn { font-size: 12.5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.nav-btn:hover { background: var(--bg2); color: var(--text1); }
+
+.wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* Tab nav */
+.tab-nav { display: flex; gap: 4px; margin-bottom: 2rem; background: var(--bg2); border-radius: 10px; padding: 4px; width: fit-content; }
+.tab-nav-btn { font-size: 13px; padding: 7px 16px; border-radius: 7px; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+.tab-nav-btn.active { background: var(--surface); color: var(--text1); box-shadow: var(--shadow); }
+.panel { display: none; } .panel.active { display: block; animation: slideUp .3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Section header */
+.section-hd { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); margin-bottom: 4px; }
+.section-sub { font-size: 13px; color: var(--text3); margin-bottom: 1.75rem; }
+
+/* Form */
+.form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+.form-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.25rem; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text2); display: block; margin-bottom: 5px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text1); outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+.form-hint { font-size: 11.5px; color: var(--text3); margin-top: 4px; }
+
+/* Block inputs */
+.block-form { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
+.block-form-num { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+
+/* Question form */
+.q-form { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
+.q-form-num { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.remove-q-btn { font-size: 11px; color: var(--red); background: none; border: none; cursor: pointer; padding: 0; }
+
+.opt-row { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: center; margin-bottom: 6px; }
+.opt-letter { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text3); }
+
+/* Buttons */
+.btn-primary { background: var(--text1); color: var(--surface); border: none; border-radius: var(--radius-sm); padding: 10px 22px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+.btn-primary:hover { background: var(--accent); }
+.btn-secondary { background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer; transition: all 0.12s; }
+.btn-secondary:hover { background: var(--bg2); color: var(--text1); }
+.btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red-border); border-radius: var(--radius-sm); padding: 7px 14px; font-family: 'DM Sans', sans-serif; font-size: 12.5px; cursor: pointer; transition: all 0.12s; }
+.btn-danger:hover { background: var(--red-bg); }
+.save-toast { font-size: 13px; color: var(--green); font-weight: 500; opacity: 0; transition: opacity .3s; margin-left: 10px; }
+.save-toast.show { opacity: 1; }
+
+/* Content library */
+.ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 10px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: flex-start; }
+.ex-card-info { flex: 1; }
+.ex-card-badge { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; background: var(--chain-pill-bg); color: var(--chain-pill-text); border-radius: 3px; padding: 2px 8px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; display: inline-block; }
+.ex-card-topic { font-size: 14px; font-weight: 600; color: var(--text1); margin-bottom: 4px; }
+.ex-card-chain { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+.ex-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* Users table */
+.users-grid { display: flex; flex-direction: column; gap: 10px; }
+.user-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
+.user-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.user-av-sm { width: 28px; height: 28px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text2); overflow: hidden; flex-shrink: 0; }
+.user-av-sm img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.user-name { font-size: 14px; font-weight: 600; color: var(--text1); }
+.user-day { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-left: auto; }
+.sessions-table { width: 100%; border-collapse: collapse; }
+.sessions-table th { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.sessions-table td { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); padding: 6px 8px; border-bottom: 0.5px solid var(--border); }
+.sessions-table tr:last-child td { border-bottom: none; }
+
+/* Variable grid */
+.var-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.var-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow); }
+.var-letter { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.var-label { font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 2px; }
+.var-desc { font-size: 11.5px; color: var(--text3); line-height: 1.5; margin-bottom: 10px; }
+.var-score { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text1); }
+.var-score.good { color: var(--green); }
+.var-score.mid  { color: #B5760A; }
+.var-score.weak { color: var(--red); }
+.var-score.none { color: var(--text3); font-size: 14px; }
+
+/* Loading */
+.spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-row { display: flex; align-items: center; gap: 10px; padding: 2rem; color: var(--text3); font-size: 13px; }
+
+/* User selector */
+.user-select-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a class="nav-brand" href="index.html">Learn<span>Smart</span></a>
+  <div class="nav-divider"></div>
+  <span class="nav-label">Reading Admin</span>
+  <span class="admin-badge">Admin</span>
+  <div class="nav-spacer"></div>
+  <a class="nav-btn" href="reading.html"><i class="ti ti-book"></i> User View</a>
+  <a class="nav-btn" href="index.html"><i class="ti ti-home"></i> Home</a>
+</nav>
+
+<div class="wrap">
+  <div id="access-denied" style="display:none;text-align:center;padding:4rem 2rem">
+    <div style="font-size:2rem;margin-bottom:1rem">🔒</div>
+    <div style="font-size:15px;color:var(--text2)">Admin access required.</div>
+  </div>
+
+  <div id="admin-content" style="display:none">
+    <div class="tab-nav">
+      <button class="tab-nav-btn active" onclick="showPanel('upload', this)"><i class="ti ti-upload"></i> Upload</button>
+      <button class="tab-nav-btn" onclick="showPanel('library', this)"><i class="ti ti-library"></i> Library</button>
+      <button class="tab-nav-btn" onclick="showPanel('users', this)"><i class="ti ti-users"></i> Users</button>
+      <button class="tab-nav-btn" onclick="showPanel('vars', this)"><i class="ti ti-chart-bar"></i> Variables</button>
+    </div>
+
+    <!-- ══ UPLOAD PANEL ══ -->
+    <div id="panel-upload" class="panel active">
+      <div class="section-hd">Upload Exercise</div>
+      <div class="section-sub">Fill in all fields. All blocks and questions are required.</div>
+
+      <div class="form-card">
+        <div class="form-card-title">Exercise Info</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Topic / Title</label>
+            <input class="form-input" id="f-topic" placeholder="e.g. How Words Work · Linguistics" />
+          </div>
+          <div class="form-row" style="gap:10px">
+            <div class="form-group">
+              <label class="form-label">Day (1–7)</label>
+              <input class="form-input" id="f-day" type="number" min="1" max="7" placeholder="1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Week</label>
+              <input class="form-input" id="f-week" type="number" min="1" placeholder="1" />
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chain Labels (5, comma-separated)</label>
+          <input class="form-input" id="f-chain" placeholder="mortgage, semantic drift, quarantine, sibilance, entropy" />
+          <div class="form-hint">These are the 5 node labels shown in the full chain.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Blank positions (1–5, comma-separated — which 3 to blank)</label>
+          <input class="form-input" id="f-blanks" placeholder="2, 3, 5" />
+          <div class="form-hint">e.g. "2, 3, 5" means nodes 2, 3, 5 become blanks (1-indexed).</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">Exercise 1 — 5 Blocks</div>
+        <div id="block-forms"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">Exercise 2 — Comprehension Questions</div>
+        <div class="form-hint" style="margin-bottom:1rem">Add at least 4 questions (2 factual, 1 interpretive, 1 inferential). Day logic picks automatically.</div>
+        <div id="q-forms"></div>
+        <button class="btn-secondary" onclick="addQuestion()" style="margin-top:4px"><i class="ti ti-plus"></i> Add Question</button>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">Anchor Questions Bank (for Days 4–7)</div>
+        <div class="form-hint" style="margin-bottom:1rem">Add questions to use on anchor recall days. Day 4 = first, Day 5 = second, etc. Type: interpretive for Day 4, inferential for Days 5–7.</div>
+        <div id="anchor-forms"></div>
+        <button class="btn-secondary" onclick="addAnchorQuestion()" style="margin-top:4px"><i class="ti ti-plus"></i> Add Anchor Question</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-top:1rem">
+        <button class="btn-primary" onclick="saveExercise()">Save Exercise</button>
+        <span class="save-toast" id="save-toast">Saved ✓</span>
+      </div>
+    </div>
+
+    <!-- ══ LIBRARY PANEL ══ -->
+    <div id="panel-library" class="panel">
+      <div class="section-hd">Content Library</div>
+      <div class="section-sub">All uploaded exercises.</div>
+      <div id="library-list"><div class="loading-row"><div class="spinner"></div> Loading…</div></div>
+    </div>
+
+    <!-- ══ USERS PANEL ══ -->
+    <div id="panel-users" class="panel">
+      <div class="section-hd">Users & Sessions</div>
+      <div class="section-sub">All users and their session data.</div>
+      <div id="users-list"><div class="loading-row"><div class="spinner"></div> Loading…</div></div>
+    </div>
+
+    <!-- ══ VARIABLES PANEL ══ -->
+    <div id="panel-vars" class="panel">
+      <div class="section-hd">Variable Tracking</div>
+      <div class="section-sub">Computed learning signals per user from session history.</div>
+      <div class="user-select-row">
+        <label class="form-label" style="margin:0;white-space:nowrap">Select user:</label>
+        <select class="form-select" id="var-user-sel" onchange="renderVars()" style="max-width:260px"></select>
+      </div>
+      <div id="var-content"><div class="loading-row"><div class="spinner"></div> Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+let adminUser = null;
+let allExercises = [], allUsers = [], allSessions = {};
+
+(async () => {
+  adminUser = await rdGetUser();
+  if (!adminUser) { window.location.href = 'auth.html'; return; }
+  const isAdmin = await rdIsAdmin(adminUser.id);
+  if (!isAdmin) {
+    document.getElementById('access-denied').style.display = 'block';
+    return;
+  }
+  document.getElementById('admin-content').style.display = 'block';
+  buildBlockForms();
+  loadAll();
+})();
+
+async function loadAll() {
+  allExercises = await rdGetAllExercises();
+  allUsers     = await rdGetAllUsers();
+  // Sessions per user
+  for (const u of allUsers) {
+    const sessions = await rdGetUserSessions(u.user_id);
+    allSessions[u.user_id] = sessions;
+  }
+  renderLibrary();
+  renderUsers();
+  renderVarSelect();
+}
+
+/* ════════════════════════════════════════
+   PANEL NAV
+════════════════════════════════════════ */
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ════════════════════════════════════════
+   UPLOAD FORM
+════════════════════════════════════════ */
+function buildBlockForms() {
+  const wrap = document.getElementById('block-forms');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    wrap.innerHTML += `
+      <div class="block-form">
+        <div class="block-form-num">Block ${i+1}</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">English text</label>
+            <textarea class="form-textarea" id="b${i}-en" rows="2" placeholder="15–20 words of passage text"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hinglish note (crisp, 1 line)</label>
+            <input class="form-input" id="b${i}-hi" placeholder="e.g. Loan ka naam maut ke waade se aaya." />
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+let qCount = 0, anchorCount = 0;
+
+function addQuestion() {
+  const i = qCount++;
+  const wrap = document.getElementById('q-forms');
+  const div = document.createElement('div');
+  div.className = 'q-form'; div.id = 'qf-' + i;
+  div.innerHTML = `
+    <div class="q-form-num">Question ${i+1}
+      <button class="remove-q-btn" onclick="document.getElementById('qf-${i}').remove()">remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Question text</label>
+        <textarea class="form-textarea" id="q${i}-text" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="q${i}-type">
+          <option value="factual">factual</option>
+          <option value="interpretive">interpretive</option>
+          <option value="inferential">inferential</option>
+        </select>
+        <label class="form-label" style="margin-top:8px">Correct (0=A, 1=B, 2=C, 3=D)</label>
+        <input class="form-input" id="q${i}-correct" type="number" min="0" max="3" placeholder="0" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Options A–D</label>
+      ${['A','B','C','D'].map((l,oi) => `<div class="opt-row"><span class="opt-letter">${l}</span><input class="form-input" id="q${i}-opt${oi}" placeholder="Option ${l}" /></div>`).join('')}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason (why correct answer is right)</label>
+      <textarea class="form-textarea" id="q${i}-reason" rows="2"></textarea>
+    </div>`;
+  wrap.appendChild(div);
+}
+
+function addAnchorQuestion() {
+  const i = anchorCount++;
+  const wrap = document.getElementById('anchor-forms');
+  const div = document.createElement('div');
+  div.className = 'q-form'; div.id = 'af-' + i;
+  div.innerHTML = `
+    <div class="q-form-num">Anchor Q${i+1} — Day ${i+4}
+      <button class="remove-q-btn" onclick="document.getElementById('af-${i}').remove()">remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Question text</label>
+        <textarea class="form-textarea" id="a${i}-text" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="a${i}-type">
+          <option value="interpretive">interpretive</option>
+          <option value="inferential">inferential</option>
+        </select>
+        <label class="form-label" style="margin-top:8px">Correct (0=A, 1=B, 2=C, 3=D)</label>
+        <input class="form-input" id="a${i}-correct" type="number" min="0" max="3" placeholder="0" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Options A–D</label>
+      ${['A','B','C','D'].map((l,oi) => `<div class="opt-row"><span class="opt-letter">${l}</span><input class="form-input" id="a${i}-opt${oi}" placeholder="Option ${l}" /></div>`).join('')}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason</label>
+      <textarea class="form-textarea" id="a${i}-reason" rows="2"></textarea>
+    </div>`;
+  wrap.appendChild(div);
+}
+
+async function saveExercise() {
+  const topic  = document.getElementById('f-topic').value.trim();
+  const day    = parseInt(document.getElementById('f-day').value) || 1;
+  const week   = parseInt(document.getElementById('f-week').value) || 1;
+  const chainRaw  = document.getElementById('f-chain').value;
+  const blanksRaw = document.getElementById('f-blanks').value;
+
+  const chain  = chainRaw.split(',').map(s => s.trim()).filter(Boolean);
+  const blanks = blanksRaw.split(',').map(s => parseInt(s.trim()) - 1).filter(n => !isNaN(n));
+
+  const blocks = [];
+  for (let i = 0; i < 5; i++) {
+    blocks.push({
+      en:   document.getElementById(`b${i}-en`)?.value.trim() || '',
+      hi:   document.getElementById(`b${i}-hi`)?.value.trim() || '',
+      node: chain[i] || ''
+    });
+  }
+
+  const questions = [];
+  for (let i = 0; i < qCount; i++) {
+    const el = document.getElementById('qf-' + i);
+    if (!el) continue;
+    questions.push({
+      text:    document.getElementById(`q${i}-text`)?.value.trim(),
+      type:    document.getElementById(`q${i}-type`)?.value,
+      correct: parseInt(document.getElementById(`q${i}-correct`)?.value),
+      reason:  document.getElementById(`q${i}-reason`)?.value.trim(),
+      options: ['A','B','C','D'].map((_,oi) => document.getElementById(`q${i}-opt${oi}`)?.value.trim())
+    });
+  }
+
+  const anchor_questions = [];
+  for (let i = 0; i < anchorCount; i++) {
+    const el = document.getElementById('af-' + i);
+    if (!el) continue;
+    anchor_questions.push({
+      text:    document.getElementById(`a${i}-text`)?.value.trim(),
+      type:    document.getElementById(`a${i}-type`)?.value,
+      correct: parseInt(document.getElementById(`a${i}-correct`)?.value),
+      reason:  document.getElementById(`a${i}-reason`)?.value.trim(),
+      options: ['A','B','C','D'].map((_,oi) => document.getElementById(`a${i}-opt${oi}`)?.value.trim())
+    });
+  }
+
+  // Build passage from blocks
+  const passage = blocks.map(b => b.en).join('\n\n');
+
+  try {
+    await rdSaveExercise({ topic, day, week, blocks, chain, blanks, passage, questions, anchor_questions });
+    const toast = document.getElementById('save-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+    allExercises = await rdGetAllExercises();
+    renderLibrary();
+  } catch (e) {
+    alert('Save failed: ' + e.message);
+  }
+}
+
+/* ════════════════════════════════════════
+   LIBRARY
+════════════════════════════════════════ */
+function renderLibrary() {
+  const el = document.getElementById('library-list');
+  if (!allExercises.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:1rem">No exercises uploaded yet.</div>';
+    return;
+  }
+  el.innerHTML = allExercises.map(ex => `
+    <div class="ex-card">
+      <div class="ex-card-info">
+        <div class="ex-card-badge">W${ex.week} · D${ex.day}</div>
+        <div class="ex-card-topic">${ex.topic}</div>
+        <div class="ex-card-chain">${(ex.chain || []).join(' → ')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${ex.questions?.length || 0} questions · ${ex.anchor_questions?.length || 0} anchor Qs</div>
+      </div>
+      <div class="ex-card-actions">
+        <button class="btn-danger" onclick="deleteEx(${ex.id})"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteEx(id) {
+  if (!confirm('Delete this exercise? This cannot be undone.')) return;
+  await rdDeleteExercise(id);
+  allExercises = await rdGetAllExercises();
+  renderLibrary();
+}
+
+/* ════════════════════════════════════════
+   USERS
+════════════════════════════════════════ */
+function renderUsers() {
+  const el = document.getElementById('users-list');
+  if (!allUsers.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:1rem">No users yet.</div>';
+    return;
+  }
+  el.innerHTML = allUsers.map(u => {
+    const name    = u.profiles?.name || u.user_id.slice(0,8);
+    const avatar  = u.profiles?.avatar_url;
+    const sessions = allSessions[u.user_id] || [];
+    const avHtml  = avatar ? `<img src="${avatar}" alt="${name}">` : name[0]?.toUpperCase() || '?';
+    const rowsHtml = sessions.slice(0, 5).map(s => `
+      <tr>
+        <td>W${s.week} D${s.day}</td>
+        <td>${s.ex1_score !== null ? s.ex1_score + '%' : '—'}</td>
+        <td>${s.ex2_score !== null ? s.ex2_score + '%' : '—'}</td>
+        <td>${fmt(s.ex1_read_time || 0)}</td>
+        <td>${fmt(s.ex1_recall_time || 0)}</td>
+        <td>${fmt(s.ex2_time || 0)}</td>
+        <td>${fmt(s.total_time || 0)}</td>
+      </tr>`).join('');
+    return `<div class="user-card">
+      <div class="user-card-header">
+        <div class="user-av-sm">${avHtml}</div>
+        <div class="user-name">${name}</div>
+        <div class="user-day">W${u.current_week || 1} · D${u.current_day || 1}</div>
+      </div>
+      ${sessions.length ? `
+      <table class="sessions-table">
+        <thead><tr><th>Day</th><th>Ex1</th><th>Ex2</th><th>Read</th><th>Recall</th><th>Ex2 time</th><th>Total</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>` : '<div style="font-size:12px;color:var(--text3)">No sessions yet.</div>'}
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   VARIABLE TRACKING
+════════════════════════════════════════ */
+function renderVarSelect() {
+  const sel = document.getElementById('var-user-sel');
+  sel.innerHTML = allUsers.map(u => {
+    const name = u.profiles?.name || u.user_id.slice(0,8);
+    return `<option value="${u.user_id}">${name}</option>`;
+  }).join('');
+  renderVars();
+}
+
+function renderVars() {
+  const uid      = document.getElementById('var-user-sel').value;
+  const sessions = allSessions[uid] || [];
+  const vars     = rdComputeVars(sessions);
+  const el       = document.getElementById('var-content');
+
+  const VAR_DEFS = [
+    { k: 'V', label: 'Vocabulary',      desc: 'Ex1 recall accuracy — exact chain node recall', signal: 'Ex1 blanks' },
+    { k: 'A', label: 'Abstract/Interp', desc: 'Interpretive question accuracy in Ex2',          signal: 'Interpretive Qs' },
+    { k: 'I', label: 'Inferential',     desc: 'Inferential question accuracy in Ex2',           signal: 'Inferential Qs' },
+    { k: 'W', label: 'Speed',           desc: 'Avg Ex1 read time (lower = faster)',             signal: 'Read timer', isTime: true },
+    { k: 'S', label: 'Comprehension',   desc: 'Ex2 overall MCQ score average',                  signal: 'All Ex2 Qs' },
+    { k: 'L', label: 'Consistency',     desc: 'Sessions completed total',                       signal: 'Session count', isCount: true }
+  ];
+
+  const cards = VAR_DEFS.map(v => {
+    const val = vars[v.k];
+    let display, cls;
+    if (val === null || val === undefined) { display = 'No data'; cls = 'none'; }
+    else if (v.isTime) { display = fmt(val); cls = val < 90 ? 'good' : val < 180 ? 'mid' : 'weak'; }
+    else if (v.isCount) { display = `${val} / 7`; cls = val >= 7 ? 'good' : val >= 3 ? 'mid' : 'weak'; }
+    else { display = val + '%'; cls = val >= 70 ? 'good' : val >= 40 ? 'mid' : 'weak'; }
+    return `<div class="var-card">
+      <div class="var-letter">${v.k}</div>
+      <div class="var-label">${v.label}</div>
+      <div class="var-desc">${v.desc}</div>
+      <div class="var-score ${cls}">${display}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Signal: ${v.signal}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="var-grid">${cards}</div>
+    <div style="font-size:12px;color:var(--text3)">Based on ${sessions.length} session${sessions.length !== 1 ? 's' : ''}.</div>`;
+}
+
+function fmt(s) { if (!s) return '0:00'; return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+</script>
+</body>
+</html>
