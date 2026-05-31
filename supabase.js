@@ -52,7 +52,9 @@ async function sbGetProfile(userId) {
 
 /* ── PROGRESS ── */
 async function sbSaveAnswer({ userId, module, itemKey, questionId, chosen, correct, source }) {
-  await SB.from('progress').insert({
+  /* upsert with onConflict so re-saves (e.g. app re-renders) never create duplicate rows.
+     The UNIQUE constraint on (user_id, module, item_key, question_id) must exist in DB — see v2.md SQL. */
+  const { error } = await SB.from('progress').upsert({
     user_id: userId,
     module,
     item_key: itemKey,
@@ -60,7 +62,8 @@ async function sbSaveAnswer({ userId, module, itemKey, questionId, chosen, corre
     chosen,
     correct,
     source
-  });
+  }, { onConflict: 'user_id,module,item_key,question_id' });
+  if (error) console.error('sbSaveAnswer error:', error.message);
   await sbUpsertStreak(userId);
 }
 
@@ -75,8 +78,19 @@ async function sbGetModuleProgress(userId, module) {
   const { data } = await SB.from('progress')
     .select('item_key, question_id, chosen, correct, source')
     .eq('user_id', userId)
-    .eq('module', module);
-  return data || [];
+    .eq('module', module)
+    .order('id', { ascending: true }); /* oldest first so first attempt wins */
+
+  if (!data) return [];
+
+  /* Deduplicate: keep only the first attempt per (item_key, question_id) */
+  const seen = new Set();
+  return data.filter(row => {
+    const k = row.item_key + '||' + row.question_id;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
 
 /* ── STREAKS ── */
