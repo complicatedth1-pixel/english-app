@@ -522,7 +522,8 @@ function buildPractice(mod, key) {
   }
 
   /* Append cached AI questions if any */
-  if (aiQuestions[key] && aiQuestions[key].length) {
+  const validAI = (aiQuestions[key] || []).filter(q => q && q.id && q.sentence && q.options);
+if (validAI.length) {
     html += `<div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:1.5rem 0 0.75rem">AI Practice Questions</div>`;
     aiQuestions[key].forEach(q => { html += renderFibCard(q, key, mod, true); });
   }
