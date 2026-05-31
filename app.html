@@ -525,14 +525,14 @@ function buildPractice(mod, key) {
   const validAI = (aiQuestions[key] || []).filter(q => q && q.id && q.sentence && q.options);
 if (validAI.length) {
     html += `<div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:1.5rem 0 0.75rem">AI Practice Questions</div>`;
-    aiQuestions[key].forEach(q => { html += renderFibCard(q, key, mod, true); });
+    validAI.forEach(q => { html += renderFibCard(q, key, mod, true); });
   }
 
   document.getElementById('sec-practice').innerHTML = html;
 
   /* Lock all previously answered questions */
   reapplyAttempts(key, qs, mod);
-  if (aiQuestions[key]) reapplyAttempts(key, aiQuestions[key], mod);
+  if (validAI.length) reapplyAttempts(key, validAI, mod);
 }
 
 function launchPracticeTest() {
@@ -540,6 +540,7 @@ function launchPracticeTest() {
 }
 
 function renderFibCard(q, key, mod, isAI) {
+  if (!q || !q.sentence || !q.options) return '';
   const meta   = MOD_META[mod];
   const tagCls = isAI ? 'ai-tag' : meta.tagCls;
   const tagLbl = isAI ? '✦ AI Question' : 'Practice';
@@ -723,6 +724,7 @@ function _recordAnswer(key, mod, qid, chosen, isCorrect, source) {
 function reapplyAttempts(key, qs, mod) {
   const att = attempts[key] || {};
   qs.forEach(q => {
+    if (!q || !q.id) return;
     const a  = att[q.id];
     if (!a)  return;
     const fc = document.getElementById('fc-' + q.id);
