@@ -113,7 +113,7 @@ function rdComputeVars(sessions) {
 // AFTER — includes all signed-up users
 async function rdGetAllUsers() {
   const [{ data: profiles }, { data: states }] = await Promise.all([
-    SB.from('profiles').select('id, name, avatar_url, created_at'),
+    SB.from('profiles').select('id, name, avatar_url, email, created_at'),
     SB.from('reading_user_state').select('user_id, current_day, current_week, updated_at')
   ]);
 
@@ -129,7 +129,8 @@ async function rdGetAllUsers() {
       current_day:  state.current_day  || 1,
       current_week: state.current_week || 1,
       updated_at:   state.updated_at   || p.created_at,
-      profiles: { name: p.name, avatar_url: p.avatar_url }
+      created_at:   p.created_at,
+      profiles: { name: p.name, avatar_url: p.avatar_url, email: p.email }
     };
-  }).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // newest first
 }

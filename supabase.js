@@ -37,9 +37,11 @@ async function sbGetSession() {
 /* ── PROFILE ── */
 async function sbUpsertProfile(user) {
   await SB.from('profiles').upsert({
-    id: user.id,
-    name: user.user_metadata?.full_name || user.email,
-    avatar_url: user.user_metadata?.avatar_url || null
+    id:         user.id,
+    name:       user.user_metadata?.full_name || user.email,
+    avatar_url: user.user_metadata?.avatar_url || null,
+    email:      user.email,
+    created_at: user.created_at
   }, { onConflict: 'id' });
 }
 
