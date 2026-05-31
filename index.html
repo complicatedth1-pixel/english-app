@@ -300,6 +300,48 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .test-cta { flex-direction: column; align-items: flex-start; }
   .form-row { grid-template-columns: 1fr; }
 }
+/* ── READING CARD ── */
+.reading-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  margin-bottom: 1.75rem; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 1rem;
+  transition: all 0.15s;
+}
+.reading-card:hover { box-shadow: var(--shadow-md); }
+.reading-card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #EBF0FB; display: flex; align-items: center;
+  justify-content: center; font-size: 20px; flex-shrink: 0;
+}
+.reading-card-body { flex: 1; min-width: 0; }
+.reading-card-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 2px;
+}
+.reading-card-title { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
+.reading-card-sub { font-size: 12.5px; color: var(--text3); }
+.reading-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.reading-card-btn {
+  font-size: 13px; padding: 7px 16px; border-radius: 20px;
+  border: 1.5px solid var(--blue-border); background: var(--blue-bg);
+  color: var(--blue); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: all 0.12s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.reading-card-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.reading-card-btn.done {
+  border-color: var(--green-border); background: var(--green-bg); color: var(--green);
+  cursor: default; pointer-events: none;
+}
+.reading-admin-btn {
+  font-size: 12px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text3); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: all 0.12s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.reading-admin-btn:hover { background: var(--bg2); color: var(--text1); }
 </style>
 </head>
 <body>
@@ -365,6 +407,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <div class="goal-title" id="goal-title">Daily Goal: 0 / 5 questions</div>
         <div class="goal-sub"  id="goal-sub">Answer 5 questions today to keep your streak alive.</div>
       </div>
+    </div>
+</div>
+
+  <!-- READING PRACTICE CARD -->
+  <div class="reading-card" id="reading-card" style="display:none">
+    <div class="reading-card-icon">📖</div>
+    <div class="reading-card-body">
+      <div class="reading-card-label">Today's Work</div>
+      <div class="reading-card-title" id="rd-card-title">Reading Practice</div>
+      <div class="reading-card-sub" id="rd-card-sub">Loading…</div>
+    </div>
+    <div class="reading-card-actions">
+      <a id="rd-admin-btn" class="reading-admin-btn" href="reading_admin.html" style="display:none">
+        <i class="ti ti-settings" style="font-size:13px"></i> Admin
+      </a>
+      <a id="rd-action-btn" class="reading-card-btn" href="reading.html">
+        Start Session →
+      </a>
     </div>
   </div>
 
@@ -578,8 +638,9 @@ async function loadDashboard() {
     ? '✓ Goal complete! Great work today.'
     : `${GOAL - todayDone} more question${GOAL - todayDone !== 1 ? 's' : ''} to reach today's goal.`;
 
-  renderProgressCards(progress);
+renderProgressCards(progress);
   renderModuleGrid();
+  loadReadingCard(); // reading practice integration
 }
 
 function renderProgressCards(progress) {
@@ -721,6 +782,88 @@ async function launchTest() {
 }
 
 function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+/* ════════════════════════════════
+   READING CARD
+════════════════════════════════ */
+async function loadReadingCard() {
+  try {
+    // 1. Get reading user state (day/week)
+    const { data: rdState } = await SB
+      .from('reading_user_state')
+      .select('current_day, current_week')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    const day  = rdState?.current_day  || 1;
+    const week = rdState?.current_week || 1;
+
+    // 2. Check if today's session is already done
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todaySessions } = await SB
+      .from('reading_sessions')
+      .select('id, created_at')
+      .eq('user_id', currentUser.id)
+      .eq('day', day)
+      .eq('week', week);
+
+    const doneToday = (todaySessions || []).some(s => {
+      return new Date(s.created_at).toISOString().split('T')[0] === today;
+    });
+
+    // 3. Check if exercise exists for this day/week
+    const { data: exData } = await SB
+      .from('reading_exercises')
+      .select('id, topic')
+      .eq('day', day <= 3 ? day : 1)
+      .eq('week', week)
+      .single();
+
+    const hasExercise = !!exData;
+
+    // 4. Update card
+    const card    = document.getElementById('reading-card');
+    const title   = document.getElementById('rd-card-title');
+    const sub     = document.getElementById('rd-card-sub');
+    const actBtn  = document.getElementById('rd-action-btn');
+
+    card.style.display = 'flex';
+
+    if (doneToday) {
+      title.textContent = 'Reading Practice — Done ✓';
+      sub.textContent   = `Week ${week} · Day ${day} complete. See you tomorrow!`;
+      actBtn.textContent = 'View Dashboard →';
+      actBtn.classList.add('done');
+    } else if (!hasExercise) {
+      title.textContent = 'Reading Practice';
+      sub.textContent   = `Week ${week} · Day ${day} — No exercise uploaded yet.`;
+      actBtn.textContent = 'Open →';
+    } else {
+      const isAnchor = day >= 4 && day <= 7;
+      title.textContent = exData.topic || 'Reading Practice';
+      sub.textContent   = isAnchor
+        ? `Week ${week} · Day ${day} — Anchor recall session`
+        : `Week ${week} · Day ${day} — ${exData.topic}`;
+      actBtn.textContent = 'Start Session →';
+      actBtn.classList.remove('done');
+    }
+
+    // 5. Show admin button if user is admin
+    const { data: adminRow } = await SB
+      .from('reading_admins')
+      .select('user_id')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (adminRow) {
+      document.getElementById('rd-admin-btn').style.display = 'inline-flex';
+    }
+
+  } catch (e) {
+    // Silently hide the card if anything fails (e.g. table not yet set up)
+    console.warn('Reading card load failed:', e);
+    document.getElementById('reading-card').style.display = 'none';
+  }
+}
 </script>
 </body>
 </html>
