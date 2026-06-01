@@ -19,7 +19,7 @@ const PT = (() => {
     };
   }
 
-  /* ── STYLES (injected once) ── */
+  /* ── STYLES ── */
   function injectStyles() {
     if (document.getElementById('pt-styles')) return;
     const st = document.createElement('style');
@@ -56,7 +56,7 @@ const PT = (() => {
 .pt-qbody{flex:1;overflow-y:auto;padding:22px 24px;}
 .pt-qbody::-webkit-scrollbar{width:4px;}
 .pt-qbody::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
-.pt-qtext{font-size:15px;line-height:1.8;color:var(--text1);font-weight:500;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;}
+.pt-qtext{font-size:15px;line-height:1.8;color:var(--text1);font-weight:500;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;min-height:60px;}
 .pt-options{display:flex;flex-direction:column;gap:9px;}
 .pt-option{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .13s;user-select:none;}
 .pt-option:hover{border-color:var(--border2);background:var(--bg2);}
@@ -281,17 +281,17 @@ const PT = (() => {
   function setLoadStep(stepId, status) {
     STEP_IDS.forEach(id => {
       const el = document.getElementById(id); if (!el) return;
-      const idx      = STEP_IDS.indexOf(id);
-      const targetIdx= STEP_IDS.indexOf(stepId);
-      if (idx < targetIdx)           el.className = 'pt-load-step done';
-      else if (id === stepId)        el.className = 'pt-load-step ' + status;
-      else                           el.className = 'pt-load-step';
+      const idx       = STEP_IDS.indexOf(id);
+      const targetIdx = STEP_IDS.indexOf(stepId);
+      if (idx < targetIdx)     el.className = 'pt-load-step done';
+      else if (id === stepId)  el.className = 'pt-load-step ' + status;
+      else                     el.className = 'pt-load-step';
     });
-    const pct = STEP_PCTS[stepId] || 0;
+    const pct  = STEP_PCTS[stepId] || 0;
     const bar  = document.getElementById('pt-load-bar');
     const pctEl= document.getElementById('pt-load-pct');
-    if (bar)   bar.style.width     = pct + '%';
-    if (pctEl) pctEl.textContent   = pct + '%';
+    if (bar)   bar.style.width   = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
   }
 
   function showLoadError(title, sub, retryFn) {
@@ -355,19 +355,25 @@ const PT = (() => {
     S.visited.add(qi);
     document.getElementById('pt-qnum').textContent = `Question ${qi + 1} of ${S.questions.length}`;
 
+    /* Build question text — handle both sentence (FIB) and q (grammar) formats */
     let qHtml = '';
     if (q.sentence) {
       qHtml = q.sentence.replace('_____',
         '<span style="display:inline-block;min-width:100px;border-bottom:2px solid var(--accent);color:var(--accent);font-weight:500;text-align:center;padding:0 4px">________</span>');
-    } else if (q.q) { qHtml = q.q; }
+    } else if (q.q) {
+      qHtml = q.q;
+    } else {
+      qHtml = '<em style="color:var(--text3)">Question text unavailable</em>';
+    }
     document.getElementById('pt-qtext').innerHTML = qHtml;
 
-    const ol = document.getElementById('pt-options');
+    const ol   = document.getElementById('pt-options');
     ol.innerHTML = '';
     const keys = ['A','B','C','D','E'];
-    const opts  = q.options || q.opts?.map(o => ({ verb: o, hint: '' })) || [];
+    const opts = q.options || (q.opts?.map(o => ({ verb: o, hint: '' }))) || [];
+
     opts.forEach((opt, i) => {
-      const verb  = typeof opt === 'string' ? opt : opt.verb;
+      const verb  = typeof opt === 'string' ? opt : (opt.verb || opt);
       const hint  = typeof opt === 'string' ? '' : (opt.hint || '');
       const isSel = S.answers[qi] === verb;
       const div   = document.createElement('div');
@@ -429,61 +435,36 @@ const PT = (() => {
     if (ql) ql.textContent = qSec + 's';
   }
 
-  /* ── SAVE SESSION TO SUPABASE ──
-     Also saves per-answer rows to progress table so analytics can read them. */
+  /* ── SAVE SESSION ── */
   async function saveSession() {
     if (!S.user) return;
-
     const results = S.questions.map((q, i) => {
       const chosen     = S.answers[i] !== undefined ? S.answers[i] : null;
       const correctAns = q.correct || (q.opts ? q.opts[q.ans] : null);
       const isCorrect  = chosen !== null && chosen === correctAns;
-      return {
-        qid:               q.id,
-        chosen,
-        correct:           isCorrect,
-        correct_answer:    correctAns,
-        time_taken_seconds: S.qTimers[i] || 0,
-      };
+      return { qid: q.id, chosen, correct: isCorrect, correct_answer: correctAns, time_taken_seconds: S.qTimers[i] || 0 };
     });
 
     const correct = results.filter(r => r.chosen && r.correct).length;
     const wrong   = results.filter(r => r.chosen && !r.correct).length;
     const score   = correct * S.posMarks - wrong * S.negMarks;
 
-    /* Save test session */
     try {
       await sbSaveTestSession({
-        userId:         S.user.id,
-        module:         S.mod,
-        subtopics:      [S.key],
-        model:          getActiveModel(),
-        totalQuestions: S.questions.length,
-        timeAllocated:  S.totalSecs,
-        timeTaken:      S.totalElapsed,
-        score,
-        results,
+        userId: S.user.id, module: S.mod, subtopics: [S.key],
+        model: getActiveModel(), totalQuestions: S.questions.length,
+        timeAllocated: S.totalSecs, timeTaken: S.totalElapsed, score, results,
       });
     } catch (e) { console.error('saveTestSession error:', e); }
 
-    /* Save each answer to progress table for analytics */
     for (const [i, q] of S.questions.entries()) {
-      const chosen     = S.answers[i];
-      if (chosen === undefined) continue; /* skipped — don't save, keeps analytics clean */
+      const chosen = S.answers[i];
+      if (chosen === undefined) continue;
       const correctAns = q.correct || (q.opts ? q.opts[q.ans] : null);
       const isCorrect  = chosen === correctAns;
-      /* item_key: prefer q.item_key (batch questions tagged per subtopic), else S.key */
-      const itemKey = q.item_key || q.topic || S.key;
+      const itemKey    = q.item_key || q.topic || S.key;
       try {
-        await sbSaveAnswer({
-          userId:     S.user.id,
-          module:     S.mod,
-          itemKey,
-          questionId: q.id,
-          chosen,
-          correct:    isCorrect,
-          source:     'ai',
-        });
+        await sbSaveAnswer({ userId: S.user.id, module: S.mod, itemKey, questionId: q.id, chosen, correct: isCorrect, source: 'ai' });
       } catch (e) { console.error('saveAnswer error q' + i, e); }
     }
   }
@@ -493,9 +474,9 @@ const PT = (() => {
     let correct = 0, wrong = 0, skipped = 0;
     S.questions.forEach((q, i) => {
       const ca = q.correct || (q.opts ? q.opts[q.ans] : null);
-      if (S.answers[i] === undefined)       skipped++;
-      else if (S.answers[i] === ca)         correct++;
-      else                                   wrong++;
+      if (S.answers[i] === undefined)   skipped++;
+      else if (S.answers[i] === ca)     correct++;
+      else                              wrong++;
     });
     const score = correct * S.posMarks - wrong * S.negMarks;
     const pct   = Math.round((correct / S.questions.length) * 100);
@@ -528,8 +509,7 @@ const PT = (() => {
           : 'background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)';
       const yourAns = isSkip
         ? '<span style="color:var(--text3)">Not attempted</span>'
-        : isRight ? `<span class="ca">${ans}</span>`
-                  : `<span class="wa">${ans}</span>`;
+        : isRight ? `<span class="ca">${ans}</span>` : `<span class="wa">${ans}</span>`;
       const corrSpan = `<span class="ca">${ca}</span>`;
       const rawText  = (q.sentence || q.q || '').replace(/<[^>]+>/g,'');
       const cleanQ   = rawText.substring(0,90) + (rawText.length > 90 ? '…' : '');
@@ -557,11 +537,11 @@ const PT = (() => {
     S.submitted = true;
     saveQTimer();
     clearInterval(S.timerHandle);
-    saveSession(); /* fire-and-forget — don't await so UI shows immediately */
+    saveSession();
     showResults();
   }
 
-  /* ── GENERATE QUESTIONS ── */
+  /* ── GENERATE — always fresh for timed test ── */
   async function generateQuestions(mod, key, user) {
     const db    = (typeof getDB === 'function') ? getDB(mod) : null;
     const entry = db?.[key];
@@ -585,7 +565,11 @@ const PT = (() => {
     let qs = null, genError = null;
 
     await generateAndCache({
-      userId: user?.id, module: mod, itemKey: key, promptText: prompt,
+      userId:       user?.id,
+      module:       mod,
+      itemKey:      key,
+      promptText:   prompt,
+      forceRefresh: true,   /* Always generate fresh questions for timed tests */
       onLoad:  () => { setLoadStep('pls-ai', 'active'); },
       onReady: (generated, source) => {
         setLoadStep('pls-parse', 'done');
@@ -616,9 +600,7 @@ const PT = (() => {
   function startTest(qs, mod, key) {
     S.questions = qs;
     document.getElementById('pt-loading').style.display = 'none';
-    document.getElementById('pt-meta').textContent =
-      `${key} · ${qs.length} questions · +2 / −0.5`;
-    /* Show initial clock */
+    document.getElementById('pt-meta').textContent = `${key} · ${qs.length} questions · +2 / −0.5`;
     const m = Math.floor(S.totalSecs / 60), sec = S.totalSecs % 60;
     const tc = document.getElementById('pt-totalclock');
     if (tc) tc.textContent = `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
@@ -644,9 +626,7 @@ const PT = (() => {
     togglePause() {
       S.paused = !S.paused;
       const btn = document.getElementById('pt-pause-btn');
-      if (btn) btn.innerHTML = S.paused
-        ? '<i class="ti ti-player-play"></i>'
-        : '<i class="ti ti-player-pause"></i>';
+      if (btn) btn.innerHTML = S.paused ? '<i class="ti ti-player-play"></i>' : '<i class="ti ti-player-pause"></i>';
       if (!S.paused) S.lastTick = Date.now();
     },
 

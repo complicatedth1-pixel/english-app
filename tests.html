@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test History — VocabMaster</title>
+<title>Test History — LearnSmart</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -33,7 +33,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
   height: 54px; position: sticky; top: 0; z-index: 100;
 }
-.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; }
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; text-decoration: none; }
 .nav-brand span { color: var(--accent); }
 .nav-spacer { flex: 1; }
 .nav-link {
@@ -57,6 +57,23 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .stat-val { font-size: 24px; font-weight: 600; color: var(--text1); line-height: 1; }
 .stat-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
 
+/* ── NO TESTS EMPTY STATE ── */
+.empty-hero {
+  text-align: center; padding: 4rem 2rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 1.5rem;
+}
+.empty-hero-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-hero-title { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); margin-bottom: 8px; }
+.empty-hero-sub { font-size: 13.5px; color: var(--text3); line-height: 1.6; margin-bottom: 20px; }
+.empty-hero-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent); color: #fff; padding: 10px 22px;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+  text-decoration: none; transition: all 0.15s;
+}
+.empty-hero-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+
 /* ── FILTERS ── */
 .filters-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; box-shadow: var(--shadow); }
 .filter-group { display: flex; flex-direction: column; gap: 5px; }
@@ -64,31 +81,22 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .filter-sel {
   font-size: 13px; padding: 6px 10px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: var(--bg2);
-  color: var(--text1); font-family: 'DM Sans', sans-serif; cursor: pointer;
-  min-width: 140px;
+  color: var(--text1); font-family: 'DM Sans', sans-serif; cursor: pointer; min-width: 140px;
 }
 .filter-sel:focus { outline: none; border-color: var(--border2); }
 .filter-reset {
   font-size: 13px; padding: 6px 12px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: transparent;
   color: var(--text2); font-family: 'DM Sans', sans-serif; cursor: pointer;
-  display: flex; align-items: center; gap: 5px; transition: all 0.12s;
-  align-self: flex-end;
+  display: flex; align-items: center; gap: 5px; transition: all 0.12s; align-self: flex-end;
 }
 .filter-reset:hover { background: var(--bg2); color: var(--text1); }
 
 /* ── TEST CARDS ── */
 .test-list { display: flex; flex-direction: column; gap: 12px; }
-.test-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); box-shadow: var(--shadow);
-  overflow: hidden; cursor: pointer; transition: all 0.15s;
-}
+.test-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; cursor: pointer; transition: all 0.15s; }
 .test-card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
-.test-card-head {
-  padding: 1rem 1.25rem;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
-}
+.test-card-head { padding: 1rem 1.25rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .tc-left { flex: 1; min-width: 0; }
 .tc-date { font-size: 11.5px; color: var(--text3); margin-bottom: 5px; }
 .tc-title { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 6px; }
@@ -117,7 +125,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .td-q-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; gap: 10px; align-items: flex-start; }
 .td-q-num { font-size: 11.5px; font-weight: 600; color: var(--text3); min-width: 22px; }
 .td-q-body { flex: 1; min-width: 0; }
-.td-q-sentence { font-size: 13.5px; color: var(--text1); line-height: 1.6; margin-bottom: 5px; }
 .td-q-ans-row { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; }
 .td-q-badge { padding: 2px 8px; border-radius: 20px; font-weight: 500; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
 .td-q-badge.c { background: var(--green-bg); color: var(--green); }
@@ -132,33 +139,29 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .page-loading-brand span { color: var(--accent); }
 .spinner-lg { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.load-more-btn { width: 100%; padding: 10px; border: 1px dashed var(--border2); background: transparent; border-radius: var(--radius); color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer; margin-top: 8px; transition: all 0.15s; }
+.load-more-btn:hover { background: var(--bg2); }
+
 @media (max-width: 520px) {
   .summary-row { grid-template-columns: repeat(2, 1fr); }
   .td-stats-row { grid-template-columns: repeat(3, 1fr); }
 }
-
-.load-more-btn {
-  width: 100%; padding: 10px; border: 1px dashed var(--border2);
-  background: transparent; border-radius: var(--radius); color: var(--text2);
-  font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer;
-  margin-top: 8px; transition: all 0.15s;
-}
-.load-more-btn:hover { background: var(--bg2); }
 </style>
 </head>
 <body>
 
 <div class="page-loading" id="page-loading">
-  <div class="page-loading-brand">Vocab<span>Master</span></div>
+  <div class="page-loading-brand">Learn<span>Smart</span></div>
   <div class="spinner-lg"></div>
 </div>
 
 <nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">Vocab<span>Master</span></div>
+  <a class="nav-brand" href="index.html">Learn<span>Smart</span></a>
   <div class="nav-spacer"></div>
-  <a href="index.html" class="nav-link"><i class="ti ti-home" style="font-size:15px"></i> Home</a>
+  <a href="index.html"     class="nav-link"><i class="ti ti-home" style="font-size:15px"></i> Home</a>
   <a href="analytics.html" class="nav-link"><i class="ti ti-chart-bar" style="font-size:15px"></i> Analytics</a>
-  <a href="tests.html" class="nav-link active"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
+  <a href="tests.html"     class="nav-link active"><i class="ti ti-clipboard-list" style="font-size:15px"></i> Tests</a>
 </nav>
 
 <div class="wrap">
@@ -170,13 +173,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 
   <div class="summary-row">
-    <div class="stat-card"><div class="stat-label">Tests taken</div><div class="stat-val" id="s-tests">—</div></div>
-    <div class="stat-card"><div class="stat-label">Avg accuracy</div><div class="stat-val" id="s-avg">—</div><div class="stat-sub">across all tests</div></div>
-    <div class="stat-card"><div class="stat-label">Best score</div><div class="stat-val" id="s-best" style="color:var(--green)">—</div><div class="stat-sub" id="s-best-sub"></div></div>
-    <div class="stat-card"><div class="stat-label">Total time</div><div class="stat-val" id="s-time">—</div><div class="stat-sub">spent in tests</div></div>
+    <div class="stat-card"><div class="stat-label">Tests Taken</div><div class="stat-val" id="s-tests">—</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Accuracy</div><div class="stat-val" id="s-avg">—</div><div class="stat-sub">across all tests</div></div>
+    <div class="stat-card"><div class="stat-label">Best Score</div><div class="stat-val" id="s-best" style="color:var(--green)">—</div><div class="stat-sub" id="s-best-sub"></div></div>
+    <div class="stat-card"><div class="stat-label">Total Time</div><div class="stat-val" id="s-time">—</div><div class="stat-sub">spent in tests</div></div>
   </div>
 
-  <div class="filters-bar">
+  <div class="filters-bar" id="filters-bar" style="display:none">
     <div class="filter-group">
       <label>Module</label>
       <select class="filter-sel" id="f-module" onchange="applyFilters()">
@@ -186,7 +189,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <option value="idiom">Idioms</option>
         <option value="grammar">Grammar Rules</option>
         <option value="modal">Modals</option>
-        <option value="mixed">Mixed</option>
       </select>
     </div>
     <div class="filter-group">
@@ -207,9 +209,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <option value="grok">Groq Llama 3.3</option>
       </select>
     </div>
-    <button class="filter-reset" onclick="resetFilters()">
-      <i class="ti ti-x" style="font-size:13px"></i> Reset
-    </button>
+    <button class="filter-reset" onclick="resetFilters()"><i class="ti ti-x" style="font-size:13px"></i> Reset</button>
   </div>
 
   <div class="test-list" id="test-list"></div>
@@ -217,20 +217,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 </div>
 
 <script>
-let currentUser = null;
-let allSessions = [];
+let currentUser    = null;
+let allSessions    = [];
 let displayedCount = 15;
-const PAGE_SIZE = 15;
+const PAGE_SIZE    = 15;
 
-/* Module meta */
 const MOD_LABELS = {
-  phrasal: 'Phrasal Verbs',
-  preposition: 'Prepositions',
-  idiom: 'Idioms',
-  grammar: 'Grammar',
-  modal: 'Modals',
-  mixed: 'Mixed',
-  '': 'Mixed'
+  phrasal:'Phrasal Verbs', preposition:'Prepositions', idiom:'Idioms',
+  grammar:'Grammar', modal:'Modals', mixed:'Mixed', '':'Mixed'
 };
 const MOD_CHIP_STYLE = {
   phrasal:     'background:var(--accent-bg);color:var(--accent)',
@@ -241,16 +235,13 @@ const MOD_CHIP_STYLE = {
   mixed:       'background:var(--bg2);color:var(--text2)'
 };
 
-/* ════════════════ INIT ════════════════ */
 (async () => {
   const { data: { session } } = await SB.auth.getSession();
   if (!session) { window.location.href = 'auth.html'; return; }
   currentUser = session.user;
 
-  /* Load all test sessions */
   const { data } = await SB.from('test_sessions')
-    .select('*')
-    .eq('user_id', currentUser.id)
+    .select('*').eq('user_id', currentUser.id)
     .order('created_at', { ascending: false });
   allSessions = data || [];
 
@@ -259,14 +250,12 @@ const MOD_CHIP_STYLE = {
   document.getElementById('page-loading').style.display = 'none';
 })();
 
-/* ════════════════ SUMMARY ════════════════ */
 function renderSummary() {
   const n = allSessions.length;
   if (!n) {
     ['s-tests','s-avg','s-best','s-time'].forEach(id => document.getElementById(id).textContent = '0');
     return;
   }
-
   const totals = allSessions.map(s => {
     const maxScore = (s.total_questions || 0) * 2;
     return maxScore > 0 ? Math.round((s.score / maxScore) * 100) : 0;
@@ -275,21 +264,18 @@ function renderSummary() {
   const best = Math.max(...totals);
   const bestSession = allSessions[totals.indexOf(best)];
   const totalSec = allSessions.reduce((a,s) => a + (s.time_taken || 0), 0);
-
-  document.getElementById('s-tests').textContent = n;
-  document.getElementById('s-avg').textContent   = avg + '%';
-  document.getElementById('s-best').textContent  = best + '%';
-  document.getElementById('s-best-sub').textContent = bestSession ? formatDate(bestSession.created_at) : '';
-  document.getElementById('s-time').textContent  = formatDuration(totalSec);
+  document.getElementById('s-tests').textContent   = n;
+  document.getElementById('s-avg').textContent     = avg + '%';
+  document.getElementById('s-best').textContent    = best + '%';
+  document.getElementById('s-best-sub').textContent = bestSession ? formatDate(bestSession.created_at, true) : '';
+  document.getElementById('s-time').textContent    = formatDuration(totalSec);
 }
 
-/* ════════════════ FILTERS ════════════════ */
 function applyFilters() {
   const fMod   = document.getElementById('f-module').value;
   const fScore = document.getElementById('f-score').value;
   const fModel = document.getElementById('f-model').value;
   displayedCount = PAGE_SIZE;
-
   let filtered = allSessions.filter(s => {
     if (fMod && s.module !== fMod) return false;
     if (fModel && s.model !== fModel) return false;
@@ -297,12 +283,11 @@ function applyFilters() {
       const maxScore = (s.total_questions || 0) * 2;
       const pct = maxScore > 0 ? (s.score / maxScore) * 100 : 0;
       if (fScore === 'great' && pct < 70)  return false;
-      if (fScore === 'ok'    && (pct < 40 || pct >= 70)) return false;
-      if (fScore === 'poor'  && pct >= 40) return false;
+      if (fScore === 'ok' && (pct < 40 || pct >= 70)) return false;
+      if (fScore === 'poor' && pct >= 40)  return false;
     }
     return true;
   });
-
   renderList(filtered);
 }
 
@@ -313,14 +298,25 @@ function resetFilters() {
   applyFilters();
 }
 
-/* ════════════════ RENDER LIST ════════════════ */
 function renderList(sessions) {
   const list = document.getElementById('test-list');
-  if (!sessions.length) {
-    list.innerHTML = `<div class="empty">
-      <i class="ti ti-clipboard-list" style="font-size:32px;color:var(--border2);display:block;margin-bottom:8px"></i>
-      No tests match your filters. <span style="color:var(--text2);cursor:pointer;text-decoration:underline" onclick="resetFilters()">Clear filters</span>
+
+  if (!allSessions.length) {
+    document.getElementById('filters-bar').style.display = 'none';
+    list.innerHTML = `<div class="empty-hero">
+      <div class="empty-hero-icon">🎯</div>
+      <div class="empty-hero-title">No tests taken yet</div>
+      <div class="empty-hero-sub">Take your first timed test to see your performance tracked here.<br>Tests are AI-generated and simulate real exam conditions.</div>
+      <a href="index.html" class="empty-hero-btn"><i class="ti ti-bolt" style="font-size:16px"></i> Take a Test Now</a>
     </div>`;
+    document.getElementById('load-more-wrap').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('filters-bar').style.display = 'flex';
+
+  if (!sessions.length) {
+    list.innerHTML = `<div class="empty">No tests match your filters. <span style="color:var(--text2);cursor:pointer;text-decoration:underline" onclick="resetFilters()">Clear filters</span></div>`;
     document.getElementById('load-more-wrap').innerHTML = '';
     return;
   }
@@ -330,14 +326,10 @@ function renderList(sessions) {
 
   const loadWrap = document.getElementById('load-more-wrap');
   if (sessions.length > displayedCount) {
-    loadWrap.innerHTML = `<button class="load-more-btn" onclick="loadMore()">
-      Load more (${sessions.length - displayedCount} remaining)
-    </button>`;
+    loadWrap.innerHTML = `<button class="load-more-btn" onclick="loadMore()">Load more (${sessions.length - displayedCount} remaining)</button>`;
   } else {
     loadWrap.innerHTML = '';
   }
-
-  /* Store filtered ref for load more */
   window._filteredSessions = sessions;
 }
 
@@ -350,22 +342,16 @@ function renderTestCard(s, idx) {
   const maxScore = (s.total_questions || 0) * 2;
   const pct      = maxScore > 0 ? Math.round((s.score / maxScore) * 100) : 0;
   const scoreCls = pct >= 70 ? 'great' : pct >= 40 ? 'ok' : 'poor';
-
   const subtopics = (s.subtopics || []).slice(0, 4);
   const extra     = (s.subtopics || []).length - 4;
   const mod       = s.module || 'mixed';
-  const modLabel  = MOD_LABELS[mod] || mod;
   const chipStyle = MOD_CHIP_STYLE[mod] || MOD_CHIP_STYLE.mixed;
-
-  const chipHtml = subtopics.map(st => `<span class="tc-chip" style="${chipStyle}">${st}</span>`).join('')
+  const chipHtml  = subtopics.map(st => `<span class="tc-chip" style="${chipStyle}">${st}</span>`).join('')
     + (extra > 0 ? `<span class="tc-chip">+${extra} more</span>` : '');
-
-  const modelLabels = { claude: '◆ Claude', gemini: '✦ Gemini', grok: '⬡ Groq' };
-  const timeAlloc   = formatDuration(s.time_allocated || 0);
+  const modelLabels = { claude:'◆ Claude', gemini:'✦ Gemini', grok:'⬡ Groq' };
   const timeTaken   = formatDuration(s.time_taken || 0);
-
-  /* Score breakdown */
-  const results = s.results || [];
+  const timeAlloc   = formatDuration(s.time_allocated || 0);
+  const results  = s.results || [];
   const correct  = results.filter(r => r.correct).length;
   const wrong    = results.filter(r => !r.correct && r.chosen).length;
   const skipped  = results.filter(r => !r.chosen).length;
@@ -374,7 +360,7 @@ function renderTestCard(s, idx) {
     <div class="test-card-head" onclick="toggleDetail('${s.id}')">
       <div class="tc-left">
         <div class="tc-date">${formatDate(s.created_at)}</div>
-        <div class="tc-title">${modLabel} Test · ${s.total_questions} questions</div>
+        <div class="tc-title">${MOD_LABELS[mod] || mod} Test · ${s.total_questions} questions</div>
         <div class="tc-chips">${chipHtml}</div>
       </div>
       <div class="tc-right">
@@ -420,26 +406,22 @@ function renderQReview(results) {
       ${timeTxt ? `<div class="td-q-time"><i class="ti ti-clock" style="font-size:12px"></i>${timeTxt}</div>` : ''}
     </div>`;
   });
-  html += '</div>';
-  return html;
+  return html + '</div>';
 }
 
-/* ════════════════ TOGGLE DETAIL ════════════════ */
 function toggleDetail(id) {
-  const el = document.getElementById('td-' + id);
-  el.classList.toggle('open');
+  document.getElementById('td-' + id).classList.toggle('open');
 }
 
-/* ════════════════ UTILS ════════════════ */
-function formatDate(iso) {
+function formatDate(iso, short) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  if (short) return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
 function formatDuration(sec) {
   if (!sec) return '0m';
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
+  const m = Math.floor(sec / 60), s = sec % 60;
   if (m === 0) return s + 's';
   return s ? `${m}m ${s}s` : `${m}m`;
 }

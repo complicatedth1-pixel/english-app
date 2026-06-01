@@ -112,9 +112,8 @@ Difficulty: SSC level — contextual, no giveaways.
 - Sentence must make the idiom meaningful in context
 - 4 options (idiom phrases), "hint" = Hindi meaning max 6 words
 - "feedback" explaining correct answer and distractors
-- "idiom_tested" field: the exact idiom phrase this question tests
 Respond ONLY with JSON array, no markdown:
-[{"id":"q1","idiom_tested":"exact idiom phrase","sentence":"...___...","correct":"idiom phrase","options":[{"verb":"phrase","hint":"..."}],"feedback":"..."}]`;
+[{"id":"q1","sentence":"...___...","correct":"idiom phrase","options":[{"verb":"phrase","hint":"..."}],"feedback":"..."}]`;
   },
 
   grammar(ruleName, ruleDesc) {
@@ -140,7 +139,6 @@ Respond ONLY with JSON array, no markdown:
 [{"id":"q1","sentence":"...___...","correct":"modal","options":[{"verb":"...","hint":"..."}],"feedback":"..."}]`;
   },
 
-  /* Homepage multi-subtopic batch — tags each question with mod+itemKey for splitting */
   testBatch(module, subtopics, count) {
     return `Generate ${count} fill-in-the-blank questions for an English test.
 Module: ${module}. Topics: ${subtopics.join(', ')}
@@ -157,18 +155,13 @@ Respond ONLY with JSON array, no markdown:
 
 /* ══════════════════════════════════════════════════════════
    GENERATE + CACHE
-   
-   Per-subtopic cache: always cached under (module, itemKey).
-   
-   Batch (homepage): generates once, then SPLITS questions by
-   item_key and saves each slice to its own cache entry so
-   app.html practice pages can find them.
+   forceRefresh: true → always generate fresh (used by timed test)
 ══════════════════════════════════════════════════════════ */
-async function generateAndCache({ userId, module, itemKey, promptText, onLoad, onReady, onError }) {
+async function generateAndCache({ userId, module, itemKey, promptText, forceRefresh, onLoad, onReady, onError }) {
   const modelKey = getActiveModel();
 
-  /* ── Cache check ── */
-  if (userId) {
+  /* ── Cache check (skipped when forceRefresh = true) ── */
+  if (userId && !forceRefresh) {
     try {
       const cached = await sbGetCachedQuestions(userId, module, itemKey, modelKey);
       if (cached && cached.length) {
@@ -184,22 +177,22 @@ async function generateAndCache({ userId, module, itemKey, promptText, onLoad, o
     const raw = await aiCall(promptText, modelKey);
     const qs  = parseAIJson(raw);
 
+    /* Filter out malformed questions */
+    const valid = qs.filter(q => q && q.id && q.sentence && q.options && q.options.length);
+
     /* Assign stable IDs */
-    qs.forEach((q, i) => {
+    valid.forEach((q, i) => {
       q.id = q.id || `${itemKey.replace(/\s+/g,'_')}_${modelKey}_${i}`;
     });
 
-    /* ── Save & split ──
-       If questions have an item_key field (batch mode), save each
-       subtopic slice to its own cache entry as well as the full batch. */
+    /* Save to cache (always, even for forceRefresh — so AI practice tab can load them) */
     if (userId) {
-      /* Always save the full batch under itemKey */
-      try { await sbSaveCachedQuestions(userId, module, itemKey, modelKey, qs); }
-      catch (e) { console.error('Cache save failed (batch):', e); }
+      try { await sbSaveCachedQuestions(userId, module, itemKey, modelKey, valid); }
+      catch (e) { console.error('Cache save failed:', e); }
 
-      /* Split by item_key and save each subtopic slice */
+      /* Split by item_key for batch questions */
       const byKey = {};
-      qs.forEach(q => {
+      valid.forEach(q => {
         const k = q.item_key || q.topic;
         if (k && k !== itemKey) {
           if (!byKey[k]) byKey[k] = [];
@@ -212,7 +205,7 @@ async function generateAndCache({ userId, module, itemKey, promptText, onLoad, o
       }
     }
 
-    onReady(qs, 'fresh');
+    onReady(valid, 'fresh');
   } catch (err) {
     console.error('AI error:', err);
     onError(err);

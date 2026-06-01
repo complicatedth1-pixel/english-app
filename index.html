@@ -3,21 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartLearn — Dashboard</title>
+<title>LearnSmart — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="ai.js"></script>
-<!-- DB files needed so PT.open() can build prompts from index.html -->
 <script src="db_phrasal.js" defer></script>
 <script src="db_preposition.js" defer></script>
 <script src="db_idioms.js" defer></script>
 <script src="db_grammar.js" defer></script>
 <script src="db_modals.js" defer></script>
-<!-- Practice Test overlay (shared with app.html) -->
-<script src="mod_practice_test.js"></script>
+<script src="mod_practice_test.js" defer></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -37,7 +35,6 @@
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
   --shadow-lg: 0 20px 50px rgba(0,0,0,0.10);
 }
-
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; line-height: 1.6; }
 
 /* ── NAV ── */
@@ -50,6 +47,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .nav-brand span { color: var(--accent); }
 .nav-spacer { flex: 1; }
 .nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-link {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 13px; color: var(--text2); text-decoration: none;
+  padding: 6px 10px; border-radius: var(--radius-sm); transition: all 0.12s;
+}
+.nav-link:hover { background: var(--bg2); color: var(--text1); }
+.nav-link.active { background: var(--bg2); color: var(--text1); font-weight: 500; }
 
 .model-selector {
   display: flex; align-items: center; gap: 2px;
@@ -137,6 +141,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .goal-title { font-size: 14px; font-weight: 600; color: var(--text1); }
 .goal-sub { font-size: 12.5px; color: var(--text3); margin-top: 2px; }
 
+/* ── NEXT ACTION BANNER — guides user to what to do next ── */
+.next-action {
+  background: linear-gradient(135deg, #1A1714 0%, #2a2521 100%);
+  border-radius: var(--radius); padding: 1.1rem 1.5rem;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 1.75rem; cursor: pointer; transition: all 0.15s;
+  text-decoration: none; border: none; width: 100%; text-align: left;
+  font-family: 'DM Sans', sans-serif;
+}
+.next-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.next-action-icon { font-size: 24px; flex-shrink: 0; }
+.next-action-body { flex: 1; }
+.next-action-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 2px; }
+.next-action-title { font-size: 15px; font-weight: 600; color: #fff; }
+.next-action-sub { font-size: 12.5px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.next-action-arrow { color: rgba(255,255,255,0.4); font-size: 20px; flex-shrink: 0; transition: transform 0.15s; }
+.next-action:hover .next-action-arrow { transform: translateX(3px); color: rgba(255,255,255,0.7); }
+
 /* ── SECTION LABEL ── */
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1rem; }
 
@@ -145,7 +167,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .prog-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1.1rem 1.25rem;
-  box-shadow: var(--shadow); transition: all 0.15s;
+  box-shadow: var(--shadow); transition: all 0.15s; cursor: pointer;
+  text-decoration: none; color: inherit; display: block;
 }
 .prog-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .prog-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -160,10 +183,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .prog-continue {
   font-size: 12px; padding: 4px 11px; border-radius: 20px;
   border: 1px solid var(--border); background: transparent;
-  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
-  font-weight: 500; transition: all 0.12s;
+  color: var(--text2); pointer-events: none;
+  font-weight: 500;
 }
-.prog-continue:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); }
 
 /* ── MODULE GRID ── */
 .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 2rem; }
@@ -179,12 +201,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .mod-card-desc { font-size: 12.5px; color: var(--text3); line-height: 1.5; }
 
 /* Per-module colours */
-.m-pv  .prog-bar-fill { background: var(--accent);   } .m-pv  .prog-icon, .m-pv  .mod-card-icon { background: var(--accent-bg);  }
-.m-pre .prog-bar-fill { background: var(--blue);     } .m-pre .prog-icon, .m-pre .mod-card-icon { background: var(--blue-bg);    }
-.m-id  .prog-bar-fill { background: var(--idiom);    } .m-id  .prog-icon, .m-id  .mod-card-icon { background: var(--idiom-bg);   }
-.m-gr  .prog-bar-fill { background: var(--grammar);  } .m-gr  .prog-icon, .m-gr  .mod-card-icon { background: var(--grammar-bg); }
-.m-mo  .prog-bar-fill { background: var(--modal-c);  } .m-mo  .prog-icon, .m-mo  .mod-card-icon { background: var(--modal-bg);   }
-.m-ca  .prog-bar-fill { background: var(--calc-c);   } .m-ca  .prog-icon, .m-ca  .mod-card-icon { background: var(--calc-bg);    }
+.m-pv  .prog-bar-fill, .m-pv  .prog-continue { background: var(--accent); }
+.m-pv  .prog-icon, .m-pv  .mod-card-icon { background: var(--accent-bg); }
+.m-pre .prog-bar-fill { background: var(--blue); }
+.m-pre .prog-icon, .m-pre .mod-card-icon { background: var(--blue-bg); }
+.m-id  .prog-bar-fill { background: var(--idiom); }
+.m-id  .prog-icon, .m-id  .mod-card-icon { background: var(--idiom-bg); }
+.m-gr  .prog-bar-fill { background: var(--grammar); }
+.m-gr  .prog-icon, .m-gr  .mod-card-icon { background: var(--grammar-bg); }
+.m-mo  .prog-bar-fill { background: var(--modal-c); }
+.m-mo  .prog-icon, .m-mo  .mod-card-icon { background: var(--modal-bg); }
+.m-ca  .prog-bar-fill { background: var(--calc-c); }
+.m-ca  .prog-icon, .m-ca  .mod-card-icon { background: var(--calc-bg); }
 
 /* ── TEST CTA ── */
 .test-cta {
@@ -204,6 +232,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 7px;
 }
 
+/* ── QUICK LINKS ROW ── */
+.quick-links { display: flex; gap: 10px; margin-bottom: 2rem; flex-wrap: wrap; }
+.quick-link {
+  flex: 1; min-width: 140px; display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 0.9rem 1.1rem;
+  text-decoration: none; color: var(--text2); font-size: 13.5px; font-weight: 500;
+  box-shadow: var(--shadow); transition: all 0.15s; cursor: pointer;
+}
+.quick-link:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); box-shadow: var(--shadow-md); }
+.quick-link i { font-size: 18px; color: var(--text3); }
+
 /* ── MODAL ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
@@ -212,7 +252,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   padding: 1rem; backdrop-filter: blur(4px);
 }
 .modal-overlay.open { display: flex; }
-
 .modal {
   background: var(--surface); border-radius: 18px;
   width: 100%; max-width: 520px; max-height: 90vh;
@@ -220,7 +259,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   animation: modalIn 0.25s ease both;
 }
 @keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
-
 .modal-head {
   padding: 1.5rem 1.75rem 1.25rem; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
@@ -232,12 +270,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.12s;
 }
 .modal-close:hover { background: var(--bg2); color: var(--text1); }
-
 .modal-body { padding: 1.5rem 1.75rem; }
-
 .form-group { margin-bottom: 1.25rem; }
 .form-label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; display: block; }
-
 .form-select {
   width: 100%; padding: 10px 14px; border-radius: var(--radius-sm);
   border: 1.5px solid var(--border); background: var(--bg);
@@ -248,7 +283,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   transition: border-color 0.15s;
 }
 .form-select:focus { outline: none; border-color: var(--accent); }
-
 .chip-group { display: flex; flex-wrap: wrap; gap: 7px; max-height: 130px; overflow-y: auto; padding: 2px; }
 .chip {
   padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border);
@@ -257,9 +291,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .chip:hover { border-color: var(--border2); color: var(--text1); }
 .chip.selected { background: var(--text1); color: #fff; border-color: var(--text1); }
-
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
 .model-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 .modal-model-pill {
   padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border);
@@ -269,7 +301,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .modal-model-pill:hover { border-color: var(--border2); }
 .modal-model-pill.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
-
 .modal-foot { padding: 1.25rem 1.75rem; border-top: 1px solid var(--border); }
 .start-btn {
   width: 100%; padding: 13px; border-radius: 10px;
@@ -279,6 +310,38 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .start-btn:hover { background: var(--accent2); transform: translateY(-1px); }
 .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── READING CARD ── */
+.reading-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  margin-bottom: 1.75rem; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 1rem; transition: all 0.15s;
+}
+.reading-card:hover { box-shadow: var(--shadow-md); }
+.reading-card-icon { width: 40px; height: 40px; border-radius: 10px; background: #EBF0FB; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.reading-card-body { flex: 1; min-width: 0; }
+.reading-card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 2px; }
+.reading-card-title { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
+.reading-card-sub { font-size: 12.5px; color: var(--text3); }
+.reading-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.reading-card-btn {
+  font-size: 13px; padding: 7px 16px; border-radius: 20px;
+  border: 1.5px solid var(--blue-border); background: var(--blue-bg);
+  color: var(--blue); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: all 0.12s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.reading-card-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.reading-card-btn.done { border-color: var(--green-border); background: var(--green-bg); color: var(--green); cursor: default; pointer-events: none; }
+.reading-admin-btn {
+  font-size: 12px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text3); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: all 0.12s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.reading-admin-btn:hover { background: var(--bg2); color: var(--text1); }
 
 /* ── PAGE LOADING ── */
 .page-loading {
@@ -299,62 +362,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .model-selector { display: none; }
   .test-cta { flex-direction: column; align-items: flex-start; }
   .form-row { grid-template-columns: 1fr; }
+  .quick-links { flex-direction: column; }
 }
-/* ── READING CARD ── */
-.reading-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.1rem 1.25rem;
-  margin-bottom: 1.75rem; box-shadow: var(--shadow);
-  display: flex; align-items: center; gap: 1rem;
-  transition: all 0.15s;
-}
-.reading-card:hover { box-shadow: var(--shadow-md); }
-.reading-card-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  background: #EBF0FB; display: flex; align-items: center;
-  justify-content: center; font-size: 20px; flex-shrink: 0;
-}
-.reading-card-body { flex: 1; min-width: 0; }
-.reading-card-label {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-  text-transform: uppercase; color: var(--text3); margin-bottom: 2px;
-}
-.reading-card-title { font-size: 15px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
-.reading-card-sub { font-size: 12.5px; color: var(--text3); }
-.reading-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.reading-card-btn {
-  font-size: 13px; padding: 7px 16px; border-radius: 20px;
-  border: 1.5px solid var(--blue-border); background: var(--blue-bg);
-  color: var(--blue); cursor: pointer; font-family: 'DM Sans', sans-serif;
-  font-weight: 500; transition: all 0.12s; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-}
-.reading-card-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
-.reading-card-btn.done {
-  border-color: var(--green-border); background: var(--green-bg); color: var(--green);
-  cursor: default; pointer-events: none;
-}
-.reading-admin-btn {
-  font-size: 12px; padding: 5px 12px; border-radius: 20px;
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text3); cursor: pointer; font-family: 'DM Sans', sans-serif;
-  font-weight: 500; transition: all 0.12s; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 5px;
-}
-.reading-admin-btn:hover { background: var(--bg2); color: var(--text1); }
 </style>
 </head>
 <body>
 
-<!-- PAGE LOADING -->
 <div class="page-loading" id="page-loading">
-  <div class="page-loading-brand">Smart<span>Learn</span></div>
+  <div class="page-loading-brand">Learn<span>Smart</span></div>
   <div class="spinner"></div>
 </div>
 
-<!-- TOP NAV -->
 <nav class="top-nav">
-  <div class="nav-brand">Smart<span>Learn</span></div>
+  <div class="nav-brand">Learn<span>Smart</span></div>
   <div class="nav-spacer"></div>
   <div class="nav-right">
     <div class="model-selector" id="model-selector">
@@ -373,7 +393,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </nav>
 
-<!-- MAIN CONTENT -->
 <div class="wrap">
 
   <!-- HERO -->
@@ -408,9 +427,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <div class="goal-sub"  id="goal-sub">Answer 5 questions today to keep your streak alive.</div>
       </div>
     </div>
-</div>
+  </div>
 
-  <!-- READING PRACTICE CARD -->
+  <!-- NEXT ACTION — system guides the user -->
+  <div id="next-action-wrap"></div>
+
+  <!-- READING CARD -->
   <div class="reading-card" id="reading-card" style="display:none">
     <div class="reading-card-icon">📖</div>
     <div class="reading-card-body">
@@ -422,9 +444,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <a id="rd-admin-btn" class="reading-admin-btn" href="reading_admin.html" style="display:none">
         <i class="ti ti-settings" style="font-size:13px"></i> Admin
       </a>
-      <a id="rd-action-btn" class="reading-card-btn" href="reading.html">
-        Start Session →
-      </a>
+      <a id="rd-action-btn" class="reading-card-btn" href="reading.html">Start Session →</a>
     </div>
   </div>
 
@@ -434,12 +454,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
   <!-- TEST CTA -->
   <button class="test-cta" onclick="openTestModal()">
-    <div class="test-cta-left">
+    <div>
       <div class="test-cta-title">Take a Timed Test</div>
-      <div class="test-cta-sub">AI-generated questions · Choose topic, length & time · Full test UI</div>
+      <div class="test-cta-sub">AI-generated · Choose topic, length & time · Full exam UI</div>
     </div>
     <div class="test-cta-btn"><i class="ti ti-bolt" style="font-size:16px"></i> Start Test</div>
   </button>
+
+  <!-- QUICK LINKS -->
+  <div class="quick-links">
+    <a href="analytics.html" class="quick-link"><i class="ti ti-chart-bar"></i> View Analytics</a>
+    <a href="tests.html"     class="quick-link"><i class="ti ti-clipboard-list"></i> Test History</a>
+    <a href="reading.html"   class="quick-link"><i class="ti ti-book"></i> Reading Practice</a>
+  </div>
 
   <!-- MODULES -->
   <div class="section-label">Learn & Practice</div>
@@ -447,7 +474,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 </div>
 
-<!-- ── TEST CONFIG MODAL ── -->
+<!-- TEST MODAL -->
 <div class="modal-overlay" id="test-modal-overlay" onclick="handleOverlayClick(event)">
   <div class="modal">
     <div class="modal-head">
@@ -455,7 +482,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <button class="modal-close" onclick="closeTestModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">
-
       <div class="form-group">
         <label class="form-label">Topic</label>
         <select class="form-select" id="test-topic" onchange="updateSubtopics()">
@@ -467,15 +493,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <option value="modal">Modals</option>
         </select>
       </div>
-
       <div class="form-group" id="subtopic-group" style="display:none">
-        <label class="form-label">
-          Subtopic
-          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);margin-left:4px">(pick one)</span>
-        </label>
+        <label class="form-label">Subtopic <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);margin-left:4px">(pick one)</span></label>
         <div class="chip-group" id="subtopic-chips"></div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Questions</label>
@@ -497,7 +518,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           </select>
         </div>
       </div>
-
       <div class="form-group">
         <label class="form-label">AI Model</label>
         <div class="model-pills" id="modal-model-pills">
@@ -506,7 +526,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <button class="modal-model-pill"          data-m="grok"   onclick="selectModalModel('grok',this)">⬡ Groq Llama 3.3</button>
         </div>
       </div>
-
     </div>
     <div class="modal-foot">
       <button class="start-btn" id="start-test-btn" onclick="launchTest()" disabled>
@@ -517,19 +536,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 </div>
 
 <script>
-/* ════════════════════════════════
-   CONFIG
-════════════════════════════════ */
 const MODULES = [
-  { key:'phrasal',     name:'Phrasal Verbs', desc:'Master verb + particle combos',        icon:'⚡', cls:'m-pv',  url:'app.html?m=phrasal',     total:50 },
-  { key:'preposition', name:'Prepositions',  desc:'Correct preposition with every word',   icon:'🔗', cls:'m-pre', url:'app.html?m=preposition',  total:45 },
-  { key:'idiom',       name:'Idioms',        desc:'200 common idioms with Hindi meanings',  icon:'💡', cls:'m-id',  url:'app.html?m=idiom',       total:60 },
-  { key:'grammar',     name:'Grammar Rules', desc:'12 essential grammar rules',            icon:'📖', cls:'m-gr',  url:'app.html?m=grammar',     total:36 },
-  { key:'modal',       name:'Modals',        desc:'Can, could, should, must & more',       icon:'🎯', cls:'m-mo',  url:'app.html?m=modal',       total:40 },
-  { key:'calc',        name:'Calculations',  desc:'Arithmetic, percentages & reasoning',   icon:'🔢', cls:'m-ca',  url:'app.html?m=calc',        total:50 },
+  { key:'phrasal',     name:'Phrasal Verbs', desc:'Master verb + particle combos',       icon:'⚡', cls:'m-pv',  url:'app.html?m=phrasal'     },
+  { key:'preposition', name:'Prepositions',  desc:'Correct preposition with every word',  icon:'🔗', cls:'m-pre', url:'app.html?m=preposition'  },
+  { key:'idiom',       name:'Idioms',        desc:'Common idioms with Hindi meanings',    icon:'💡', cls:'m-id',  url:'app.html?m=idiom'        },
+  { key:'grammar',     name:'Grammar Rules', desc:'Essential grammar rules',             icon:'📖', cls:'m-gr',  url:'app.html?m=grammar'      },
+  { key:'modal',       name:'Modals',        desc:'Can, could, should, must & more',      icon:'🎯', cls:'m-mo',  url:'app.html?m=modal'        },
+  { key:'calc',        name:'Calculations',  desc:'Arithmetic, percentages & reasoning',  icon:'🔢', cls:'m-ca',  url:'app.html?m=calc'         },
 ];
 
-/* Maps topic → subtopic keys that match the actual DB keys used in mod files */
 const SUBTOPICS = {
   phrasal:     ['Break','Bring','Call','Catch','Come','Cut','Get','Give','Go','Keep','Look','Make','Put','Run','Set','Take','Turn'],
   preposition: ['FROM_Prevention','TO_Attachment','IN_Location','AT_Time','ON_Surface','WITH_Association','FOR_Purpose','BY_Agent','OF_Belonging','ABOUT_Topic'],
@@ -538,32 +553,19 @@ const SUBTOPICS = {
   modal:       ['Can / Could','May / Might','Will / Would','Shall / Should','Must / Ought to','Need / Dare','Used to / Would'],
 };
 
-/* Display labels for grammar rules */
 const GRAMMAR_LABELS = {
-  'Rule_01_Each_vs_Every':       'Rule 1: Each vs Every',
-  'Rule_02_Tense_Consistency':   'Rule 2: Tense Consistency',
-  'Rule_03_Articles':            'Rule 3: Articles (A/An/The)',
-  'Rule_04_Prepositions':        'Rule 4: Prepositions',
-  'Rule_05_Pronouns':            'Rule 5: Pronouns',
-  'Rule_06_Adjectives_Adverbs':  'Rule 6: Adjectives & Adverbs',
-  'Rule_07_Active_Passive':      'Rule 7: Active vs Passive',
-  'Rule_08_Direct_Indirect':     'Rule 8: Direct vs Indirect Speech',
-  'Rule_09_Conditionals':        'Rule 9: Conditionals',
-  'Rule_10_Modal_Verbs':         'Rule 10: Modal Verbs',
-  'Rule_11_Gerunds_Infinitives': 'Rule 11: Gerunds & Infinitives',
-  'Rule_12_Conjunctions':        'Rule 12: Conjunctions',
+  'Rule_01_Each_vs_Every':'Rule 1: Each vs Every','Rule_02_Tense_Consistency':'Rule 2: Tense Consistency',
+  'Rule_03_Articles':'Rule 3: Articles','Rule_04_Prepositions':'Rule 4: Prepositions',
+  'Rule_05_Pronouns':'Rule 5: Pronouns','Rule_06_Adjectives_Adverbs':'Rule 6: Adjectives & Adverbs',
+  'Rule_07_Active_Passive':'Rule 7: Active vs Passive','Rule_08_Direct_Indirect':'Rule 8: Direct vs Indirect',
+  'Rule_09_Conditionals':'Rule 9: Conditionals','Rule_10_Modal_Verbs':'Rule 10: Modal Verbs',
+  'Rule_11_Gerunds_Infinitives':'Rule 11: Gerunds & Infinitives','Rule_12_Conjunctions':'Rule 12: Conjunctions',
 };
 
-/* ════════════════════════════════
-   STATE
-════════════════════════════════ */
-let currentUser    = null;
-let selectedChip   = null; // currently selected subtopic key
-let modalModel     = 'claude';
+let currentUser  = null;
+let selectedChip = null;
+let modalModel   = 'claude';
 
-/* ════════════════════════════════
-   INIT
-════════════════════════════════ */
 (async () => {
   const session = await sbGetSession();
   if (!session) { window.location.href = 'auth.html'; return; }
@@ -571,19 +573,17 @@ let modalModel     = 'claude';
   currentUser = await sbGetUser();
   await sbUpsertProfile(currentUser);
 
-  /* Sync active model */
   const m = getActiveModel();
   modalModel = m;
   syncModelPills(m);
 
-  /* Expose getDB globally for mod_practice_test.js PT.open() */
   window.getDB = function(mod) {
     const map = {
-      phrasal:     typeof DB         !== 'undefined' ? DB         : null,
-      preposition: typeof DB_FP      !== 'undefined' ? DB_FP      : null,
-      idiom:       typeof DB_IDIOMS  !== 'undefined' ? DB_IDIOMS  : null,
-      grammar:     typeof DB_GRAMMAR !== 'undefined' ? DB_GRAMMAR : null,
-      modal:       typeof DB_MOD     !== 'undefined' ? DB_MOD     : null,
+      phrasal: typeof DB !== 'undefined' ? DB : null,
+      preposition: typeof DB_FP !== 'undefined' ? DB_FP : null,
+      idiom: typeof DB_IDIOMS !== 'undefined' ? DB_IDIOMS : null,
+      grammar: typeof DB_GRAMMAR !== 'undefined' ? DB_GRAMMAR : null,
+      modal: typeof DB_MOD !== 'undefined' ? DB_MOD : null,
     };
     return map[mod] || null;
   };
@@ -592,9 +592,6 @@ let modalModel     = 'claude';
   document.getElementById('page-loading').style.display = 'none';
 })();
 
-/* ════════════════════════════════
-   DASHBOARD
-════════════════════════════════ */
 async function loadDashboard() {
   const [profile, streakData, progress] = await Promise.all([
     sbGetProfile(currentUser.id),
@@ -602,18 +599,15 @@ async function loadDashboard() {
     sbGetProgress(currentUser.id),
   ]);
 
-  /* Greeting */
   const hr    = new Date().getHours();
   const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
   const name  = (profile?.name || currentUser.email || 'there').split(' ')[0];
   document.getElementById('greeting').textContent = `${greet}, ${name} 👋`;
 
-  /* Streak + total */
   document.getElementById('hero-streak').textContent  = streakData.current;
   document.getElementById('hero-total').textContent   = streakData.total;
   document.getElementById('streak-count').textContent = streakData.current;
 
-  /* Avatar */
   const av = document.getElementById('user-avatar');
   if (profile?.avatar_url) {
     av.innerHTML = `<img src="${profile.avatar_url}" alt="${name}">`;
@@ -622,25 +616,90 @@ async function loadDashboard() {
   }
   document.getElementById('dd-name').textContent = name;
 
-  /* Daily goal ring */
   const todayStr  = new Date().toISOString().split('T')[0];
-  const todayDone = progress.filter(p => {
-    if (!p.created_at) return false;
-    return new Date(p.created_at).toISOString().split('T')[0] === todayStr;
-  }).length;
-  const GOAL    = 5;
+  const todayDone = progress.filter(p => p.created_at && new Date(p.created_at).toISOString().split('T')[0] === todayStr).length;
+  const GOAL = 5;
   const goalPct = Math.min(100, Math.round((todayDone / GOAL) * 100));
-  const circ    = 125.7;
+  const circ = 125.7;
   document.getElementById('goal-ring').style.strokeDashoffset = circ - (circ * goalPct / 100);
-  document.getElementById('goal-ring-label').textContent      = goalPct + '%';
-  document.getElementById('goal-title').textContent           = `Daily Goal: ${todayDone} / ${GOAL} questions`;
-  document.getElementById('goal-sub').textContent             = todayDone >= GOAL
+  document.getElementById('goal-ring-label').textContent = goalPct + '%';
+  document.getElementById('goal-title').textContent = `Daily Goal: ${todayDone} / ${GOAL} questions`;
+  document.getElementById('goal-sub').textContent = todayDone >= GOAL
     ? '✓ Goal complete! Great work today.'
     : `${GOAL - todayDone} more question${GOAL - todayDone !== 1 ? 's' : ''} to reach today's goal.`;
 
-renderProgressCards(progress);
+  renderNextAction(progress, streakData, todayDone, GOAL);
+  renderProgressCards(progress);
   renderModuleGrid();
-  loadReadingCard(); // reading practice integration
+  loadReadingCard();
+}
+
+/* ── NEXT ACTION BANNER
+   Figures out what the user should do next and surfaces it prominently ── */
+function renderNextAction(progress, streakData, todayDone, goal) {
+  const wrap = document.getElementById('next-action-wrap');
+
+  // Find weakest module (most wrong answers)
+  const modStats = {};
+  progress.forEach(r => {
+    if (!modStats[r.module]) modStats[r.module] = { c: 0, t: 0 };
+    modStats[r.module].t++;
+    if (r.correct) modStats[r.module].c++;
+  });
+
+  // Find module with most unattempted questions
+  const lastVisited = getLastVisited();
+
+  let icon, label, title, sub, href;
+
+  if (streakData.current === 0 && todayDone === 0) {
+    // Brand new or hasn't practiced today
+    icon = '🚀'; label = 'Start Here';
+    title = 'Begin your first practice session';
+    sub = 'Pick any module and answer a few questions to build your streak.';
+    href = 'app.html?m=phrasal';
+  } else if (todayDone < goal) {
+    // Goal not met today — push them to practice
+    const remaining = goal - todayDone;
+    icon = '🎯'; label = 'Daily Goal';
+    if (lastVisited) {
+      title = `Continue ${lastVisited.module} — ${remaining} more to hit today's goal`;
+      sub = `You last practiced ${lastVisited.itemKey}. Keep going!`;
+      href = `app.html?m=${lastVisited.module}&key=${encodeURIComponent(lastVisited.itemKey)}`;
+    } else {
+      title = `${remaining} more question${remaining !== 1 ? 's' : ''} to hit today's goal`;
+      sub = 'Keep your streak alive — just a few minutes of practice.';
+      href = 'app.html?m=phrasal';
+    }
+  } else {
+    // Goal met — suggest weak areas or a timed test
+    const weakMod = Object.entries(modStats)
+      .filter(([, v]) => v.t >= 3)
+      .sort((a, b) => (a[1].c / a[1].t) - (b[1].c / b[1].t))[0];
+
+    if (weakMod && (weakMod[1].c / weakMod[1].t) < 0.6) {
+      const modNames = { phrasal:'Phrasal Verbs', preposition:'Prepositions', idiom:'Idioms', grammar:'Grammar', modal:'Modals' };
+      icon = '📈'; label = 'Improve Weak Area';
+      title = `Work on ${modNames[weakMod[0]] || weakMod[0]}`;
+      sub = `Your accuracy there is ${Math.round(weakMod[1].c / weakMod[1].t * 100)}%. A little focus will go a long way.`;
+      href = `app.html?m=${weakMod[0]}`;
+    } else {
+      icon = '⚡'; label = 'Challenge Yourself';
+      title = 'Take a timed test';
+      sub = "You've hit today's goal. Test yourself under exam conditions.";
+      href = null; // triggers modal
+    }
+  }
+
+  wrap.innerHTML = `<button class="next-action" onclick="${href ? `window.location.href='${href}'` : 'openTestModal()'}">
+    <div class="next-action-icon">${icon}</div>
+    <div class="next-action-body">
+      <div class="next-action-label">${label}</div>
+      <div class="next-action-title">${title}</div>
+      <div class="next-action-sub">${sub}</div>
+    </div>
+    <i class="ti ti-arrow-right next-action-arrow"></i>
+  </button>`;
 }
 
 function renderProgressCards(progress) {
@@ -649,8 +708,9 @@ function renderProgressCards(progress) {
     const done = new Set(
       progress.filter(p => p.module === mod.key && p.correct).map(p => p.question_id)
     ).size;
-    const pct = mod.total > 0 ? Math.round((done / mod.total) * 100) : 0;
-    return `<div class="prog-card ${mod.cls}">
+    const total = 50; // rough total per module — replace with actual count if desired
+    const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    return `<a class="prog-card ${mod.cls}" href="${mod.url}">
       <div class="prog-card-top">
         <div class="prog-card-left">
           <div class="prog-icon">${mod.icon}</div>
@@ -660,16 +720,15 @@ function renderProgressCards(progress) {
       </div>
       <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
       <div class="prog-bottom">
-        <div class="prog-done">${done} / ${mod.total} correct</div>
-        <button class="prog-continue" onclick="window.location.href='${mod.url}'">Continue →</button>
+        <div class="prog-done">${done} correct</div>
+        <div class="prog-continue">Continue →</div>
       </div>
-    </div>`;
+    </a>`;
   }).join('');
 }
 
 function renderModuleGrid() {
-  const grid = document.getElementById('module-grid');
-  grid.innerHTML = MODULES.map(mod =>
+  document.getElementById('module-grid').innerHTML = MODULES.map(mod =>
     `<a class="mod-card ${mod.cls}" href="${mod.url}">
       <div class="mod-card-icon">${mod.icon}</div>
       <div class="mod-card-name">${mod.name}</div>
@@ -678,79 +737,49 @@ function renderModuleGrid() {
   ).join('');
 }
 
-/* ════════════════════════════════
-   MODEL SELECTOR
-════════════════════════════════ */
+/* ── MODEL ── */
 function syncModelPills(m) {
   document.querySelectorAll('.model-pill').forEach(p => p.classList.toggle('active', p.dataset.model === m));
   document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.toggle('selected', p.dataset.m === m));
 }
-
 function switchModel(key, btn) {
-  setActiveModel(key);
-  modalModel = key;
+  setActiveModel(key); modalModel = key;
   document.querySelectorAll('.model-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.toggle('selected', p.dataset.m === key));
 }
-
 function selectModalModel(key, btn) {
-  modalModel = key;
-  setActiveModel(key);
+  modalModel = key; setActiveModel(key);
   document.querySelectorAll('.modal-model-pill').forEach(p => p.classList.remove('selected'));
   btn.classList.add('selected');
   document.querySelectorAll('.model-pill').forEach(p => p.classList.toggle('active', p.dataset.model === key));
 }
 
-/* ════════════════════════════════
-   USER MENU
-════════════════════════════════ */
-function toggleUserMenu() {
-  document.getElementById('user-dropdown').classList.toggle('open');
-}
+/* ── USER MENU ── */
+function toggleUserMenu() { document.getElementById('user-dropdown').classList.toggle('open'); }
 document.addEventListener('click', e => {
-  if (!e.target.closest('.user-menu')) {
-    document.getElementById('user-dropdown').classList.remove('open');
-  }
+  if (!e.target.closest('.user-menu')) document.getElementById('user-dropdown').classList.remove('open');
 });
 
-/* ════════════════════════════════
-   TEST MODAL
-════════════════════════════════ */
-function openTestModal() {
-  document.getElementById('test-modal-overlay').classList.add('open');
-}
-
-function closeTestModal() {
-  document.getElementById('test-modal-overlay').classList.remove('open');
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('test-modal-overlay')) closeTestModal();
-}
+/* ── TEST MODAL ── */
+function openTestModal()  { document.getElementById('test-modal-overlay').classList.add('open'); }
+function closeTestModal() { document.getElementById('test-modal-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('test-modal-overlay')) closeTestModal(); }
 
 function updateSubtopics() {
   const topic = document.getElementById('test-topic').value;
   selectedChip = null;
-  const group  = document.getElementById('subtopic-group');
-  const chips  = document.getElementById('subtopic-chips');
-
-  if (!topic || !SUBTOPICS[topic]) {
-    group.style.display = 'none';
-    checkStartBtn();
-    return;
-  }
-
+  const group = document.getElementById('subtopic-group');
+  const chips = document.getElementById('subtopic-chips');
+  if (!topic || !SUBTOPICS[topic]) { group.style.display = 'none'; checkStartBtn(); return; }
   group.style.display = 'block';
-  const subs = SUBTOPICS[topic];
-  chips.innerHTML = subs.map(s => {
+  chips.innerHTML = SUBTOPICS[topic].map(s => {
     const label = (topic === 'grammar' && GRAMMAR_LABELS[s]) ? GRAMMAR_LABELS[s] : s;
     return `<div class="chip" data-key="${esc(s)}" onclick="selectChip(this,'${esc(s)}')">${label}</div>`;
   }).join('');
   checkStartBtn();
 }
 
-/* Only one subtopic selected at a time (PT.open takes one key) */
 function selectChip(el, key) {
   document.querySelectorAll('#subtopic-chips .chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
@@ -763,69 +792,30 @@ function checkStartBtn() {
   document.getElementById('start-test-btn').disabled = !(topic && selectedChip);
 }
 
-/* ════════════════════════════════
-   LAUNCH TEST → PT OVERLAY
-════════════════════════════════ */
 async function launchTest() {
   const topic   = document.getElementById('test-topic').value;
   const key     = selectedChip;
   const timeSec = parseInt(document.getElementById('test-time').value);
-
   if (!topic || !key) return;
-
   closeTestModal();
-
-  /* Override PT totalSecs before opening */
-  const _open = PT.open.bind(PT);
-
   await PT.open({ mod: topic, key, user: currentUser, timeSecs: timeSec });
 }
 
-function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
-/* ════════════════════════════════
-   READING CARD
-════════════════════════════════ */
+/* ── READING CARD ── */
 async function loadReadingCard() {
   try {
-    // 1. Get reading user state (day/week)
-    const { data: rdState } = await SB
-      .from('reading_user_state')
-      .select('current_day, current_week')
-      .eq('user_id', currentUser.id)
-      .single();
-
-    const day  = rdState?.current_day  || 1;
+    const { data: rdState } = await SB.from('reading_user_state').select('current_day,current_week').eq('user_id', currentUser.id).single();
+    const day = rdState?.current_day || 1;
     const week = rdState?.current_week || 1;
-
-    // 2. Check if today's session is already done
     const today = new Date().toISOString().split('T')[0];
-    const { data: todaySessions } = await SB
-      .from('reading_sessions')
-      .select('id, created_at')
-      .eq('user_id', currentUser.id)
-      .eq('day', day)
-      .eq('week', week);
+    const { data: todaySessions } = await SB.from('reading_sessions').select('id,created_at').eq('user_id', currentUser.id).eq('day', day).eq('week', week);
+    const doneToday = (todaySessions || []).some(s => new Date(s.created_at).toISOString().split('T')[0] === today);
+    const { data: exData } = await SB.from('reading_exercises').select('id,topic').eq('day', day <= 3 ? day : 1).eq('week', week).single();
 
-    const doneToday = (todaySessions || []).some(s => {
-      return new Date(s.created_at).toISOString().split('T')[0] === today;
-    });
-
-    // 3. Check if exercise exists for this day/week
-    const { data: exData } = await SB
-      .from('reading_exercises')
-      .select('id, topic')
-      .eq('day', day <= 3 ? day : 1)
-      .eq('week', week)
-      .single();
-
-    const hasExercise = !!exData;
-
-    // 4. Update card
-    const card    = document.getElementById('reading-card');
-    const title   = document.getElementById('rd-card-title');
-    const sub     = document.getElementById('rd-card-sub');
-    const actBtn  = document.getElementById('rd-action-btn');
-
+    const card   = document.getElementById('reading-card');
+    const title  = document.getElementById('rd-card-title');
+    const sub    = document.getElementById('rd-card-sub');
+    const actBtn = document.getElementById('rd-action-btn');
     card.style.display = 'flex';
 
     if (doneToday) {
@@ -833,37 +823,25 @@ async function loadReadingCard() {
       sub.textContent   = `Week ${week} · Day ${day} complete. See you tomorrow!`;
       actBtn.textContent = 'View Dashboard →';
       actBtn.classList.add('done');
-    } else if (!hasExercise) {
+    } else if (!exData) {
       title.textContent = 'Reading Practice';
       sub.textContent   = `Week ${week} · Day ${day} — No exercise uploaded yet.`;
-      actBtn.textContent = 'Open →';
     } else {
       const isAnchor = day >= 4 && day <= 7;
       title.textContent = exData.topic || 'Reading Practice';
-      sub.textContent   = isAnchor
-        ? `Week ${week} · Day ${day} — Anchor recall session`
-        : `Week ${week} · Day ${day} — ${exData.topic}`;
+      sub.textContent   = isAnchor ? `Week ${week} · Day ${day} — Anchor recall session` : `Week ${week} · Day ${day} — ${exData.topic}`;
       actBtn.textContent = 'Start Session →';
       actBtn.classList.remove('done');
     }
 
-    // 5. Show admin button if user is admin
-    const { data: adminRow } = await SB
-      .from('reading_admins')
-      .select('user_id')
-      .eq('user_id', currentUser.id)
-      .single();
-
-    if (adminRow) {
-      document.getElementById('rd-admin-btn').style.display = 'inline-flex';
-    }
-
+    const { data: adminRow } = await SB.from('reading_admins').select('user_id').eq('user_id', currentUser.id).single();
+    if (adminRow) document.getElementById('rd-admin-btn').style.display = 'inline-flex';
   } catch (e) {
-    // Silently hide the card if anything fails (e.g. table not yet set up)
-    console.warn('Reading card load failed:', e);
     document.getElementById('reading-card').style.display = 'none';
   }
 }
+
+function esc(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>

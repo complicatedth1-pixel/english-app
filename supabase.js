@@ -1,7 +1,5 @@
 /* ═══════════════════════════════════════════
    SUPABASE CONFIG & HELPERS
-   Replace SUPABASE_URL and SUPABASE_ANON_KEY
-   with your actual values from supabase.com
 ═══════════════════════════════════════════ */
 
 const SUPABASE_URL  = 'https://ypowdifzhpafluihdfsn.supabase.co';
@@ -65,6 +63,7 @@ async function sbSaveAnswer({ userId, module, itemKey, questionId, chosen, corre
   await sbUpsertStreak(userId);
 }
 
+/* Returns deduplicated progress rows — one per (module, item_key, question_id) */
 async function sbGetProgress(userId) {
   const { data } = await SB.from('progress')
     .select('module, item_key, question_id, correct, source, created_at')
@@ -75,7 +74,7 @@ async function sbGetProgress(userId) {
   const seen = new Map();
   data.forEach(r => {
     const k = r.module + '|' + r.item_key + '|' + r.question_id;
-    seen.set(k, r); // later rows overwrite earlier ones (ascending order = last wins)
+    seen.set(k, r); // ascending order → last write wins = latest
   });
   return Array.from(seen.values());
 }
@@ -142,8 +141,6 @@ async function sbGetStreak(userId) {
 
 /* ── AI QUESTION CACHE ── */
 async function sbGetCachedQuestions(userId, module, itemKey, model) {
-  /* First try the requested model. If not found, try any model —
-     so cached AI questions always show regardless of which model is active. */
   const { data, error } = await SB.from('ai_questions_cache')
     .select('questions, model')
     .eq('user_id', userId)
