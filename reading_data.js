@@ -120,20 +120,22 @@ async function rdGetUserSessions(uid) {
 }
 
 async function rdGetAllUsers() {
-  const { data: states } = await rdClient()
-    .from('reading_user_state')
-    .select('*');
-  if (!states?.length) return [];
-
-  const uids = states.map(s => s.user_id);
   const { data: profiles } = await rdClient()
     .from('profiles')
-    .select('id, name, avatar_url')
-    .in('id', uids);
+    .select('id, name, avatar_url');
+  if (!profiles?.length) return [];
 
-  return states.map(s => ({
-    ...s,
-    profiles: profiles?.find(p => p.id === s.user_id) || null,
+  const uids = profiles.map(p => p.id);
+  const { data: states } = await rdClient()
+    .from('reading_user_state')
+    .select('*')
+    .in('user_id', uids);
+
+  return profiles.map(p => ({
+    user_id: p.id,
+    profiles: p,
+    current_day:  states?.find(s => s.user_id === p.id)?.current_day  || 1,
+    current_week: states?.find(s => s.user_id === p.id)?.current_week || 1,
   }));
 }
 
