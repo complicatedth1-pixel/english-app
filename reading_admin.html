@@ -20,135 +20,78 @@
   --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
   --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
   --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
+  --purple: #6B3FA0; --purple-bg: #F3EDFC; --purple-border: #C9AEED;
   --radius: 12px; --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 20px 50px rgba(0,0,0,0.10);
 }
-
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
 
-/* ══ TOP NAV (always visible, takes admin home) ══ */
-.top-nav {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
-  height: 54px; position: sticky; top: 0; z-index: 300;
-}
-.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; text-decoration: none; }
+/* NAV */
+.top-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; gap: 10px; height: 54px; position: sticky; top: 0; z-index: 300; }
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; text-decoration: none; }
 .nav-brand span { color: var(--accent); }
 .admin-badge { font-size: 11px; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); border-radius: 20px; padding: 2px 9px; font-weight: 500; }
 .nav-spacer { flex: 1; }
 .nav-btn { font-size: 12.5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
 .nav-btn:hover { background: var(--bg2); color: var(--text1); }
 
-/* ══ SUB NAV (user-level tabs, shown only in user view) ══ */
-.sub-nav {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; display: none; align-items: center; gap: 4px;
-  height: 44px; position: sticky; top: 54px; z-index: 200;
-}
+/* SUB NAV */
+.sub-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: none; align-items: center; gap: 4px; height: 44px; position: sticky; top: 54px; z-index: 200; }
 .sub-nav.visible { display: flex; }
-.sub-nav-back { font-size: 12.5px; color: var(--text3); cursor: pointer; display: flex; align-items: center; gap: 4px; margin-right: 10px; padding: 4px 8px; border-radius: var(--radius-sm); transition: all 0.12s; border: none; background: none; font-family: 'DM Sans', sans-serif; }
-.sub-nav-back:hover { background: var(--bg2); color: var(--text1); }
-.sub-divider { width: 1px; height: 18px; background: var(--border); margin-right: 6px; }
 .sub-tab { font-size: 13px; padding: 5px 14px; border-radius: 20px; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; }
 .sub-tab:hover { background: var(--bg2); color: var(--text1); }
 .sub-tab.active { background: var(--text1); color: #fff; }
+.sub-nav-back { font-size: 12.5px; color: var(--text3); cursor: pointer; display: flex; align-items: center; gap: 4px; margin-right: 10px; padding: 4px 8px; border-radius: var(--radius-sm); border: none; background: none; font-family: 'DM Sans', sans-serif; }
+.sub-nav-back:hover { background: var(--bg2); color: var(--text1); }
+.sub-divider { width: 1px; height: 18px; background: var(--border); margin-right: 6px; }
 .sub-user-name { font-size: 13px; font-weight: 600; color: var(--text1); margin-left: auto; display: flex; align-items: center; gap: 7px; }
 .sub-av { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text2); background: var(--bg2); flex-shrink: 0; }
 .sub-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-/* ══ SCREENS ══ */
+/* SCREENS */
 .screen { display: none; }
 .screen.active { display: block; animation: fadeUp .3s ease both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ══ WRAP ══ */
-.wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-/* ══ SECTION HEADER ══ */
-.section-hd { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); margin-bottom: 4px; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+.section-hd  { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); margin-bottom: 4px; }
 .section-sub { font-size: 13px; color: var(--text3); margin-bottom: 1.75rem; }
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.85rem; }
 
-/* ══ STATS ROW ══ */
+/* STATS */
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
 .stat-num { font-family: 'Instrument Serif', serif; font-size: 30px; color: var(--text1); line-height: 1; margin-bottom: 4px; }
 .stat-num.green { color: var(--green); }
-.stat-num.red   { color: var(--red); }
 .stat-num.blue  { color: var(--blue); }
+.stat-num.red   { color: var(--red); }
 .stat-lbl { font-size: 12px; color: var(--text3); font-weight: 500; }
 
-/* ══ USER LIST ══ */
+/* USER LIST */
 .user-list { display: flex; flex-direction: column; gap: 10px; }
-.user-row {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1rem 1.25rem;
-  display: flex; align-items: center; gap: 14px;
-  box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s;
-}
+.user-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s; }
 .user-row:hover { box-shadow: var(--shadow-md); border-color: var(--border2); transform: translateY(-1px); }
 .user-av { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg2); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text2); overflow: hidden; flex-shrink: 0; }
 .user-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .user-info { flex: 1; min-width: 0; }
 .user-name { font-size: 14px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
 .user-meta { font-size: 12px; color: var(--text3); display: flex; gap: 10px; flex-wrap: wrap; }
-.user-badges { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
 .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
 .badge.done   { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
 .badge.todo   { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
-.badge.ready  { background: var(--blue-bg);  color: var(--blue);  border: 1px solid var(--blue-border); }
-.badge.miss   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
-.badge.neu    { background: var(--bg2);      color: var(--text3); border: 1px solid var(--border); }
+.badge.ready  { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.badge.miss   { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
 .open-btn { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; }
 .open-btn:hover { background: var(--text1); color: #fff; border-color: var(--text1); }
 
-/* ══ USER DETAIL PANELS ══ */
+/* PANELS */
 .panel { display: none; }
 .panel.active { display: block; animation: fadeUp .3s ease both; }
 
-/* ══ EXERCISE SCHEDULE ══ */
-.schedule-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 1.5rem; }
-.sched-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 6px; text-align: center; }
-.sched-cell.current { border-color: var(--accent); background: var(--accent-bg); }
-.sched-cell.has-ex  { border-color: var(--green-border); background: var(--green-bg); }
-.sched-cell.missing { border-color: var(--red-border); background: var(--red-bg); }
-.sched-day  { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
-.sched-cell.current  .sched-day { color: var(--accent); }
-.sched-cell.has-ex   .sched-day { color: var(--green); }
-.sched-cell.missing  .sched-day { color: var(--red); }
-.sched-status { font-size: 16px; }
-.sched-topic { font-size: 9px; color: var(--text3); margin-top: 3px; line-height: 1.3; }
-.sched-cell.has-ex .sched-topic  { color: var(--green); }
-.sched-cell.missing .sched-topic { color: var(--red); }
-
-/* ══ PROMPT SECTION ══ */
-.prompt-box {
-  background: #1A1714; border-radius: var(--radius);
-  padding: 1.5rem; margin-bottom: 1.25rem; position: relative;
-}
-.prompt-box pre {
-  font-family: 'DM Mono', monospace; font-size: 11.5px; color: #E8E4DC;
-  line-height: 1.8; white-space: pre-wrap; word-break: break-word;
-}
-.prompt-box .prompt-label {
-  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em;
-  text-transform: uppercase; color: #9C9590; margin-bottom: 12px;
-}
-.copy-btn {
-  position: absolute; top: 1rem; right: 1rem;
-  font-size: 11px; padding: 4px 12px; border-radius: 20px;
-  border: 1px solid #3A3530; background: #2A2520;
-  color: #9C9590; cursor: pointer; font-family: 'DM Mono', monospace;
-  transition: all 0.12s;
-}
-.copy-btn:hover { background: #3A3530; color: #E8E4DC; }
-.copy-btn.copied { color: var(--green); border-color: var(--green-border); }
-
-/* ══ UPLOAD / IMPORT SECTION ══ */
+/* FORM */
 .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
-.form-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.25rem; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.form-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.25rem; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
 .form-group { margin-bottom: 1rem; }
@@ -157,55 +100,96 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .form-input, .form-select, .form-textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text1); outline: none; }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
 .form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
-.form-hint { font-size: 11.5px; color: var(--text3); margin-top: 4px; }
+.form-hint { font-size: 11.5px; color: var(--text3); margin-top: 4px; line-height: 1.5; }
 
-/* Block forms */
+/* DAY TABS */
+.day-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.day-tab { font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; position: relative; }
+.day-tab:hover { background: var(--bg2); }
+.day-tab.active { background: var(--text1); color: #fff; border-color: var(--text1); }
+.day-tab.has-data::after { content: ''; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+.day-tab.recall-day { border-color: var(--purple-border); }
+.day-tab.recall-day.active { background: var(--purple); border-color: var(--purple); }
+
+/* BLOCK FORM */
 .block-form { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
-.block-form-num { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
-.q-form { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
-.q-form-num { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-.remove-btn { font-size: 11px; color: var(--red); background: none; border: none; cursor: pointer; padding: 0; }
-.opt-row { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: center; margin-bottom: 6px; }
+.block-num { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+
+/* BLANK SELECTOR */
+.blank-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.blank-btn { font-family: 'DM Mono', monospace; font-size: 11px; width: 32px; height: 32px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; color: var(--text2); transition: all .12s; display: flex; align-items: center; justify-content: center; }
+.blank-btn:hover { border-color: var(--border2); }
+.blank-btn.selected { background: var(--text1); color: #fff; border-color: var(--text1); }
+
+/* RECALL CONFIG */
+.recall-config-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.recall-day-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.recall-day-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.recall-day-label { font-size: 12px; color: var(--text2); font-weight: 500; min-width: 60px; }
+.chain-preview { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.chain-node  { font-family: 'DM Mono', monospace; font-size: 9px; background: #EEEDFE; color: #3C3489; border-radius: 3px; padding: 3px 8px; text-transform: uppercase; letter-spacing: .08em; }
+.chain-blank { font-family: 'DM Mono', monospace; font-size: 9px; background: var(--accent-bg); color: var(--accent); border: 1.5px dashed var(--accent-border); border-radius: 3px; padding: 2px 8px; cursor: pointer; transition: all .12s; }
+.chain-blank:hover { background: var(--accent); color: #fff; }
+.chain-blank.active-blank { background: var(--accent); color: #fff; border-style: solid; border-color: var(--accent); }
+.chain-arr { font-size: 10px; color: var(--text3); }
+
+/* QUESTION FORM */
+.q-form-inline { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
+.q-form-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.opt-row { display: grid; grid-template-columns: 18px 1fr; gap: 6px; align-items: center; margin-bottom: 6px; }
 .opt-letter { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text3); }
 
-/* Import box */
-.import-drop {
-  border: 2px dashed var(--border2); border-radius: var(--radius);
-  padding: 2.5rem; text-align: center; cursor: pointer;
-  transition: all 0.15s; background: var(--bg);
+/* DAY QUESTION BUCKET */
+.day-bucket {
+  background: var(--bg2); border: 2px dashed var(--border2);
+  border-radius: var(--radius-sm); padding: 12px;
+  min-height: 80px; transition: all 0.15s;
 }
-.import-drop:hover, .import-drop.drag-over { border-color: var(--blue); background: var(--blue-bg); }
-.import-drop-icon { font-size: 2rem; margin-bottom: 8px; }
-.import-drop-text { font-size: 14px; color: var(--text2); margin-bottom: 4px; }
-.import-drop-sub  { font-size: 12px; color: var(--text3); }
-.import-preview { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-top: 1rem; display: none; }
-.import-preview.show { display: block; }
-.import-preview pre { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text2); white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
-.import-actions { display: flex; gap: 10px; margin-top: 1rem; align-items: center; }
+.day-bucket.drag-active { border-color: var(--blue); background: var(--blue-bg); }
+.day-bucket-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.day-bucket-count { font-family: 'DM Mono', monospace; font-size: 10px; }
+.day-bucket-count.ok   { color: var(--green); }
+.day-bucket-count.warn { color: var(--accent); }
+.day-bucket-empty { font-size: 12px; color: var(--text3); text-align: center; padding: 1rem; }
 
-/* Buttons */
+/* Q CARD (drag-drop) */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 6px; cursor: grab; user-select: none; transition: all 0.15s; position: relative; }
+.q-card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+.q-card.dragging { opacity: 0.45; transform: rotate(1.5deg); cursor: grabbing; }
+.q-card.drag-over { border-color: var(--blue); background: var(--blue-bg); }
+.q-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.q-card-num { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; }
+.q-type-pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.q-type-pill.factual     { background: var(--green-bg); color: var(--green); }
+.q-type-pill.interpretive { background: var(--blue-bg); color: var(--blue); }
+.q-type-pill.inferential  { background: var(--purple-bg); color: var(--purple); }
+.q-card-text { font-size: 12px; color: var(--text1); line-height: 1.5; margin-bottom: 4px; }
+.q-card-opts { display: flex; flex-wrap: wrap; gap: 4px; font-size: 10px; color: var(--text3); }
+.q-card-opt.correct { color: var(--green); font-weight: 600; }
+.q-card-drag-handle { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+
+/* BUTTONS */
 .btn-primary { background: var(--text1); color: var(--surface); border: none; border-radius: var(--radius-sm); padding: 10px 22px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
 .btn-primary:hover { background: var(--accent); }
 .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn-secondary { background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer; transition: all 0.12s; }
 .btn-secondary:hover { background: var(--bg2); color: var(--text1); }
-.btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red-border); border-radius: var(--radius-sm); padding: 7px 14px; font-family: 'DM Sans', sans-serif; font-size: 12.5px; cursor: pointer; transition: all 0.12s; }
-.btn-danger:hover { background: var(--red-bg); }
+.btn-sm { font-size: 12px; padding: 6px 13px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .12s; }
+.btn-sm:hover { background: var(--bg2); }
 .save-toast { font-size: 13px; color: var(--green); font-weight: 500; opacity: 0; transition: opacity .3s; margin-left: 8px; }
 .save-toast.show { opacity: 1; }
 
-/* ══ ANALYTICS ══ */
-.var-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+/* ANALYTICS */
+.var-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
 .var-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow); }
 .var-letter { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--accent); line-height: 1; margin-bottom: 4px; }
-.var-label { font-size: 13px; color: var(--text1); font-weight: 600; margin-bottom: 2px; }
-.var-desc  { font-size: 11.5px; color: var(--text3); line-height: 1.5; margin-bottom: 10px; }
-.var-score { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text1); }
+.var-label  { font-size: 13px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
+.var-desc   { font-size: 11.5px; color: var(--text3); line-height: 1.5; margin-bottom: 10px; }
+.var-score  { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; }
 .var-score.good { color: var(--green); }
 .var-score.mid  { color: #B5760A; }
 .var-score.weak { color: var(--red); }
 .var-score.none { color: var(--text3); font-size: 14px; }
-
 .session-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
 .session-table th { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg2); }
 .session-table td { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text2); padding: 9px 12px; border-bottom: 0.5px solid var(--border); }
@@ -215,23 +199,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .td-mid { color: #B5760A; font-weight: 500; }
 .td-bad { color: var(--red); font-weight: 500; }
 
-/* Loading / empty */
 .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-row { display: flex; align-items: center; gap: 10px; padding: 2rem; color: var(--text3); font-size: 13px; }
-.empty-state { text-align: center; padding: 3rem 2rem; color: var(--text3); font-size: 13px; }
+.empty-state { text-align: center; padding: 2.5rem 2rem; color: var(--text3); font-size: 13px; }
 
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .var-grid   { grid-template-columns: repeat(2, 1fr); }
-  .schedule-grid { grid-template-columns: repeat(4, 1fr); }
+  .var-grid  { grid-template-columns: repeat(2, 1fr); }
   .form-row, .form-row-3 { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
-<!-- ══ TOP NAV ══ -->
 <nav class="top-nav">
   <a class="nav-brand" href="index.html">Learn<span>Smart</span></a>
   <span class="admin-badge">Admin</span>
@@ -240,11 +221,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <a class="nav-btn" href="index.html"><i class="ti ti-home"></i> Home</a>
 </nav>
 
-<!-- ══ SUB NAV (shown in user view) ══ -->
 <div class="sub-nav" id="sub-nav">
   <button class="sub-nav-back" onclick="goHome()"><i class="ti ti-arrow-left"></i> All Users</button>
   <div class="sub-divider"></div>
-  <button class="sub-tab active" data-panel="upload"    onclick="switchPanel('upload',this)">Upload / Import</button>
+  <button class="sub-tab active" data-panel="upload"    onclick="switchPanel('upload',this)">Upload</button>
   <button class="sub-tab"        data-panel="schedule"  onclick="switchPanel('schedule',this)">Schedule</button>
   <button class="sub-tab"        data-panel="analytics" onclick="switchPanel('analytics',this)">Analytics</button>
   <div class="sub-user-name" id="sub-user-name">
@@ -253,7 +233,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
-<!-- ══ ACCESS DENIED ══ -->
+<!-- DENIED -->
 <div id="screen-denied" class="screen">
   <div class="wrap" style="text-align:center;padding-top:4rem">
     <div style="font-size:2.5rem;margin-bottom:1rem">🔒</div>
@@ -261,21 +241,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
-<!-- ══ DASHBOARD SCREEN ══ -->
+<!-- DASHBOARD -->
 <div id="screen-dashboard" class="screen">
   <div class="wrap">
     <div class="section-hd">Reading Admin</div>
     <div class="section-sub">Manage users, upload exercises, track progress.</div>
-
-    <!-- Stats -->
-    <div class="stats-row" id="admin-stats">
-      <div class="stat-card"><div class="stat-num blue" id="st-users">—</div><div class="stat-lbl">Total Users</div></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num blue"  id="st-users">—</div><div class="stat-lbl">Total Users</div></div>
       <div class="stat-card"><div class="stat-num green" id="st-done">—</div><div class="stat-lbl">Done Today</div></div>
-      <div class="stat-card"><div class="stat-num red" id="st-miss">—</div><div class="stat-lbl">Not Done Today</div></div>
-      <div class="stat-card"><div class="stat-num" id="st-ex">—</div><div class="stat-lbl">Exercises Uploaded</div></div>
+      <div class="stat-card"><div class="stat-num red"   id="st-miss">—</div><div class="stat-lbl">Not Done Today</div></div>
+      <div class="stat-card"><div class="stat-num"       id="st-ex">—</div><div class="stat-lbl">Exercises Uploaded</div></div>
     </div>
-
-    <!-- User list -->
     <div class="section-label">All Users</div>
     <div class="user-list" id="user-list">
       <div class="loading-row"><div class="spinner"></div> Loading users…</div>
@@ -283,131 +259,38 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
-<!-- ══ USER DETAIL SCREEN ══ -->
+<!-- USER DETAIL -->
 <div id="screen-user" class="screen">
   <div class="wrap">
 
-    <!-- ── UPLOAD / IMPORT PANEL ── -->
+    <!-- UPLOAD PANEL -->
     <div id="panel-upload" class="panel active">
       <div class="section-hd" id="upload-heading">Upload Exercise</div>
-      <div class="section-sub" id="upload-sub">Create a new exercise for this user's next session.</div>
+      <div class="section-sub" id="upload-sub">Select a day to upload or edit its exercise.</div>
 
-      <!-- AI Prompt Section -->
-      <div class="section-label" style="margin-bottom:.5rem">AI Prompt — Copy & Send to AI</div>
-      <div class="prompt-box" id="prompt-box">
-        <div class="prompt-label">system prompt + response schema</div>
-        <button class="copy-btn" onclick="copyPrompt()">Copy</button>
-        <pre id="prompt-text">Loading user context…</pre>
-      </div>
-      <p style="font-size:12px;color:var(--text3);margin-bottom:1.75rem">Copy the prompt above, paste it into any AI (Claude, GPT, Gemini) along with your chosen article or passage text. The AI will return a JSON block — paste it into the import box below or fill the form manually.</p>
-
-      <!-- Import from AI -->
-      <div class="form-card">
-        <div class="form-card-title">
-          Import from AI Response
-          <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">Paste JSON or drop a .md / .json file</span>
-        </div>
-        <div class="import-drop" id="import-drop"
-             onclick="document.getElementById('file-input').click()"
-             ondragover="handleDragOver(event)"
-             ondragleave="handleDragLeave(event)"
-             ondrop="handleDrop(event)">
-          <div class="import-drop-icon">📂</div>
-          <div class="import-drop-text">Drop file here or click to browse</div>
-          <div class="import-drop-sub">.md or .json from AI output</div>
-        </div>
-        <input type="file" id="file-input" accept=".json,.md,.txt" style="display:none" onchange="handleFileSelect(event)">
-
-        <div class="import-preview" id="import-preview">
-          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">Detected JSON</div>
-          <pre id="import-preview-text"></pre>
-        </div>
-
-        <div style="margin-top:1rem">
-          <label class="form-label">Or paste JSON directly</label>
-          <textarea class="form-textarea" id="import-paste" rows="5" placeholder='[{"topic":"...","day":1,"week":1,"chain":[...],...}]' oninput="handlePasteInput()"></textarea>
-        </div>
-
-        <div class="import-actions">
-          <button class="btn-primary" id="import-btn" onclick="importFromAI()" disabled>Import & Save</button>
-          <button class="btn-secondary" onclick="clearImport()">Clear</button>
-          <span class="save-toast" id="import-toast">Saved ✓</span>
+      <div class="form-card" style="margin-bottom:1.25rem">
+        <div class="form-card-title">Select Day to Edit</div>
+        <div class="day-tabs" id="day-tab-row"></div>
+        <div style="font-size:11.5px;color:var(--text3)">
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block"></span> has exercise</span>
+          <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:var(--purple);display:inline-block"></span> recall day (2,4,6,7)</span>
         </div>
       </div>
-
-      <!-- Manual Form -->
-      <div class="form-card">
-        <div class="form-card-title">Manual Entry</div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Topic / Title</label>
-            <input class="form-input" id="f-topic" placeholder="e.g. How Words Work · Linguistics">
-          </div>
-          <div class="form-row" style="gap:10px">
-            <div class="form-group">
-              <label class="form-label">Day (1–7)</label>
-              <input class="form-input" id="f-day" type="number" min="1" max="7" placeholder="1">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Week</label>
-              <input class="form-input" id="f-week" type="number" min="1" placeholder="1">
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Chain Labels (5, comma-separated)</label>
-          <input class="form-input" id="f-chain" placeholder="mortgage, semantic drift, quarantine, sibilance, entropy">
-          <div class="form-hint">5 node labels shown in the full chain.</div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Blank positions (1-indexed, comma-separated — which 3 to blank)</label>
-          <input class="form-input" id="f-blanks" placeholder="2, 3, 5">
-        </div>
-      </div>
-
-      <div class="form-card">
-        <div class="form-card-title">Exercise 1 — 5 Blocks</div>
-        <div id="block-forms"></div>
-      </div>
-
-      <div class="form-card">
-        <div class="form-card-title">Exercise 2 — Comprehension Questions</div>
-        <div class="form-hint" style="margin-bottom:1rem">Add at least 4 questions (2 factual, 1 interpretive, 1 inferential).</div>
-        <div id="q-forms"></div>
-        <button class="btn-secondary" onclick="addQuestion()" style="margin-top:6px"><i class="ti ti-plus"></i> Add Question</button>
-      </div>
-
-      <div class="form-card">
-        <div class="form-card-title">Anchor Questions (Days 4–7)</div>
-        <div class="form-hint" style="margin-bottom:1rem">Day 4 = first, Day 5 = second, etc.</div>
-        <div id="anchor-forms"></div>
-        <button class="btn-secondary" onclick="addAnchorQuestion()" style="margin-top:6px"><i class="ti ti-plus"></i> Add Anchor Question</button>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:10px;margin-top:1rem">
-        <button class="btn-primary" onclick="saveManual()">Save Exercise</button>
-        <span class="save-toast" id="manual-toast">Saved ✓</span>
-      </div>
+      <div id="day-form-area"></div>
     </div>
 
-    <!-- ── SCHEDULE PANEL ── -->
+    <!-- SCHEDULE PANEL -->
     <div id="panel-schedule" class="panel">
-      <div class="section-hd">Exercise Schedule</div>
-      <div class="section-sub">Week view — which days have exercises uploaded and which are missing.</div>
-      <div class="schedule-grid" id="sched-grid"></div>
-
-      <div class="section-label">Uploaded Exercises</div>
-      <div id="ex-library"></div>
+      <div class="section-hd">Week Schedule</div>
+      <div class="section-sub">Exercises uploaded for each day of the current week.</div>
+      <div id="schedule-content"></div>
     </div>
 
-    <!-- ── ANALYTICS PANEL ── -->
+    <!-- ANALYTICS PANEL -->
     <div id="panel-analytics" class="panel">
       <div class="section-hd">Analytics</div>
-      <div class="section-sub">Session history and computed learning signals.</div>
-
+      <div class="section-sub">Session history and learning signals.</div>
       <div class="var-grid" id="var-grid"></div>
-
       <div class="section-label" style="margin-bottom:.85rem">Session History</div>
       <div id="session-table-wrap"></div>
     </div>
@@ -416,52 +299,60 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 </div>
 
 <script>
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    STATE
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 let adminUser    = null;
-let allUsers     = [];      // from reading_user_state + profiles join
+let allUsers     = [];
 let allExercises = [];
-let currentUID   = null;    // user being viewed
-let currentUserData = {};   // { state, sessions, profile }
-let qCount = 0, anchorCount = 0;
-let importedJSON = null;
+let currentUID   = null;
+let currentWeek  = 1;
+let activeDay    = 1;
 
-/* ════════════════════════════════════════
+/*
+  dayFormState[day] = {
+    id?,
+    topic, ex1Blocks[],
+    ex1BlankPos,           // Day1: integer index (single blank)
+    ex1RecallBlanks,       // Day1 only: { "2": 0, "4": 3, ... } — index per recall day
+    ex1BlankPositions[],   // Days 2–7: two blank indices
+    ex2Passage,
+    ex2Questions[],        // each q has transient ._idx (its position in the array)
+    ex2RecallMap,          // Day1 only: { "2": [4,5,6,7], "4": [8,9,10,11], ... } — stores INDICES
+  }
+
+  CRITICAL: ex2RecallMap stores question INDICES (integers), not _id strings.
+  When rendering buckets we use array position, not any _id field.
+*/
+let dayFormState = {};
+
+// Drag-drop state
+let dragSrcIdx  = null;   // integer index of the dragged question in dayFormState[1].ex2Questions
+let dragSrcDay  = null;   // which day bucket it came from (1,2,4,6,7 or null if unassigned)
+
+/* ════════════════════════════════════════════════════════════
    INIT
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 (async () => {
   adminUser = await rdGetUser();
   if (!adminUser) { window.location.href = 'auth.html'; return; }
-
   const isAdmin = await rdIsAdmin(adminUser.id);
   if (!isAdmin) { showScreen('denied'); return; }
-
-  buildBlockForms();
   await loadAll();
   showScreen('dashboard');
 })();
 
 async function loadAll() {
-  const [users, exercises] = await Promise.all([
-    rdGetAllUsers(),
-    rdGetAllExercises()
-  ]);
+  const [users, exercises] = await Promise.all([rdGetAllUsers(), rdGetAllExercises()]);
   allUsers     = users;
   allExercises = exercises;
-
-  // Load sessions for all users
-  for (const u of allUsers) {
-    const sessions = await rdGetUserSessions(u.user_id);
-    u._sessions = sessions;
-  }
-
+  for (const u of allUsers) u._sessions = await rdGetUserSessions(u.user_id);
   renderDashboard();
 }
 
-/* ════════════════════════════════════════
-   SCREEN NAV
-════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   SCREENS / PANELS
+════════════════════════════════════════════════════════════ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
@@ -469,584 +360,725 @@ function showScreen(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function goHome() {
-  currentUID = null;
-  showScreen('dashboard');
-}
+function goHome() { currentUID = null; showScreen('dashboard'); }
 
 function switchPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-
-  if (id === 'schedule')  renderSchedule();
-  if (id === 'analytics') renderAnalytics();
+  if (id === 'schedule')  renderSchedulePanel();
+  if (id === 'analytics') renderAnalyticsPanel();
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    DASHBOARD
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 function renderDashboard() {
   const today = new Date().toISOString().split('T')[0];
   let doneToday = 0, missToday = 0;
-
   allUsers.forEach(u => {
-    const sessions = u._sessions || [];
-    const doneToday_ = sessions.some(s =>
-      s.day === u.current_day &&
-      s.week === u.current_week &&
-      new Date(s.created_at).toISOString().split('T')[0] === today
-    );
-    if (doneToday_) doneToday++; else missToday++;
+    const done = (u._sessions || []).some(x => new Date(x.created_at).toISOString().split('T')[0] === today);
+    if (done) doneToday++; else missToday++;
   });
-
   document.getElementById('st-users').textContent = allUsers.length;
   document.getElementById('st-done').textContent  = doneToday;
   document.getElementById('st-miss').textContent  = missToday;
   document.getElementById('st-ex').textContent    = allExercises.length;
 
   const list = document.getElementById('user-list');
-  if (!allUsers.length) {
-    list.innerHTML = '<div class="empty-state">No users yet.</div>';
-    return;
-  }
-
+  if (!allUsers.length) { list.innerHTML = '<div class="empty-state">No users yet.</div>'; return; }
   list.innerHTML = allUsers.map(u => {
-    const name    = u.profiles?.name || u.user_id.slice(0, 8);
-    const email   = u.profiles?.email || '—';
-    const avatar  = u.profiles?.avatar_url;
-    const avHtml  = avatar ? `<img src="${avatar}" alt="${name}">` : (name[0] || '?').toUpperCase();
-    const day     = u.current_day  || 1;
-    const week    = u.current_week || 1;
-    const sessions = u._sessions || [];
-
-    const joined = u.created_at
-      ? new Date(u.created_at).toLocaleString('en-IN', {
-          day: 'numeric', month: 'short', year: 'numeric',
-          hour: '2-digit', minute: '2-digit'
-        })
-      : '—';
-
-    const doneToday = sessions.some(s =>
-      s.day === day && s.week === week &&
-      new Date(s.created_at).toISOString().split('T')[0] === today
-    );
-
-    const nextDay  = day > 7 ? 1 : day;
-    const nextWeek = day > 7 ? week + 1 : week;
-    const hasNextEx = allExercises.some(e =>
-      e.day === (nextDay <= 3 ? nextDay : 1) && e.week === nextWeek
-    );
-
-    const todayBadge = doneToday
-      ? `<span class="badge done">✓ Done today</span>`
-      : `<span class="badge todo">Pending today</span>`;
-    const nextBadge = hasNextEx
-      ? `<span class="badge ready">Next ex ready</span>`
-      : `<span class="badge miss">Next ex missing</span>`;
-
-    const totalSessions = sessions.length;
-    const avgEx2 = totalSessions
-      ? Math.round(sessions.reduce((a, s) => a + (s.ex2_score || 0), 0) / totalSessions)
-      : null;
-
+    const name   = u.profiles?.name || u.user_id.slice(0, 8);
+    const avatar = u.profiles?.avatar_url;
+    const avHtml = avatar ? `<img src="${avatar}" alt="${name}">` : (name[0] || '?').toUpperCase();
+    const day    = u.current_day  || 1;
+    const week   = u.current_week || 1;
+    const doneT  = (u._sessions || []).some(s => new Date(s.created_at).toISOString().split('T')[0] === today);
+    const hasNext = allExercises.some(e => e.week === week && e.day === (day % 7) + 1);
     return `<div class="user-row" onclick="openUser('${u.user_id}')">
       <div class="user-av">${avHtml}</div>
       <div class="user-info">
         <div class="user-name">${name}</div>
-        <div class="user-meta">
-          <span>${email}</span>
-          <span>Joined ${joined}</span>
-          <span>Week ${week} · Day ${day}</span>
-          <span>${totalSessions} session${totalSessions !== 1 ? 's' : ''}</span>
-          ${avgEx2 !== null ? `<span>Avg score ${avgEx2}%</span>` : ''}
-        </div>
+        <div class="user-meta"><span>Week ${week} · Day ${day}</span><span>${(u._sessions||[]).length} sessions</span></div>
       </div>
-      <div class="user-badges">${todayBadge}${nextBadge}</div>
+      <div style="display:flex;gap:6px">
+        <span class="badge ${doneT ? 'done' : 'todo'}">${doneT ? '✓ Done today' : 'Pending'}</span>
+        <span class="badge ${hasNext ? 'ready' : 'miss'}">${hasNext ? 'Next ready' : 'Next missing'}</span>
+      </div>
       <button class="open-btn">Open →</button>
     </div>`;
   }).join('');
 }
-/* ════════════════════════════════════════
-   OPEN USER
-════════════════════════════════════════ */
-async function openUser(uid) {
-  currentUID = uid;
-  const u = allUsers.find(x => x.user_id === uid);
-  if (!u) return;
 
+/* ════════════════════════════════════════════════════════════
+   OPEN USER
+════════════════════════════════════════════════════════════ */
+async function openUser(uid) {
+  currentUID  = uid;
+  const u     = allUsers.find(x => x.user_id === uid);
+  if (!u) return;
   const name   = u.profiles?.name || uid.slice(0, 8);
   const avatar = u.profiles?.avatar_url;
+  currentWeek  = u.current_week || 1;
+  activeDay    = 1;
 
-  // Update sub nav
   const avEl = document.getElementById('sub-av');
   avEl.innerHTML = avatar ? `<img src="${avatar}" alt="${name}">` : (name[0] || '?').toUpperCase();
-  document.getElementById('sub-name-text').textContent = name;
+  document.getElementById('sub-name-text').textContent    = name;
+  document.getElementById('upload-heading').textContent   = `Upload Exercise — ${name}`;
+  document.getElementById('upload-sub').textContent       = `Week ${currentWeek} · Select a day tab below`;
 
-  // Reset to upload panel
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-upload').classList.add('active');
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   document.querySelector('[data-panel="upload"]').classList.add('active');
 
-  // Prefill day/week in manual form
-  const day  = u.current_day  || 1;
-  const week = u.current_week || 1;
-  document.getElementById('f-day').value  = day;
-  document.getElementById('f-week').value = week;
-  document.getElementById('upload-heading').textContent = `Upload Exercise — ${name}`;
-  document.getElementById('upload-sub').textContent     = `Currently on Week ${week} · Day ${day}`;
-
-  // Build AI prompt
-  buildPrompt(name, day, week, u._sessions || []);
-
+  renderDayTabs();
+  loadDayForm(1);
   showScreen('user');
 }
 
-/* ════════════════════════════════════════
-   AI PROMPT BUILDER
-════════════════════════════════════════ */
-function buildPrompt(name, day, week, sessions) {
-  const isAnchor = day >= 4 && day <= 7;
-  const sessionCount = sessions.length;
-  const avgScore = sessionCount
-    ? Math.round(sessions.reduce((a, s) => a + (s.ex2_score || 0), 0) / sessionCount)
-    : null;
-
-  const prompt = `You are creating a reading exercise for a spaced-repetition learning system.
-
-USER CONTEXT
-  Name: ${name}
-  Current: Week ${week}, Day ${day}
-  Sessions completed: ${sessionCount}
-  ${avgScore !== null ? `Average comprehension score: ${avgScore}%` : 'No sessions yet — start simple.'}
-  ${isAnchor ? 'NOTE: This is an ANCHOR RECALL day (Day 4–7). Supply anchor_questions only; blocks/chain are from Day 1 of this week.' : ''}
-
-TASK
-  Choose a rich English passage (100–150 words) on any intellectually stimulating topic (linguistics, science, philosophy, history, economics). Extract 5 key concept-words or phrases that form a logical chain of ideas.
-
-REQUIRED JSON STRUCTURE — respond ONLY with valid JSON, no markdown fences, no preamble:
-
-{
-  "topic": "Short descriptive title · Subject area",
-  "day": ${day},
-  "week": ${week},
-  "chain": ["node1", "node2", "node3", "node4", "node5"],
-  "blanks": [1, 3, 5],
-  "blocks": [
-    { "node": "node1", "en": "15–25 word passage sentence using this concept naturally.", "hi": "Crisp Hinglish note, 1 line." },
-    { "node": "node2", "en": "...", "hi": "..." },
-    { "node": "node3", "en": "...", "hi": "..." },
-    { "node": "node4", "en": "...", "hi": "..." },
-    { "node": "node5", "en": "...", "hi": "..." }
-  ],
-  "passage": "Full 100–150 word comprehension passage. Can be the blocks stitched together or a standalone passage.",
-  "questions": [
-    { "type": "factual",      "text": "Question text?", "options": ["A", "B", "C", "D"], "correct": 0, "reason": "Why A is correct." },
-    { "type": "factual",      "text": "...", "options": ["A","B","C","D"], "correct": 1, "reason": "..." },
-    { "type": "interpretive", "text": "...", "options": ["A","B","C","D"], "correct": 2, "reason": "..." },
-    { "type": "inferential",  "text": "...", "options": ["A","B","C","D"], "correct": 3, "reason": "..." }
-  ],
-  "anchor_questions": [
-    { "type": "interpretive", "text": "Deeper question for anchor recall day 4?", "options": ["A","B","C","D"], "correct": 0, "reason": "..." },
-    { "type": "inferential",  "text": "Inference question for anchor recall day 5?", "options": ["A","B","C","D"], "correct": 1, "reason": "..." },
-    { "type": "inferential",  "text": "Harder inference for day 6?", "options": ["A","B","C","D"], "correct": 0, "reason": "..." },
-    { "type": "inferential",  "text": "Most abstract for day 7?", "options": ["A","B","C","D"], "correct": 2, "reason": "..." }
-  ]
-}
-
-RULES
-  - chain: exactly 5 strings, each a concept word or short phrase
-  - blanks: exactly 3 numbers (1-indexed) indicating which chain positions become recall blanks
-  - blocks: exactly 5 objects, one per chain node; en must read as natural prose
-  - questions: at least 4 — include 2 factual, 1 interpretive, 1 inferential minimum
-  - anchor_questions: exactly 4 — for days 4, 5, 6, 7 respectively
-  - correct: 0-indexed integer (0=A, 1=B, 2=C, 3=D)
-  - All text in English except hi fields (Hinglish allowed)
-  - Difficulty: SSC CGL / undergraduate reading level`;
-
-  document.getElementById('prompt-text').textContent = prompt;
-}
-
-function copyPrompt() {
-  const text = document.getElementById('prompt-text').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.copy-btn');
-    btn.textContent = 'Copied ✓';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-  });
-}
-
-/* ════════════════════════════════════════
-   IMPORT FROM AI
-════════════════════════════════════════ */
-function handleDragOver(e) { e.preventDefault(); document.getElementById('import-drop').classList.add('drag-over'); }
-function handleDragLeave(e) { document.getElementById('import-drop').classList.remove('drag-over'); }
-
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('import-drop').classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) readImportFile(file);
-}
-
-function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (file) readImportFile(file);
-}
-
-function readImportFile(file) {
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const raw = ev.target.result;
-    parseImportText(raw);
-  };
-  reader.readAsText(file);
-}
-
-function handlePasteInput() {
-  const raw = document.getElementById('import-paste').value;
-  parseImportText(raw);
-}
-
-function parseImportText(raw) {
-  // Strip markdown fences if present
-  const clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-  try {
-    // Try to find JSON object in text
-    const match = clean.match(/\{[\s\S]*\}/);
-    const parsed = match ? JSON.parse(match[0]) : JSON.parse(clean);
-    importedJSON = parsed;
-    document.getElementById('import-preview-text').textContent = JSON.stringify(parsed, null, 2).slice(0, 1500) + (JSON.stringify(parsed).length > 1500 ? '\n…' : '');
-    document.getElementById('import-preview').classList.add('show');
-    document.getElementById('import-btn').disabled = false;
-  } catch (e) {
-    importedJSON = null;
-    document.getElementById('import-preview-text').textContent = 'Could not parse JSON: ' + e.message;
-    document.getElementById('import-preview').classList.add('show');
-    document.getElementById('import-btn').disabled = true;
+/* ════════════════════════════════════════════════════════════
+   DAY TABS
+════════════════════════════════════════════════════════════ */
+function renderDayTabs() {
+  const row = document.getElementById('day-tab-row');
+  row.innerHTML = '';
+  for (let d = 1; d <= 7; d++) {
+    const isRecall = [2, 4, 6, 7].includes(d);
+    const hasData  = allExercises.some(e => e.week === currentWeek && e.day === d);
+    const btn = document.createElement('button');
+    btn.className = 'day-tab' + (isRecall ? ' recall-day' : '') + (hasData ? ' has-data' : '') + (d === 1 ? ' active' : '');
+    btn.textContent = `Day ${d}`;
+    if (isRecall) btn.title = 'Recall day (shows Day 1 chain + new chain)';
+    btn.onclick = () => {
+      document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      loadDayForm(d);
+    };
+    row.appendChild(btn);
   }
 }
 
-function clearImport() {
-  importedJSON = null;
-  document.getElementById('import-paste').value = '';
-  document.getElementById('import-preview').classList.remove('show');
-  document.getElementById('import-btn').disabled = true;
-  document.getElementById('file-input').value = '';
-}
+/* ════════════════════════════════════════════════════════════
+   DAY FORM LOADER
+════════════════════════════════════════════════════════════ */
+function loadDayForm(day) {
+  activeDay = day;
+  const existing = allExercises.find(e => e.week === currentWeek && e.day === day);
 
-async function importFromAI() {
-  if (!importedJSON) return;
-  const btn = document.getElementById('import-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  try {
-    const ex = importedJSON;
-    // Build passage from blocks if missing
-    if (!ex.passage && ex.blocks) {
-      ex.passage = ex.blocks.map(b => b.en).join(' ');
-    }
-    await rdSaveExercise(ex);
-    allExercises = await rdGetAllExercises();
-    showToast('import-toast');
-    clearImport();
-  } catch (e) {
-    alert('Save failed: ' + e.message);
+  // Init state — ex2RecallMap always stores indices (integers)
+  if (existing) {
+    dayFormState[day] = {
+      id:                 existing.id,
+      topic:              existing.topic || '',
+      ex1Blocks:          existing.ex1_blocks || defaultBlocks(day),
+      ex1BlankPos:        existing.ex1_blank_pos ?? null,
+      ex1RecallBlanks:    existing.ex1_recall_blanks || {},
+      ex1BlankPositions:  existing.ex1_blank_positions || [],
+      ex2Passage:         existing.ex2_passage || '',
+      ex2Questions:       (existing.ex2_questions || []).map(q => ({ ...q })),  // plain copies, no _id
+      ex2RecallMap:       existing.ex2_recall_map || {},
+    };
+  } else {
+    dayFormState[day] = {
+      topic: '', ex1Blocks: defaultBlocks(day),
+      ex1BlankPos: null, ex1RecallBlanks: {}, ex1BlankPositions: [],
+      ex2Passage: '', ex2Questions: [], ex2RecallMap: {},
+    };
   }
 
-  btn.disabled = false;
-  btn.textContent = 'Import & Save';
-}
+  const isRecall   = [2, 4, 6, 7].includes(day);
+  const isDay1     = day === 1;
+  const nodeCount  = isDay1 ? 5 : 4;
 
-/* ════════════════════════════════════════
-   MANUAL FORM
-════════════════════════════════════════ */
-function buildBlockForms() {
-  const wrap = document.getElementById('block-forms');
-  wrap.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    wrap.innerHTML += `
-      <div class="block-form">
-        <div class="block-form-num">Block ${i+1}</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">English text</label>
-            <textarea class="form-textarea" id="b${i}-en" rows="2" placeholder="15–25 word passage sentence"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Hinglish note</label>
-            <input class="form-input" id="b${i}-hi" placeholder="1-line Hinglish note">
-          </div>
+  const area = document.getElementById('day-form-area');
+  area.innerHTML = `
+    <div class="form-card">
+      <div class="form-card-title">Day ${day} — ${isRecall ? '<span style="color:var(--purple)">Recall + New</span>' : 'New Exercise'}</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Topic / Title</label>
+          <input class="form-input" id="f-topic" value="${esc(dayFormState[day].topic)}" placeholder="e.g. The Roots of Language · Linguistics">
         </div>
+        <div class="form-group">
+          <label class="form-label">Week</label>
+          <input class="form-input" id="f-week" type="number" min="1" value="${currentWeek}" readonly style="background:var(--bg3);cursor:default">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-title">
+        Exercise 1 — ${nodeCount}-Node Chain
+        <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">${isDay1 ? '5 nodes · 1 blank today' : '4 nodes · 2 blanks today'}</span>
+      </div>
+      <div id="ex1-blocks-wrap"></div>
+      <div style="margin-top:1.25rem">
+        <label class="form-label">${isDay1 ? "Today's blank position (click a node)" : "Today's 2 blank positions (click to select)"}</label>
+        <div id="blank-selector" class="blank-selector"></div>
+        <div class="form-hint" id="blank-hint"></div>
+      </div>
+      ${isDay1 ? `
+      <div style="margin-top:1.25rem">
+        <label class="form-label">Recall blank positions for recall days</label>
+        <div class="form-hint" style="margin-bottom:10px">Click the node you want blanked on each recall day.</div>
+        <div id="recall-blank-config"></div>
+      </div>` : ''}
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-title">Exercise 2 — Passage</div>
+      <div class="form-group">
+        <label class="form-label">Passage text <span style="color:var(--text3);font-weight:400">(shown on normal days, hidden on recall days)</span></label>
+        <textarea class="form-textarea" id="f-passage" rows="6" placeholder="100–150 word comprehension passage…">${esc(dayFormState[day].ex2Passage)}</textarea>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-title">
+        Exercise 2 — Questions
+        <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">${isDay1 ? 'Add 20 questions — assign 4 to each recall day' : '4 questions for Day ' + day}</span>
+      </div>
+      <div id="ex2-questions-wrap"></div>
+      <button class="btn-sm" onclick="addQuestion()" style="margin-top:6px"><i class="ti ti-plus"></i> Add Question</button>
+    </div>
+
+    ${isDay1 ? `
+    <div class="form-card" id="recall-assign-card">
+      <div class="form-card-title">
+        Assign Questions to Recall Days
+        <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">Drag questions into each day's bucket (4 per day)</span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:1rem">Questions 1–4 are fixed for Day 1. Drag the remaining 16 into Days 2, 4, 6, 7.</div>
+      <div style="margin-bottom:1rem">
+        <div class="day-bucket-label">Day 1 — own questions <span class="day-bucket-count" id="bucket-count-1">0/4</span></div>
+        <div class="day-bucket" id="bucket-day-1" data-day="1">
+          <div class="day-bucket-empty" id="bucket-empty-1">First 4 questions appear here as you add them.</div>
+        </div>
+      </div>
+      <div class="form-row">
+        ${[2, 4, 6, 7].map(rd => `
+        <div>
+          <div class="day-bucket-label">Day ${rd} <span class="day-bucket-count" id="bucket-count-${rd}">0/4</span></div>
+          <div class="day-bucket" id="bucket-day-${rd}" data-day="${rd}"
+               ondragover="bucketDragOver(event,${rd})"
+               ondragleave="bucketDragLeave(event,${rd})"
+               ondrop="bucketDrop(event,${rd})">
+            <div class="day-bucket-empty" id="bucket-empty-${rd}">Drop 4 questions here</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div style="display:flex;align-items:center;gap:10px;margin-top:1rem;margin-bottom:3rem">
+      <button class="btn-primary" onclick="saveDay()">Save Day ${day}</button>
+      <span class="save-toast" id="day-toast">Saved ✓</span>
+    </div>`;
+
+  renderEx1Blocks(day, nodeCount);
+  renderBlankSelector(day, nodeCount);
+  if (isDay1) renderRecallBlankConfig(day);
+  renderEx2Questions(day);
+  if (isDay1) renderDay1Buckets();
+}
+
+function defaultBlocks(day) {
+  const n = day === 1 ? 5 : 4;
+  return Array.from({ length: n }, () => ({ node: '', en: '', hi: '' }));
+}
+
+/* ────────────────────────────────────────────────────────────
+   EX1 BLOCKS
+──────────────────────────────────────────────────────────── */
+function renderEx1Blocks(day, nodeCount) {
+  const wrap   = document.getElementById('ex1-blocks-wrap');
+  const blocks = dayFormState[day].ex1Blocks;
+  wrap.innerHTML = '';
+  for (let i = 0; i < nodeCount; i++) {
+    const b   = blocks[i] || { node: '', en: '', hi: '' };
+    const div = document.createElement('div');
+    div.className = 'block-form';
+    div.innerHTML = `
+      <div class="block-num">Node ${i + 1} <span style="font-size:10px;color:var(--text3)">Position ${i + 1} of ${nodeCount}</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Node label (concept word)</label>
+          <input class="form-input block-node" data-i="${i}" value="${esc(b.node)}" placeholder="e.g. semantic drift" oninput="updateBlock(${day},${i},'node',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hinglish note</label>
+          <input class="form-input" value="${esc(b.hi)}" placeholder="1-line Hinglish note" oninput="updateBlock(${day},${i},'hi',this.value)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">English sentence</label>
+        <textarea class="form-textarea" rows="2" placeholder="15–25 word sentence using this concept naturally" oninput="updateBlock(${day},${i},'en',this.value)">${esc(b.en)}</textarea>
       </div>`;
+    wrap.appendChild(div);
   }
 }
 
-function addQuestion() {
-  const i = qCount++;
-  const wrap = document.getElementById('q-forms');
+function updateBlock(day, i, field, val) {
+  if (!dayFormState[day]) return;
+  if (!dayFormState[day].ex1Blocks[i]) dayFormState[day].ex1Blocks[i] = {};
+  dayFormState[day].ex1Blocks[i][field] = val;
+  if (field === 'node') {
+    renderBlankSelector(day, dayFormState[day].ex1Blocks.length);
+    if (day === 1) renderRecallBlankConfig(day);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   BLANK SELECTOR
+──────────────────────────────────────────────────────────── */
+function renderBlankSelector(day, nodeCount) {
+  const sel   = document.getElementById('blank-selector');
+  const hint  = document.getElementById('blank-hint');
+  if (!sel) return;
+  const state  = dayFormState[day];
+  const isDay1 = day === 1;
+  sel.innerHTML = '';
+
+  for (let i = 0; i < nodeCount; i++) {
+    const label = state.ex1Blocks[i]?.node || `N${i + 1}`;
+    const isDay1Selected = isDay1 && state.ex1BlankPos === i;
+    const isMultiSelected = !isDay1 && state.ex1BlankPositions.includes(i);
+    const btn = document.createElement('button');
+    btn.type      = 'button';
+    btn.className = 'blank-btn' + ((isDay1Selected || isMultiSelected) ? ' selected' : '');
+    btn.textContent = i + 1;
+    btn.title = label;
+    btn.onclick = () => {
+      if (isDay1) {
+        state.ex1BlankPos = (state.ex1BlankPos === i) ? null : i;
+      } else {
+        if (state.ex1BlankPositions.includes(i)) {
+          state.ex1BlankPositions = state.ex1BlankPositions.filter(x => x !== i);
+        } else if (state.ex1BlankPositions.length < 2) {
+          state.ex1BlankPositions = [...state.ex1BlankPositions, i].sort((a, b) => a - b);
+        }
+      }
+      renderBlankSelector(day, nodeCount);
+    };
+    sel.appendChild(btn);
+  }
+
+  if (isDay1) {
+    if (hint) hint.textContent = state.ex1BlankPos !== null && state.ex1BlankPos !== undefined
+      ? `Day 1 blank: node ${state.ex1BlankPos + 1} "${state.ex1Blocks[state.ex1BlankPos]?.node || ''}"`
+      : 'Click a number to set which node is blank on Day 1';
+  } else {
+    const chosen = state.ex1BlankPositions.map(i => `node ${i + 1} "${state.ex1Blocks[i]?.node || ''}"`).join(', ');
+    if (hint) hint.textContent = state.ex1BlankPositions.length === 2
+      ? `Blanks: ${chosen}`
+      : `Select exactly 2 blanks (${state.ex1BlankPositions.length}/2 selected)`;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   RECALL BLANK CONFIG (Day 1 only)
+   Sets which node position to blank when recalling Day1's chain
+   on each recall day (2,4,6,7)
+──────────────────────────────────────────────────────────── */
+function renderRecallBlankConfig(day) {
+  const wrap = document.getElementById('recall-blank-config');
+  if (!wrap) return;
+  const state  = dayFormState[day];
+  const blocks = state.ex1Blocks;
+
+  wrap.innerHTML = [2, 4, 6, 7].map(rd => {
+    const currentBlank = (state.ex1RecallBlanks[String(rd)] !== undefined)
+      ? Number(state.ex1RecallBlanks[String(rd)]) : null;
+    const nodes = blocks.map((b, i) => {
+      const isBlank = currentBlank === i;
+      return `<span class="chain-blank${isBlank ? ' active-blank' : ''}"
+                onclick="setRecallBlank(${day},${rd},${i})"
+                title="Set Day ${rd} blank to node ${i + 1}">
+                ${b.node || `N${i + 1}`}
+              </span>`;
+    });
+    const flow = nodes.flatMap((n, i) => i < nodes.length - 1 ? [n, '<span class="chain-arr">→</span>'] : [n]).join('');
+    return `<div class="recall-day-row">
+      <span class="recall-day-label">Day ${rd}</span>
+      <div class="chain-preview">${flow}</div>
+      ${currentBlank !== null
+        ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">blank: node ${currentBlank + 1}</span>`
+        : '<span style="font-size:11px;color:var(--accent);margin-left:8px">← pick a blank</span>'}
+    </div>`;
+  }).join('');
+}
+
+function setRecallBlank(day, recallDay, pos) {
+  dayFormState[day].ex1RecallBlanks[String(recallDay)] = pos;
+  renderRecallBlankConfig(day);
+}
+
+/* ────────────────────────────────────────────────────────────
+   EX2 QUESTIONS (inline form, no _id dependency)
+   Questions are stored as plain objects, referenced by their
+   array INDEX. No _id field is used for recall map assignment.
+──────────────────────────────────────────────────────────── */
+function renderEx2Questions(day) {
+  const wrap = document.getElementById('ex2-questions-wrap');
+  if (!wrap) return;
+  const qs = dayFormState[day].ex2Questions;
+  wrap.innerHTML = '';
+  qs.forEach((q, i) => appendQuestionForm(wrap, q, i, day));
+}
+
+function appendQuestionForm(wrap, q, idx, day) {
   const div = document.createElement('div');
-  div.className = 'q-form'; div.id = 'qf-' + i;
+  div.className   = 'q-form-inline';
+  div.dataset.idx = idx;
+  const opts = ['A', 'B', 'C', 'D'];
   div.innerHTML = `
-    <div class="q-form-num">Question ${i+1}
-      <button class="remove-btn" onclick="document.getElementById('qf-${i}').remove()">remove</button>
+    <div class="q-form-title">
+      Question ${idx + 1}
+      <button class="btn-sm" style="color:var(--red);border-color:var(--red-border)" onclick="removeQuestion(${idx},${day})">Remove</button>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Question text</label>
-        <textarea class="form-textarea" id="q${i}-text" rows="2"></textarea>
+        <textarea class="form-textarea" id="qt-${day}-${idx}" rows="2" oninput="updateQ(${day},${idx},'text',this.value)">${esc(q.text || '')}</textarea>
       </div>
       <div class="form-group">
         <label class="form-label">Type</label>
-        <select class="form-select" id="q${i}-type">
-          <option value="factual">factual</option>
-          <option value="interpretive">interpretive</option>
-          <option value="inferential">inferential</option>
+        <select class="form-select" id="qtype-${day}-${idx}" onchange="updateQ(${day},${idx},'type',this.value)">
+          ${['factual', 'interpretive', 'inferential'].map(t => `<option value="${t}"${q.type === t ? ' selected' : ''}>${t}</option>`).join('')}
         </select>
-        <label class="form-label" style="margin-top:8px">Correct (0=A 1=B 2=C 3=D)</label>
-        <input class="form-input" id="q${i}-correct" type="number" min="0" max="3" placeholder="0">
+        <label class="form-label" style="margin-top:8px">Correct option (0=A 1=B 2=C 3=D)</label>
+        <input class="form-input" type="number" min="0" max="3" id="qcorr-${day}-${idx}" value="${q.correct ?? 0}" oninput="updateQ(${day},${idx},'correct',+this.value)">
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">Options A–D</label>
-      ${['A','B','C','D'].map((l,oi) => `<div class="opt-row"><span class="opt-letter">${l}</span><input class="form-input" id="q${i}-opt${oi}" placeholder="Option ${l}"></div>`).join('')}
+      ${opts.map((l, oi) => `
+        <div class="opt-row">
+          <span class="opt-letter">${l}</span>
+          <input class="form-input" value="${esc((q.options || [])[oi] || '')}" placeholder="Option ${l}" oninput="updateQOpt(${day},${idx},${oi},this.value)">
+        </div>`).join('')}
     </div>
     <div class="form-group">
       <label class="form-label">Reason (why correct answer is right)</label>
-      <textarea class="form-textarea" id="q${i}-reason" rows="2"></textarea>
+      <textarea class="form-textarea" id="qreason-${day}-${idx}" rows="2" oninput="updateQ(${day},${idx},'reason',this.value)">${esc(q.reason || '')}</textarea>
     </div>`;
   wrap.appendChild(div);
 }
 
-function addAnchorQuestion() {
-  const i = anchorCount++;
-  const wrap = document.getElementById('anchor-forms');
-  const div = document.createElement('div');
-  div.className = 'q-form'; div.id = 'af-' + i;
-  div.innerHTML = `
-    <div class="q-form-num">Anchor Q${i+1} — Day ${i+4}
-      <button class="remove-btn" onclick="document.getElementById('af-${i}').remove()">remove</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Question text</label>
-        <textarea class="form-textarea" id="a${i}-text" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Type</label>
-        <select class="form-select" id="a${i}-type">
-          <option value="interpretive">interpretive</option>
-          <option value="inferential">inferential</option>
-        </select>
-        <label class="form-label" style="margin-top:8px">Correct (0=A 1=B 2=C 3=D)</label>
-        <input class="form-input" id="a${i}-correct" type="number" min="0" max="3" placeholder="0">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Options A–D</label>
-      ${['A','B','C','D'].map((l,oi) => `<div class="opt-row"><span class="opt-letter">${l}</span><input class="form-input" id="a${i}-opt${oi}" placeholder="Option ${l}"></div>`).join('')}
-    </div>
-    <div class="form-group">
-      <label class="form-label">Reason</label>
-      <textarea class="form-textarea" id="a${i}-reason" rows="2"></textarea>
-    </div>`;
-  wrap.appendChild(div);
+function addQuestion() {
+  const day = activeDay;
+  const q   = { text: '', type: 'factual', options: ['', '', '', ''], correct: 0, reason: '' };
+  dayFormState[day].ex2Questions.push(q);
+  const idx  = dayFormState[day].ex2Questions.length - 1;
+  const wrap = document.getElementById('ex2-questions-wrap');
+  appendQuestionForm(wrap, q, idx, day);
+  if (day === 1) setTimeout(() => renderDay1Buckets(), 50);
 }
 
-async function saveManual() {
-  const topic  = document.getElementById('f-topic').value.trim();
-  const day    = parseInt(document.getElementById('f-day').value)   || 1;
-  const week   = parseInt(document.getElementById('f-week').value)  || 1;
-  const chain  = document.getElementById('f-chain').value.split(',').map(s => s.trim()).filter(Boolean);
-  const blanks = document.getElementById('f-blanks').value.split(',').map(s => parseInt(s.trim()) - 1).filter(n => !isNaN(n));
+function removeQuestion(idx, day) {
+  dayFormState[day].ex2Questions.splice(idx, 1);
+  // Rebuild recall map with updated indices
+  if (day === 1) rebuildRecallMapAfterRemove(idx);
+  // Re-render all question forms (indices shift)
+  renderEx2Questions(day);
+  if (day === 1) renderDay1Buckets();
+}
 
-  const blocks = [];
-  for (let i = 0; i < 5; i++) {
-    blocks.push({
-      en:   document.getElementById(`b${i}-en`)?.value.trim() || '',
-      hi:   document.getElementById(`b${i}-hi`)?.value.trim() || '',
-      node: chain[i] || ''
+function rebuildRecallMapAfterRemove(removedIdx) {
+  const map    = dayFormState[1].ex2RecallMap;
+  const newMap = {};
+  for (const [rd, indices] of Object.entries(map)) {
+    newMap[rd] = indices
+      .filter(i => i !== removedIdx)
+      .map(i => i > removedIdx ? i - 1 : i);
+  }
+  dayFormState[1].ex2RecallMap = newMap;
+}
+
+function updateQ(day, idx, field, val) {
+  const q = dayFormState[day].ex2Questions[idx];
+  if (q) q[field] = val;
+}
+
+function updateQOpt(day, idx, oi, val) {
+  const q = dayFormState[day].ex2Questions[idx];
+  if (q) { if (!q.options) q.options = ['', '', '', '']; q.options[oi] = val; }
+}
+
+/* ────────────────────────────────────────────────────────────
+   DAY 1 QUESTION BUCKET (drag-drop by index)
+
+   ex2RecallMap = { "2": [4,5,6,7], "4": [8,9,10,11], ... }
+   Indices are question array positions (integers).
+   Day 1's "own" questions = those NOT in any recall day bucket,
+   capped at the first 4.
+──────────────────────────────────────────────────────────── */
+function renderDay1Buckets() {
+  const qs  = dayFormState[1].ex2Questions;
+  const map = dayFormState[1].ex2RecallMap;
+
+  // All indices assigned to recall days
+  const assignedSet = new Set(Object.values(map).flat().map(Number));
+
+  // Day1's own = unassigned, first 4
+  const day1Indices    = qs.map((_, i) => i).filter(i => !assignedSet.has(i)).slice(0, 4);
+  // Unassigned beyond first 4 (the "pool" waiting to be dragged)
+  const unassignedIdxs = qs.map((_, i) => i).filter(i => !assignedSet.has(i) && !day1Indices.includes(i));
+
+  // Render each bucket
+  for (const rd of [1, 2, 4, 6, 7]) {
+    const bucket  = document.getElementById(`bucket-day-${rd}`);
+    const emptyEl = document.getElementById(`bucket-empty-${rd}`);
+    const countEl = document.getElementById(`bucket-count-${rd}`);
+    if (!bucket) continue;
+
+    const bucketIdxs = rd === 1 ? day1Indices : (map[String(rd)] || []).map(Number);
+
+    if (emptyEl) emptyEl.style.display = bucketIdxs.length ? 'none' : 'block';
+    if (countEl) {
+      countEl.textContent = `${bucketIdxs.length}/4`;
+      countEl.className   = 'day-bucket-count ' + (bucketIdxs.length === 4 ? 'ok' : 'warn');
+    }
+
+    bucket.querySelectorAll('.q-card').forEach(c => c.remove());
+    bucketIdxs.forEach(qi => {
+      const card = makeQCard(qi, rd, qs[qi]);
+      if (card) bucket.appendChild(card);
     });
   }
 
-  const questions = [];
-  for (let i = 0; i < qCount; i++) {
-    if (!document.getElementById('qf-' + i)) continue;
-    questions.push({
-      text:    document.getElementById(`q${i}-text`)?.value.trim(),
-      type:    document.getElementById(`q${i}-type`)?.value,
-      correct: parseInt(document.getElementById(`q${i}-correct`)?.value),
-      reason:  document.getElementById(`q${i}-reason`)?.value.trim(),
-      options: [0,1,2,3].map(oi => document.getElementById(`q${i}-opt${oi}`)?.value.trim())
-    });
+  // Unassigned pool
+  let pool = document.getElementById('unassigned-pool');
+  if (unassignedIdxs.length) {
+    if (!pool) {
+      pool = document.createElement('div');
+      pool.id = 'unassigned-pool';
+      pool.style.cssText = 'margin-top:1rem;padding:1rem;border:1px dashed var(--border2);border-radius:var(--radius-sm);background:var(--bg2)';
+      pool.innerHTML = '<div class="day-bucket-label" style="margin-bottom:8px">Unassigned — drag to a day bucket</div><div id="unassigned-cards"></div>';
+      const card = document.getElementById('recall-assign-card');
+      if (card) card.insertBefore(pool, card.querySelector('.form-row'));
+    }
+    const uCards = document.getElementById('unassigned-cards');
+    if (uCards) {
+      uCards.innerHTML = '';
+      unassignedIdxs.forEach(qi => {
+        const card = makeQCard(qi, null, qs[qi]);
+        if (card) {
+          // Unassigned cards can be dragged to recall buckets
+          card.ondragover  = e => { e.preventDefault(); };
+          uCards.appendChild(card);
+        }
+      });
+    }
+  } else if (pool) { pool.remove(); }
+}
+
+function makeQCard(qIdx, sourceDay, q) {
+  if (!q) return null;
+  const card         = document.createElement('div');
+  card.className     = 'q-card';
+  card.draggable     = true;
+  card.dataset.qidx  = qIdx;
+  card.dataset.fromDay = sourceDay != null ? String(sourceDay) : '';
+
+  const typeCls = q.type || 'factual';
+  card.innerHTML = `
+    <div class="q-card-header">
+      <span class="q-card-num">Q${qIdx + 1}</span>
+      <span class="q-type-pill ${typeCls}">${q.type || 'factual'}</span>
+    </div>
+    <div class="q-card-text">${q.text || '(no text yet)'}</div>
+    <div class="q-card-opts">
+      ${(q.options || []).map((o, i) =>
+        `<span class="q-card-opt ${i === q.correct ? 'correct' : ''}">${'ABCD'[i]}. ${o || '—'}</span>`
+      ).join('  ')}
+    </div>
+    <i class="ti ti-grip-horizontal q-card-drag-handle"></i>`;
+
+  card.addEventListener('dragstart', e => {
+    dragSrcIdx = qIdx;
+    dragSrcDay = sourceDay;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  return card;
+}
+
+function bucketDragOver(e, day) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.getElementById(`bucket-day-${day}`)?.classList.add('drag-active');
+}
+function bucketDragLeave(e, day) {
+  document.getElementById(`bucket-day-${day}`)?.classList.remove('drag-active');
+}
+function bucketDrop(e, day) {
+  e.preventDefault();
+  document.getElementById(`bucket-day-${day}`)?.classList.remove('drag-active');
+  if (dragSrcIdx === null || dragSrcIdx === undefined) return;
+
+  const map = dayFormState[1].ex2RecallMap;
+
+  // Remove from old recall day if it was assigned
+  if (dragSrcDay && dragSrcDay !== 1) {
+    const rdStr = String(dragSrcDay);
+    map[rdStr] = (map[rdStr] || []).filter(i => i !== dragSrcIdx);
   }
 
-  const anchor_questions = [];
-  for (let i = 0; i < anchorCount; i++) {
-    if (!document.getElementById('af-' + i)) continue;
-    anchor_questions.push({
-      text:    document.getElementById(`a${i}-text`)?.value.trim(),
-      type:    document.getElementById(`a${i}-type`)?.value,
-      correct: parseInt(document.getElementById(`a${i}-correct`)?.value),
-      reason:  document.getElementById(`a${i}-reason`)?.value.trim(),
-      options: [0,1,2,3].map(oi => document.getElementById(`a${i}-opt${oi}`)?.value.trim())
-    });
+  // Add to target day (only recall days 2,4,6,7 — Day 1 is auto)
+  if (day !== 1) {
+    const rdStr = String(day);
+    if (!map[rdStr]) map[rdStr] = [];
+    if (!map[rdStr].includes(dragSrcIdx) && map[rdStr].length < 4) {
+      map[rdStr].push(dragSrcIdx);
+    }
   }
 
-  const passage = blocks.map(b => b.en).join('\n\n');
+  dragSrcIdx = null;
+  dragSrcDay = null;
+  renderDay1Buckets();
+}
+
+/* ────────────────────────────────────────────────────────────
+   SAVE DAY
+──────────────────────────────────────────────────────────── */
+async function saveDay() {
+  const day   = activeDay;
+  const state = dayFormState[day];
+  if (!state) return;
+
+  const topic   = document.getElementById('f-topic')?.value.trim()   || state.topic;
+  const passage = document.getElementById('f-passage')?.value.trim() || state.ex2Passage;
+
+  // Strip any transient fields from questions before saving
+  const questions = state.ex2Questions.map(({ _id, ...rest }) => rest);
+
+  const payload = {
+    week:                currentWeek,
+    day,
+    topic,
+    ex1_blocks:          state.ex1Blocks,
+    ex1_blank_pos:       state.ex1BlankPos,
+    ex1_recall_blanks:   state.ex1RecallBlanks,
+    ex1_blank_positions: state.ex1BlankPositions,
+    ex2_passage:         passage,
+    ex2_questions:       questions,
+    ex2_recall_map:      day === 1 ? state.ex2RecallMap : {},
+    created_by:          adminUser.id,
+  };
+
   try {
-    await rdSaveExercise({ topic, day, week, blocks, chain, blanks, passage, questions, anchor_questions });
+    await rdSaveExercise(payload);
     allExercises = await rdGetAllExercises();
-    showToast('manual-toast');
+    renderDayTabs();
+    showToast('day-toast');
   } catch (e) {
     alert('Save failed: ' + e.message);
   }
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    SCHEDULE PANEL
-════════════════════════════════════════ */
-function renderSchedule() {
-  const u    = allUsers.find(x => x.user_id === currentUID);
+════════════════════════════════════════════════════════════ */
+function renderSchedulePanel() {
+  const u = allUsers.find(x => x.user_id === currentUID);
   if (!u) return;
-  const week = u.current_week || 1;
-  const day  = u.current_day  || 1;
+  const week    = u.current_week || 1;
+  const weekExs = allExercises.filter(e => e.week === week);
+  const el      = document.getElementById('schedule-content');
 
-  const grid = document.getElementById('sched-grid');
-  grid.innerHTML = '';
-
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:2rem">`;
   for (let d = 1; d <= 7; d++) {
-    const lookupDay = d <= 3 ? d : 1;
-    const ex = allExercises.find(e => e.day === lookupDay && e.week === week);
-    const isCurrent = d === day;
-    const isAnchor  = d >= 4;
-
-    let cls = '';
-    if (isCurrent) cls = ' current';
-    else if (ex)   cls = ' has-ex';
-    else           cls = ' missing';
-
-    const topicLabel = ex ? ex.topic.split('·')[0].trim().slice(0, 20) : (isAnchor ? 'Anchor' : 'Missing');
-
-    grid.innerHTML += `
-      <div class="sched-cell${cls}">
-        <div class="sched-day">D${d}${isCurrent ? ' ←' : ''}</div>
-        <div class="sched-status">${ex ? '✓' : isAnchor ? '🔁' : '✗'}</div>
-        <div class="sched-topic">${topicLabel}</div>
-      </div>`;
+    const ex        = weekExs.find(e => e.day === d);
+    const isRecall  = [2, 4, 6, 7].includes(d);
+    const isCurrent = d === (u.current_day || 1);
+    const color     = isCurrent ? 'var(--accent)' : ex ? 'var(--green)' : 'var(--red)';
+    html += `<div style="background:var(--surface);border:1.5px solid ${color};border-radius:10px;padding:10px 6px;text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:${color};margin-bottom:5px">D${d}${isCurrent ? ' ←' : ''}${isRecall ? ' 🔁' : ''}</div>
+      <div style="font-size:16px">${ex ? '✓' : '✗'}</div>
+      <div style="font-size:9px;color:${color};margin-top:3px">${ex ? ex.topic.split('·')[0].trim().slice(0, 18) : 'Missing'}</div>
+    </div>`;
   }
+  html += `</div>`;
 
-  // Exercise library for this user's week
-  const lib = document.getElementById('ex-library');
-  const weekExes = allExercises.filter(e => e.week === week);
-  if (!weekExes.length) {
-    lib.innerHTML = '<div class="empty-state">No exercises for this week yet.</div>';
-    return;
+  if (weekExs.length) {
+    html += weekExs.map(ex => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">W${ex.week} · D${ex.day}</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text1);margin-bottom:3px">${ex.topic}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${(ex.ex1_blocks || []).map(b => b.node).filter(Boolean).join(' → ')}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">${(ex.ex2_questions || []).length} questions</div>
+        </div>
+        <button class="btn-sm" style="color:var(--red);border-color:var(--red-border)" onclick="deleteEx(${ex.id})"><i class="ti ti-trash"></i></button>
+      </div>`).join('');
+  } else {
+    html += '<div class="empty-state">No exercises for this week yet.</div>';
   }
-  lib.innerHTML = weekExes.map(ex => `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:12px">
-      <div style="flex:1">
-        <div style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">W${ex.week} · D${ex.day}</div>
-        <div style="font-size:14px;font-weight:600;color:var(--text1);margin-bottom:3px">${ex.topic}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${(ex.chain || []).join(' → ')}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">${ex.questions?.length || 0} Qs · ${ex.anchor_questions?.length || 0} anchor Qs</div>
-      </div>
-      <button class="btn-danger" onclick="deleteEx(${ex.id})"><i class="ti ti-trash"></i></button>
-    </div>`).join('');
+  el.innerHTML = html;
 }
 
 async function deleteEx(id) {
-  if (!confirm('Delete this exercise? Cannot be undone.')) return;
+  if (!confirm('Delete this exercise?')) return;
   await rdDeleteExercise(id);
   allExercises = await rdGetAllExercises();
-  renderSchedule();
+  renderSchedulePanel();
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    ANALYTICS PANEL
-════════════════════════════════════════ */
-function renderAnalytics() {
+════════════════════════════════════════════════════════════ */
+function renderAnalyticsPanel() {
   const u = allUsers.find(x => x.user_id === currentUID);
   if (!u) return;
   const sessions = u._sessions || [];
+  const vars     = rdComputeVars(sessions);
 
-  // Variables
-  const vars = rdComputeVars(sessions);
-  const VAR_DEFS = [
-    { k: 'V', label: 'Vocabulary Recall',   desc: 'Ex1 chain node recall accuracy',        isTime: false },
-    { k: 'A', label: 'Interpretation',       desc: 'Interpretive question accuracy',        isTime: false },
-    { k: 'I', label: 'Inference',            desc: 'Inferential question accuracy',         isTime: false },
-    { k: 'W', label: 'Reading Speed',        desc: 'Avg Ex1 read time (lower = faster)',    isTime: true  },
-    { k: 'S', label: 'Comprehension',        desc: 'Overall Ex2 score average',             isTime: false },
-    { k: 'L', label: 'Consistency',          desc: 'Total sessions completed',              isCount: true },
+  const defs = [
+    { k: 'V', label: 'Chain Recall',  desc: 'Ex1 blank accuracy'        },
+    { k: 'S', label: 'Comprehension', desc: 'Ex2 score (normal days)'   },
+    { k: 'R', label: 'Retention',     desc: 'Ex2 score (recall days)'   },
+    { k: 'L', label: 'Consistency',   desc: 'Total sessions completed', isCount: true },
   ];
-
-  document.getElementById('var-grid').innerHTML = VAR_DEFS.map(v => {
+  document.getElementById('var-grid').innerHTML = defs.map(v => {
     const val = vars[v.k];
     let display, cls;
     if (val === null || val === undefined) { display = 'No data'; cls = 'none'; }
-    else if (v.isTime)  { display = fmt(val);      cls = val < 90 ? 'good' : val < 180 ? 'mid' : 'weak'; }
-    else if (v.isCount) { display = `${val}`; cls = val >= 7 ? 'good' : val >= 3 ? 'mid' : 'weak'; }
-    else                { display = val + '%'; cls = val >= 70 ? 'good' : val >= 40 ? 'mid' : 'weak'; }
-    return `<div class="var-card">
-      <div class="var-letter">${v.k}</div>
-      <div class="var-label">${v.label}</div>
-      <div class="var-desc">${v.desc}</div>
-      <div class="var-score ${cls}">${display}</div>
-    </div>`;
+    else if (v.isCount) { display = String(val); cls = val >= 7 ? 'good' : val >= 3 ? 'mid' : 'weak'; }
+    else { display = val + '%'; cls = val >= 70 ? 'good' : val >= 40 ? 'mid' : 'weak'; }
+    return `<div class="var-card"><div class="var-letter">${v.k}</div><div class="var-label">${v.label}</div><div class="var-desc">${v.desc}</div><div class="var-score ${cls}">${display}</div></div>`;
   }).join('');
 
-  // Session table
   const wrap = document.getElementById('session-table-wrap');
-  if (!sessions.length) {
-    wrap.innerHTML = '<div class="empty-state">No sessions yet.</div>';
-    return;
-  }
-
+  if (!sessions.length) { wrap.innerHTML = '<div class="empty-state">No sessions yet.</div>'; return; }
   const rows = sessions.map(s => {
-    const ex1Cls = s.ex1_score >= 80 ? 'td-ok' : s.ex1_score >= 50 ? 'td-mid' : 'td-bad';
-    const ex2Cls = s.ex2_score >= 70 ? 'td-ok' : s.ex2_score >= 40 ? 'td-mid' : 'td-bad';
-    const date   = new Date(s.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+    const e1c  = s.ex1_score >= 80 ? 'td-ok' : s.ex1_score >= 50 ? 'td-mid' : 'td-bad';
+    const e2c  = s.ex2_score >= 70 ? 'td-ok' : s.ex2_score >= 40 ? 'td-mid' : 'td-bad';
+    const date = new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
     return `<tr>
       <td>W${s.week} D${s.day}</td>
       <td>${date}</td>
-      <td class="${ex1Cls}">${s.ex1_score !== null ? s.ex1_score + '%' : '—'}</td>
-      <td class="${ex2Cls}">${s.ex2_score !== null ? s.ex2_score + '%' : '—'}</td>
-      <td>${fmt(s.ex1_read_time || 0)}</td>
-      <td>${fmt(s.ex1_recall_time || 0)}</td>
-      <td>${fmt(s.ex2_time || 0)}</td>
+      <td>${s.session_type || '—'}</td>
+      <td class="${e1c}">${s.ex1_score != null ? s.ex1_score + '%' : '—'}</td>
+      <td class="${e2c}">${s.ex2_score != null ? s.ex2_score + '%' : '—'}</td>
       <td>${fmt(s.total_time || 0)}</td>
     </tr>`;
   }).join('');
-
-  wrap.innerHTML = `
-    <table class="session-table">
-      <thead><tr>
-        <th>Day</th><th>Date</th>
-        <th>Ex1 %</th><th>Ex2 %</th>
-        <th>Read</th><th>Recall</th><th>Ex2 time</th><th>Total</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  wrap.innerHTML = `<table class="session-table">
+    <thead><tr><th>Day</th><th>Date</th><th>Type</th><th>Ex1 %</th><th>Ex2 %</th><th>Time</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    UTILS
-════════════════════════════════════════ */
-function fmt(s) {
-  if (!s && s !== 0) return '—';
-  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-}
-
-function showToast(id) {
-  const el = document.getElementById(id);
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
-}
+════════════════════════════════════════════════════════════ */
+function fmt(s)     { if (!s && s !== 0) return '—'; return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function esc(s)     { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function showToast(id) { const el = document.getElementById(id); el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2500); }
 </script>
 </body>
 </html>

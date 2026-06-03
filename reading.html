@@ -16,270 +16,196 @@
   --bg: #F7F5F0; --bg2: #EEEAE2; --bg3: #E5E0D5;
   --surface: #FFFFFF; --border: #DDD8CE; --border2: #CBC5B8;
   --text1: #1A1714; --text2: #5C5751; --text3: #9C9590;
-  --accent: #C84B2F; --accent2: #E86A4A; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
+  --accent: #C84B2F; --accent-bg: #FDF0EC; --accent-border: #F0BFB3;
   --green: #2D6A3F; --green-bg: #EAF4EE; --green-border: #A8D4B5;
   --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
   --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
+  --chain-bg: #EEEDFE; --chain-text: #3C3489;
   --radius: 12px; --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 20px 50px rgba(0,0,0,0.10);
-  /* Reading-specific */
-  --chain-line: #C8C5E8;
-  --chain-pill-bg: #EEEDFE;
-  --chain-pill-text: #3C3489;
-  --anchor-bg: #F3F2EE;
-  --rr: 6px;
 }
-
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
 
-/* ══ SCREENS ══ */
 .screen { display: none; }
 .screen.active { display: block; }
 
-/* ══ NAV ══ */
-.top-nav {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
-  height: 54px; position: sticky; top: 0; z-index: 200;
-}
-.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; cursor: pointer; text-decoration: none; }
+/* NAV */
+.top-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; gap: 10px; height: 54px; position: sticky; top: 0; z-index: 200; }
+.nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; text-decoration: none; }
 .nav-brand span { color: var(--accent); }
 .nav-divider { width: 1px; height: 20px; background: var(--border); }
 .nav-label { font-size: 13px; color: var(--text2); font-weight: 500; }
 .nav-spacer { flex: 1; }
-.nav-btn {
-  font-size: 12.5px; padding: 5px 13px; border-radius: 20px;
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
-  font-weight: 500; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
-}
+.nav-btn { font-size: 12.5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
 .nav-btn:hover { background: var(--bg2); color: var(--text1); }
-.user-av {
-  width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border);
-  background: var(--bg2); display: flex; align-items: center; justify-content: center;
-  font-size: 13px; color: var(--text2); overflow: hidden; cursor: pointer; flex-shrink: 0;
-}
+.user-av { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg2); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text2); overflow: hidden; flex-shrink: 0; }
 .user-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-/* ══ DASHBOARD ══ */
-#screen-dashboard { padding: 0; }
+/* DASHBOARD */
 .dash-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-.dash-hero {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 2rem; margin-bottom: 1.75rem;
-  box-shadow: var(--shadow-md); position: relative; overflow: hidden;
-}
-.dash-hero::before {
-  content: ''; position: absolute; top: 0; right: 0;
-  width: 250px; height: 250px;
-  background: radial-gradient(circle at top right, rgba(200,75,47,0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
+.dash-hero { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 2rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-md); }
 .dash-greeting { font-family: 'Instrument Serif', serif; font-size: 26px; color: var(--text1); letter-spacing: -0.4px; margin-bottom: 4px; }
 .dash-sub { font-size: 13px; color: var(--text3); margin-bottom: 1.5rem; }
 
 .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 1.5rem; }
-.day-cell {
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 6px; text-align: center;
-  transition: all 0.15s;
-}
-.day-cell.today { border-color: var(--accent); background: var(--accent-bg); }
-.day-cell.done { background: var(--green-bg); border-color: var(--green-border); }
+.day-cell { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 6px; text-align: center; }
+.day-cell.today  { border-color: var(--accent); background: var(--accent-bg); }
+.day-cell.done   { background: var(--green-bg); border-color: var(--green-border); }
 .day-cell.locked { opacity: 0.4; }
-.day-cell-num { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
-.day-cell.today .day-cell-num { color: var(--accent); }
-.day-cell.done .day-cell-num { color: var(--green); }
+.day-cell-num    { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.day-cell.today  .day-cell-num { color: var(--accent); }
+.day-cell.done   .day-cell-num { color: var(--green); }
 .day-cell-status { font-size: 10px; color: var(--text3); }
-.day-cell.done .day-cell-status { color: var(--green); }
-.day-cell.today .day-cell-status { color: var(--accent); }
+.day-cell.done   .day-cell-status { color: var(--green); }
+.day-cell.today  .day-cell-status { color: var(--accent); }
 
-.start-btn {
-  width: 100%; padding: 12px; background: var(--text1); color: var(--surface);
-  border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
-  font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s;
-}
+.start-btn { width: 100%; padding: 12px; background: var(--text1); color: var(--surface); border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
 .start-btn:hover { background: var(--accent); }
 .start-btn:disabled { opacity: 0.4; cursor: default; background: var(--text1); }
 
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.75rem; }
-
 .session-history { display: flex; flex-direction: column; gap: 8px; }
-.hist-row {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 12px 14px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow);
-}
-.hist-day { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text3); min-width: 50px; }
+.hist-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 14px; }
+.hist-day   { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text3); min-width: 60px; }
+.hist-type  { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: var(--bg2); color: var(--text3); }
+.hist-type.recall { background: var(--chain-bg); color: var(--chain-text); }
 .hist-scores { display: flex; gap: 10px; flex: 1; flex-wrap: wrap; }
 .hist-score { font-size: 12px; color: var(--text2); }
 .hist-score span { font-weight: 600; color: var(--text1); }
-.hist-time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+.hist-time  { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
 
-/* ══ EXERCISE SCREEN ══ */
-#screen-exercise { padding: 0; }
-.ex-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 5rem; }
-
-.ex-header {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin-bottom: 3.5rem; opacity: 0; animation: fadeUp .4s ease forwards;
-}
+/* EXERCISE SCREEN */
+.ex-wrap { max-width: 1050px; margin: 0 auto; padding: 2rem 4rem; }
+.ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem; }
 .ex-meta { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; }
-.ex-phase-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .07em; color: var(--text3); text-transform: uppercase; margin-top: 5px; }
-.ex-timer { font-family: 'DM Mono', monospace; font-size: 21px; font-weight: 500; color: var(--text1); letter-spacing: .04em; text-align: right; }
+.ex-phase { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); text-transform: uppercase; margin-top: 5px; }
+.ex-timer { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text1); letter-spacing: .04em; text-align: right; }
 .ex-timer.warn { color: #BA7517; }
 .ex-timer.over { color: var(--red); }
-.ex-timer-phase { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); text-align: right; margin-top: 2px; text-transform: uppercase; letter-spacing: .07em; }
+.ex-timer-lbl { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); text-align: right; margin-top: 2px; text-transform: uppercase; }
 
-/* ══ EX1 BLOCKS ══ */
-.block-row {
-  display: grid; grid-template-columns: 160px 1fr 1fr;
-  gap: 0 2.75rem; align-items: start; opacity: 0; transform: translateY(14px);
-}
-.block-row.visible { animation: blockIn .48s cubic-bezier(.22,.68,0,1.2) forwards; }
+/* PROGRESS STEPS */
+.steps-bar { display: flex; gap: 6px; margin-bottom: 2.5rem; }
+.step { flex: 1; height: 3px; background: var(--border); border-radius: 2px; transition: background .3s; }
+.step.done    { background: var(--green); }
+.step.current { background: var(--accent); }
+.step.active  { background: var(--text1); }
 
+/* CHAIN / BLOCKS — full reading view */
+.block-row { display: grid; grid-template-columns: 150px 1fr 1fr; gap: 0 2.5rem; align-items: start; opacity: 0; transform: translateY(12px); }
+.block-row.in { animation: blockIn .45s cubic-bezier(.22,.68,0,1.2) forwards; }
 .col-node { display: flex; justify-content: flex-end; padding-top: 3px; }
-.node-pill {
-  font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500;
-  color: var(--chain-pill-text); background: var(--chain-pill-bg);
-  border-radius: 3px; padding: 3px 9px; letter-spacing: .1em; text-transform: uppercase;
-  opacity: 0; white-space: nowrap;
-}
+.node-pill { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; color: var(--chain-text); background: var(--chain-bg); border-radius: 3px; padding: 3px 9px; letter-spacing: .1em; text-transform: uppercase; opacity: 0; white-space: nowrap; }
 .node-pill.pop { animation: pillFade .35s ease forwards; }
-
 .col-en { font-family: 'Merriweather', serif; font-size: 14px; line-height: 1.95; color: var(--text1); font-weight: 300; padding-top: 2px; }
-.col-en em { font-style: italic; font-weight: 400; }
-
 .col-hi { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--text3); line-height: 1.75; padding-top: 3px; }
-.hint-label { color: #7F77DD; margin-right: 4px; }
+.hint-lbl { color: #7F77DD; margin-right: 4px; }
 
-/* ── EX2 left col: anchor question ── */
-.col-anchor { display: flex; justify-content: flex-end; padding-top: 4px; }
-.anchor-pill {
-  font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 400;
-  color: var(--text2); background: var(--anchor-bg); border: 0.5px solid var(--border);
-  border-radius: 4px; padding: 6px 10px; line-height: 1.55; text-align: right;
-  opacity: 0; max-width: 180px; font-style: italic;
-}
-.anchor-pill.pop { animation: pillFade .4s ease forwards; }
-
-.block-sep { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 0 2.75rem; margin: 2.6rem 0; opacity: 0; }
+.block-sep { display: grid; grid-template-columns: 150px 1fr 1fr; gap: 0 2.5rem; margin: 2.5rem 0; opacity: 0; }
 .block-sep.show { animation: fadeUp .4s ease forwards; }
-.sep-center { display: flex; align-items: center; justify-content: center; }
-.sep-line { width: 55%; height: 1px; background: linear-gradient(to right, transparent 0%, var(--chain-line) 30%, var(--chain-line) 70%, transparent 100%); }
+.sep-line { width: 55%; height: 1px; background: linear-gradient(to right, transparent, #C8C5E8 30%, #C8C5E8 70%, transparent); margin: 0 auto; }
 
 .divider { height: 0.5px; background: var(--border); margin: 2.5rem 0 1.75rem; opacity: 0; }
-.divider.slide { animation: divSlide .5s ease forwards; }
+.divider.in { animation: divSlide .5s ease forwards; }
 
-/* ── full chain ── */
 .fc-wrap { padding: 1rem 1.3rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); margin-bottom: 1.5rem; opacity: 0; }
-.fc-wrap.up { animation: slideUp .45s ease forwards; }
+.fc-wrap.in { animation: slideUp .45s ease forwards; }
 .fc-label { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 9px; }
 .fc-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.fc-node { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; background: var(--chain-pill-bg); color: var(--chain-pill-text); border-radius: 3px; padding: 3px 9px; text-transform: uppercase; letter-spacing: .08em; }
-.fc-arr { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+.fc-node { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; background: var(--chain-bg); color: var(--chain-text); border-radius: 3px; padding: 3px 9px; text-transform: uppercase; letter-spacing: .08em; }
+.fc-arr  { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
 
-/* ── action buttons ── */
-.rd-btn {
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  background: transparent; border: 0.5px solid var(--border2);
-  border-radius: var(--rr); padding: 8px 20px; cursor: pointer;
-  color: var(--text1); letter-spacing: .04em; opacity: 0; display: inline-block;
-}
-.rd-btn.up { animation: slideUp .4s ease forwards; }
-.rd-btn:hover { background: var(--bg2); }
-.rd-btn.solid { background: var(--text1); color: var(--surface); border-color: var(--text1); opacity: 1; }
-.rd-btn.solid:hover { background: var(--accent); border-color: var(--accent); }
-
-/* ── phase sections ── */
-.phase-sec { display: none; }
-.phase-sec.show { display: block; animation: slideUp .4s ease forwards; }
-
-/* ── recall ── */
-.recall-lbl { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 16px; }
-.recall-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
-.rn-given { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; background: var(--chain-pill-bg); color: var(--chain-pill-text); border-radius: 3px; padding: 3px 9px; text-transform: uppercase; letter-spacing: .08em; }
-.rn-blank { font-family: 'DM Mono', monospace; font-size: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 4px 8px; width: 120px; color: var(--text1); outline: none; }
-.rn-blank:focus { border-color: #7F77DD; }
-.r-arr { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+/* RECALL — chain-only (no blocks) */
+.recall-wrap { opacity: 0; animation: slideUp .4s ease forwards; }
+.recall-lbl { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 14px; }
+.chain-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+.cn-given { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; background: var(--chain-bg); color: var(--chain-text); border-radius: 3px; padding: 3px 9px; text-transform: uppercase; letter-spacing: .08em; }
+.cn-blank { font-family: 'DM Mono', monospace; font-size: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 4px 8px; width: 130px; color: var(--text1); outline: none; }
+.cn-blank:focus { border-color: #7F77DD; }
+.cn-arr  { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
 
 .result-box { display: none; margin-top: 1rem; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; background: var(--bg2); }
 .result-box.show { display: block; animation: slideUp .35s ease forwards; }
-.result-row { display: flex; align-items: baseline; gap: 10px; font-family: 'DM Mono', monospace; font-size: 10px; padding: 5px 0; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; }
-.result-row:last-of-type { border-bottom: none; }
-.rr-lbl { color: var(--text3); min-width: 56px; }
+.rr { display: flex; align-items: baseline; gap: 10px; font-family: 'DM Mono', monospace; font-size: 10px; padding: 5px 0; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; }
+.rr:last-of-type { border-bottom: none; }
+.rr-lbl  { color: var(--text3); min-width: 60px; }
 .rr-user { color: var(--text1); flex: 1; }
-.rr-ok { color: var(--green); font-weight: 500; }
-.rr-no { color: var(--red); font-weight: 500; }
-.rr-ans { color: var(--text3); font-size: 9px; }
+.rr-ok   { color: var(--green); font-weight: 500; }
+.rr-no   { color: var(--red); font-weight: 500; }
+.rr-ans  { color: var(--text3); font-size: 9px; }
 .score-big { font-family: 'DM Mono', monospace; font-size: 19px; font-weight: 500; color: var(--text1); margin-top: 12px; }
-.time-summ { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 6px; line-height: 1.95; }
 
-/* ── Ex2 MCQs ── */
+/* RECALL DAY BANNER */
+.recall-day-banner { background: var(--chain-bg); border: 1px solid #C8C5E8; border-radius: var(--radius-sm); padding: 8px 14px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--chain-text); margin-bottom: 1.5rem; display: inline-block; }
+
+/* PASSAGE */
+.passage-wrap { opacity: 0; animation: slideUp .45s ease forwards; margin-bottom: 2rem; }
+.passage-label { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; }
+.passage-text { font-family: 'Merriweather', serif; font-size: 14px; line-height: 1.95; color: var(--text1); font-weight: 300; max-width: 620px; }
+
+/* MCQ */
+.mcq-section { opacity: 0; animation: slideUp .45s ease .15s forwards; }
 .mcq-lbl { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 1.5rem; }
 .q-block { margin-bottom: 2rem; }
-.q-num { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
-.q-type-badge { font-family: 'DM Mono', monospace; font-size: 8px; color: #5B52C7; background: var(--chain-pill-bg); border-radius: 2px; padding: 1px 5px; margin-left: 6px; letter-spacing: .06em; }
-.q-text { font-family: 'Merriweather', serif; font-size: 13.5px; line-height: 1.75; font-weight: 300; color: var(--text1); margin-bottom: 14px; }
-.q-text em { font-style: italic; font-weight: 400; }
-
+.q-num   { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
+.q-type-badge { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--chain-text); background: var(--chain-bg); border-radius: 2px; padding: 1px 5px; margin-left: 6px; }
+.q-text  { font-family: 'Merriweather', serif; font-size: 13.5px; line-height: 1.75; font-weight: 300; color: var(--text1); margin-bottom: 14px; }
 .opt-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-width: 580px; }
-.opt-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text1); line-height: 1.6; transition: border-color .15s, background .15s; }
+.opt-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text1); line-height: 1.6; transition: all .15s; }
 .opt-item:hover { border-color: var(--border2); background: var(--bg2); }
-.opt-item.selected { border-color: #7F77DD; background: var(--chain-pill-bg); color: var(--chain-pill-text); }
-.opt-item.selected .opt-key { color: #5B52C7; }
-.opt-key { font-weight: 500; min-width: 14px; color: var(--text3); flex-shrink: 0; margin-top: 1px; }
+.opt-item.sel { border-color: #7F77DD; background: var(--chain-bg); color: var(--chain-text); }
+.opt-key { font-weight: 500; min-width: 14px; color: var(--text3); flex-shrink: 0; }
 .q-divider { height: 0.5px; background: var(--border); margin: 1.75rem 0; max-width: 580px; }
 
-/* ── Analysis ── */
-.an-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 2.5rem; }
-.score-row { display: flex; align-items: baseline; gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
-.score-huge { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; color: var(--text1); }
-.score-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); line-height: 2; }
+/* SECTION HEADER inside exercise */
+.ex-section-hd { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--chain-text); background: var(--chain-bg); border: 1px solid #C8C5E8; border-radius: var(--radius-sm); padding: 6px 12px; display: inline-block; margin-bottom: 1.5rem; }
 
+/* ANALYSIS */
+.an-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 2rem; }
+.score-row { display: flex; align-items: baseline; gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+.score-huge { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; color: var(--text1); }
+.score-sub  { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); line-height: 2; }
 .an-block { margin-bottom: 2rem; }
-.an-q-num { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
 .an-q-text { font-family: 'Merriweather', serif; font-size: 13.5px; line-height: 1.75; font-weight: 300; color: var(--text1); margin-bottom: 12px; }
 .an-opts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; max-width: 580px; }
 .an-opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-family: 'DM Mono', monospace; font-size: 10px; line-height: 1.6; border: 1px solid var(--border); }
 .an-opt.correct { border-color: var(--green-border); background: var(--green-bg); color: #085041; }
-.an-opt.wrong { border-color: var(--red-border); background: var(--red-bg); color: #4A1B0C; }
+.an-opt.wrong   { border-color: var(--red-border);   background: var(--red-bg);   color: #4A1B0C; }
 .an-opt.neutral { background: var(--bg2); }
 .an-key { font-weight: 500; min-width: 14px; flex-shrink: 0; margin-top: 1px; color: var(--text3); }
 .an-opt.correct .an-key { color: var(--green); }
-.an-opt.wrong .an-key { color: var(--red); }
+.an-opt.wrong   .an-key { color: var(--red); }
 .an-reason { font-family: 'DM Mono', monospace; font-size: 9.5px; line-height: 1.75; color: var(--text2); padding: 10px 14px; border-left: 2px solid var(--green-border); background: var(--bg2); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; max-width: 580px; }
-.an-reason strong { color: var(--text1); font-weight: 500; }
 .an-divider { height: 0.5px; background: var(--border); margin: 1.75rem 0; }
-.session-times { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--text3); line-height: 2; padding: 1rem 1.3rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); margin-top: 2rem; display: inline-block; min-width: 260px; }
-.st-lbl { display: inline-block; min-width: 130px; }
-.st-val { color: var(--text1); font-weight: 500; }
+.time-tbl { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--text3); line-height: 2; padding: 1rem 1.3rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); display: inline-block; min-width: 260px; margin-top: 1.5rem; }
+.tl { display: inline-block; min-width: 150px; }
+.tv { color: var(--text1); font-weight: 500; }
 
-/* ── Anchor recall day ── */
-.anchor-day-wrap { max-width: 580px; }
-.anchor-intro { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--border); }
+/* BUTTONS */
+.rd-btn { font-family: 'DM Mono', monospace; font-size: 10px; background: transparent; border: 0.5px solid var(--border2); border-radius: 6px; padding: 8px 20px; cursor: pointer; color: var(--text1); letter-spacing: .04em; opacity: 0; display: inline-block; }
+.rd-btn.in { animation: slideUp .4s ease forwards; }
+.rd-btn:hover { background: var(--bg2); }
+.rd-btn.solid { background: var(--text1); color: var(--surface); border-color: var(--text1); opacity: 1; }
+.rd-btn.solid:hover { background: var(--accent); border-color: var(--accent); }
 
-/* ── Loading / Empty ── */
+/* LOADING / EMPTY */
 .loading-state { text-align: center; padding: 4rem 2rem; }
 .spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 1rem; }
 .empty-state { text-align: center; padding: 4rem 2rem; }
-.empty-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.4; }
+.empty-icon { font-size: 2rem; margin-bottom: 1rem; opacity: .4; }
 .empty-text { font-size: 14px; color: var(--text3); }
 
-/* ── Animations ── */
 @keyframes blockIn  { to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeUp   { to { opacity: 1; } }
 @keyframes pillFade { to { opacity: 1; } }
-@keyframes divSlide { from { opacity: 0; transform: scaleX(0); transform-origin: left; } to { opacity: 1; transform: scaleX(1); } }
-@keyframes slideUp  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes divSlide { from { opacity:0; transform:scaleX(0); transform-origin:left; } to { opacity:1; transform:scaleX(1); } }
+@keyframes slideUp  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 @keyframes spin     { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- ══ NAV ══ -->
 <nav class="top-nav">
   <a class="nav-brand" href="index.html">Learn<span>Smart</span></a>
   <div class="nav-divider"></div>
@@ -289,20 +215,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <div class="user-av" id="user-av"></div>
 </nav>
 
-<!-- ══ DASHBOARD ══ -->
+<!-- DASHBOARD -->
 <div id="screen-dashboard" class="screen">
   <div class="dash-wrap">
     <div class="dash-hero">
       <div class="dash-greeting" id="dash-greeting">Reading Practice</div>
-      <div class="dash-sub" id="dash-sub">Loading your progress…</div>
-
+      <div class="dash-sub" id="dash-sub">Loading…</div>
       <div class="week-grid" id="week-grid"></div>
-
-      <button class="start-btn" id="start-btn" onclick="startSession()" disabled>
-        Loading…
-      </button>
+      <button class="start-btn" id="start-btn" onclick="startSession()" disabled>Loading…</button>
     </div>
-
     <div class="section-label">Recent Sessions</div>
     <div class="session-history" id="session-history">
       <div class="loading-state"><div class="spinner"></div></div>
@@ -310,41 +231,40 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
-<!-- ══ EXERCISE ══ -->
+<!-- EXERCISE -->
 <div id="screen-exercise" class="screen">
   <div class="ex-wrap">
     <div class="ex-header">
       <div>
         <div class="ex-meta" id="ex-meta">Reading Practice</div>
-        <div class="ex-phase-tag" id="ex-phase-tag">reading phase</div>
+        <div class="ex-phase" id="ex-phase"></div>
       </div>
       <div>
         <div class="ex-timer" id="ex-timer">0:00</div>
-        <div class="ex-timer-phase" id="ex-timer-phase">reading</div>
+        <div class="ex-timer-lbl" id="ex-timer-lbl"></div>
       </div>
     </div>
+    <div class="steps-bar" id="steps-bar"></div>
     <div id="ex-content"></div>
   </div>
 </div>
 
 <script>
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    STATE
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 let currentUser = null;
-let userState   = null; // { current_day, current_week }
-let currentEx   = null; // exercise data from Supabase
-let exState     = {};   // runtime state during session
+let userState   = null;
+let sess        = {};
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    INIT
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 (async () => {
   currentUser = await rdGetUser();
   if (!currentUser) { window.location.href = 'auth.html'; return; }
 
-  // Avatar
-  const av = document.getElementById('user-av');
+  const av     = document.getElementById('user-av');
   const avatar = currentUser.user_metadata?.avatar_url;
   const name   = (currentUser.user_metadata?.full_name || currentUser.email || '?').split(' ')[0];
   av.innerHTML = avatar ? `<img src="${avatar}" alt="${name}">` : name[0].toUpperCase();
@@ -360,48 +280,41 @@ function showScreen(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    DASHBOARD
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 async function renderDashboard() {
   const day  = userState.current_day;
   const week = userState.current_week;
-
-  const name = (currentUser.user_metadata?.full_name || currentUser.email || 'there').split(' ')[0];
+  const name = (currentUser.user_metadata?.full_name || 'there').split(' ')[0];
   const hr   = new Date().getHours();
-  const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('dash-greeting').textContent = `${greet}, ${name}`;
+  document.getElementById('dash-greeting').textContent =
+    `${hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening'}, ${name}`;
   document.getElementById('dash-sub').textContent = `Week ${week} · Day ${day} · Reading Practice`;
 
-  // Week grid
   const sessions = await rdGetUserSessions(currentUser.id);
+
+  // Week grid
   const grid = document.getElementById('week-grid');
   grid.innerHTML = '';
   for (let d = 1; d <= 7; d++) {
-    const done    = sessions.some(s => s.day === d && s.week === week);
-    const isToday = d === day;
-    const locked  = d > day;
-    const cell = document.createElement('div');
-    cell.className = 'day-cell' + (done ? ' done' : '') + (isToday ? ' today' : '') + (locked ? ' locked' : '');
-    cell.innerHTML = `<div class="day-cell-num">D${d}</div><div class="day-cell-status">${done ? '✓' : isToday ? 'today' : locked ? '—' : '·'}</div>`;
+    const done      = sessions.some(s => s.day === d && s.week === week);
+    const isToday   = d === day;
+    const locked    = d > day;
+    const isRecall  = [2, 4, 6, 7].includes(d);
+    const cell      = document.createElement('div');
+    cell.className  = 'day-cell' + (done ? ' done' : isToday ? ' today' : locked ? ' locked' : '');
+    cell.innerHTML  = `<div class="day-cell-num">D${d}${isRecall ? ' 🔁' : ''}</div>
+      <div class="day-cell-status">${done ? '✓' : isToday ? 'today' : locked ? '—' : '·'}</div>`;
     grid.appendChild(cell);
   }
 
-  // Start button
-  const btn = document.getElementById('start-btn');
-  const alreadyDone = sessions.some(s => s.day === day && s.week === week);
-  if (alreadyDone) {
-    btn.textContent = 'Day complete — see you tomorrow!';
-    btn.disabled = true;
-  } else if (day > 7) {
-    btn.textContent = 'Week complete!';
-    btn.disabled = true;
-  } else {
-    btn.textContent = `Start Day ${day} Session →`;
-    btn.disabled = false;
-  }
+  const btn  = document.getElementById('start-btn');
+  const done = sessions.some(s => s.day === day && s.week === week);
+  if (done)       { btn.textContent = 'Done for today — see you tomorrow!'; btn.disabled = true; }
+  else if (day > 7) { btn.textContent = 'Week complete!'; btn.disabled = true; }
+  else            { btn.textContent = `Start Day ${day} →`; btn.disabled = false; }
 
-  // Session history
   renderSessionHistory(sessions);
 }
 
@@ -414,542 +327,605 @@ function renderSessionHistory(sessions) {
   el.innerHTML = sessions.slice(0, 7).map(s => `
     <div class="hist-row">
       <div class="hist-day">W${s.week} D${s.day}</div>
+      <span class="hist-type ${s.session_type === 'recall' ? 'recall' : ''}">${s.session_type || 'normal'}</span>
       <div class="hist-scores">
-        ${s.ex1_score !== null ? `<div class="hist-score">Ex1 <span>${s.ex1_score}%</span></div>` : ''}
-        ${s.ex2_score !== null ? `<div class="hist-score">Ex2 <span>${s.ex2_score}%</span></div>` : ''}
+        ${s.ex1_score !== null && s.ex1_score !== undefined ? `<div class="hist-score">Ex1 <span>${s.ex1_score}%</span></div>` : ''}
+        ${s.ex2_score !== null && s.ex2_score !== undefined ? `<div class="hist-score">Ex2 <span>${s.ex2_score}%</span></div>` : ''}
       </div>
       <div class="hist-time">${fmt(s.total_time || 0)}</div>
     </div>`).join('');
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    SESSION START
-════════════════════════════════════════ */
+════════════════════════════════════════════════════════════ */
 async function startSession() {
-  const btn = document.getElementById('start-btn');
-  btn.textContent = 'Loading…'; btn.disabled = true;
+  const btn  = document.getElementById('start-btn');
+  btn.textContent = 'Loading…';
+  btn.disabled    = true;
 
-  const day  = userState.current_day;
-  const week = userState.current_week;
-  const isAnchorDay = day >= 4 && day <= 7;
+  const day         = userState.current_day;
+  const week        = userState.current_week;
+  const isRecallDay = [2, 4, 6, 7].includes(day);
 
-  currentEx = await rdGetExercise(isAnchorDay ? 1 : day, week);
-  if (!currentEx) {
-    btn.textContent = 'No exercise uploaded for this day yet.';
+  // Always fetch today's exercise.
+  // On recall days we also need Day 1's exercise for the recall chain + recall questions.
+  const dayEx  = await rdGetExercise(week, day);
+  const day1Ex = (day === 1) ? dayEx : await rdGetExercise(week, 1);
+
+  if (!dayEx) {
+    btn.textContent = 'No exercise uploaded for today yet.';
+    btn.disabled    = false;
+    return;
+  }
+  if (isRecallDay && !day1Ex) {
+    btn.textContent = 'Day 1 exercise missing — cannot run recall.';
+    btn.disabled    = false;
     return;
   }
 
-  exState = {
-    ex: currentEx,
-    day, week,
-    isAnchorDay,
-    phase: 'read',
-    readStart: Date.now(),
-    recallStart: null,
-    ex2Start: null,
-    readTime: 0, recallTime: 0, ex2Time: 0,
-    userAnswers: {},
-    ex1Score: 0, ex1Correct: 0, ex1Total: 0
+  sess = {
+    day, week, isRecallDay,
+    dayEx, day1Ex,
+    stepIndex: 0,
+    steps: buildSteps(day, isRecallDay),
+    startTime:  Date.now(),
+    phaseStart: Date.now(),
+    phaseTimes: {},
+    userAnswers: {},        // numeric keys for today's Ex2
+    recallAnswers: {},      // 'r0','r1',… for Day1 recall questions
+
+    // Ex1 chain recall — today's own chain (Days 1,3,5 and Days 2,4,6,7 new chain)
+    ex1Correct: 0, ex1Total: 0, ex1Score: null,
+    // Ex1 chain recall — Day1 chain (on recall days only)
+    ex1D1Correct: 0, ex1D1Total: 0, ex1D1Score: null,
+
+    // Ex2 today's questions
+    ex2Correct: 0, ex2Total: 0, ex2Score: null,
+    // Ex2 Day1 recall questions (on recall days only)
+    ex2D1Correct: 0, ex2D1Total: 0, ex2D1Score: null,
+
+    _activeQuestions:       [],   // today's Ex2 questions
+    _activeRecallQuestions: [],   // Day1 recall questions (recall days only)
   };
 
-  document.getElementById('ex-meta').textContent = `${currentEx.topic} · Week ${week} Day ${day}`;
-  document.getElementById('nav-label').textContent = currentEx.topic;
+  document.getElementById('ex-meta').textContent  = `${dayEx.topic} · Week ${week} Day ${day}`;
+  document.getElementById('nav-label').textContent = dayEx.topic;
+
+  renderStepsBar();
   showScreen('exercise');
-
-  if (isAnchorDay) {
-    buildAnchorDay();
-  } else {
-    buildEx1Read();
-  }
   startTimer();
+  runStep();
 }
 
-/* ════════════════════════════════════════
-   TIMER
-════════════════════════════════════════ */
-let timerInterval = null;
-function startTimer() {
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    let s = 0;
-    if (exState.phase === 'read')   s = Math.floor((Date.now() - exState.readStart) / 1000);
-    if (exState.phase === 'recall') s = Math.floor((Date.now() - exState.recallStart) / 1000);
-    if (exState.phase === 'ex2')    s = Math.floor((Date.now() - exState.ex2Start) / 1000);
-    if (exState.phase === 'anchor') s = Math.floor((Date.now() - exState.readStart) / 1000);
-    const el = document.getElementById('ex-timer');
-    el.textContent = fmt(s);
-    const warn = exState.phase === 'read' ? 180 : exState.phase === 'recall' ? 75 : 120;
-    const over = exState.phase === 'read' ? 300 : exState.phase === 'recall' ? 120 : 200;
-    el.className = 'ex-timer' + (s >= over ? ' over' : s >= warn ? ' warn' : '');
-  }, 500);
+/* ════════════════════════════════════════════════════════════
+   STEP ROUTING
+   ─────────────────────────────────────────────────────────
+   Day 1  (new):
+     ex1-read  → ex1-recall  → ex2-questions  → analysis
+
+   Day 3/5 (new, 4-node chain):
+     ex1-read-day  → ex1-recall-day  → ex2-questions-day  → analysis
+
+   Day 2/4/6/7 (recall + new):
+     ex1-recall-d1  → ex1-read-day  → ex1-recall-day
+       → ex2-recall-d1  → ex2-questions-day  → analysis
+════════════════════════════════════════════════════════════ */
+function buildSteps(day, isRecallDay) {
+  if (day === 1)        return ['ex1-read', 'ex1-recall', 'ex2-questions', 'analysis'];
+  if (!isRecallDay)     return ['ex1-read-day', 'ex1-recall-day', 'ex2-questions-day', 'analysis'];
+  /* recall day */      return ['ex1-recall-d1', 'ex1-read-day', 'ex1-recall-day', 'ex2-recall-d1', 'ex2-questions-day', 'analysis'];
 }
 
-function fmt(s) { return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+function renderStepsBar() {
+  const bar = document.getElementById('steps-bar');
+  bar.innerHTML = sess.steps.map((_, i) => `<div class="step" id="step-${i}"></div>`).join('');
+  updateStepsBar();
+}
 
-/* ════════════════════════════════════════
-   EX1 — READ PHASE
-════════════════════════════════════════ */
-function buildEx1Read() {
-  setPhaseTag('reading phase', 'reading');
-  const ex = exState.ex;
-  const cont = document.getElementById('ex-content');
-  cont.innerHTML = '';
+function updateStepsBar() {
+  sess.steps.forEach((_, i) => {
+    const el = document.getElementById('step-' + i);
+    if (!el) return;
+    el.className = 'step ' + (i < sess.stepIndex ? 'done' : i === sess.stepIndex ? 'active' : '');
+  });
+}
 
-  const readDiv = document.createElement('div');
-  readDiv.id = 'phase-read';
+function nextStep() {
+  sess.phaseTimes[sess.steps[sess.stepIndex]] = Math.floor((Date.now() - sess.phaseStart) / 1000);
+  sess.stepIndex++;
+  sess.phaseStart = Date.now();
+  updateStepsBar();
+  runStep();
+}
 
+function runStep() {
+  const step    = sess.steps[sess.stepIndex];
+  const content = document.getElementById('ex-content');
+  content.innerHTML = '';
+  setPhase(step);
+
+  switch (step) {
+    case 'ex1-read':            return buildEx1Read(sess.dayEx);
+    case 'ex1-read-day':        return buildEx1Read(sess.dayEx);
+
+    case 'ex1-recall':          return buildEx1Recall(sess.dayEx, false,  /* isD1recall */ false);
+    case 'ex1-recall-day':      return buildEx1Recall(sess.dayEx, false,  false);
+    case 'ex1-recall-d1':       return buildEx1Recall(sess.day1Ex, true,  true);
+
+    case 'ex2-questions':       return buildEx2(sess.dayEx, sess.day);
+    case 'ex2-questions-day':   return buildEx2(sess.dayEx, sess.day);
+    case 'ex2-recall-d1':       return buildEx2RecallD1(sess.day1Ex, sess.day);
+
+    case 'analysis':            return buildAnalysis();
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   EX1 — READING (full blocks with English + Hinglish)
+════════════════════════════════════════════════════════════ */
+function buildEx1Read(ex) {
+  const blocks  = ex.ex1_blocks || [];
+  const content = document.getElementById('ex-content');
   let html = '';
-  ex.blocks.forEach((b, i) => {
+
+  blocks.forEach((b, i) => {
     const delay = 100 + i * 170;
     html += `<div class="block-row" data-delay="${delay}">
-      <div class="col-node"><div class="node-pill" data-node>${b.node}</div></div>
-      <div class="col-en">${b.en}</div>
-      <div class="col-hi"><span class="hint-label">यानी —</span>${b.hi}</div>
+      <div class="col-node"><div class="node-pill" data-pill>${b.node || ''}</div></div>
+      <div class="col-en">${b.en || ''}</div>
+      <div class="col-hi"><span class="hint-lbl">यानी —</span>${b.hi || ''}</div>
     </div>`;
-    if (i < ex.blocks.length - 1) {
-      html += `<div class="block-sep" data-sep><div></div><div class="sep-center"><div class="sep-line"></div></div><div></div></div>`;
+    if (i < blocks.length - 1) {
+      html += `<div class="block-sep" data-sep><div></div><div><div class="sep-line"></div></div><div></div></div>`;
     }
   });
 
   html += `<div class="divider" id="ex-divider"></div>
     <div class="fc-wrap" id="ex-fc">
       <div class="fc-label">full chain</div>
-      <div class="fc-flow">${ex.chain.map((n,i) => `<span class="fc-node">${n}</span>${i < ex.chain.length-1 ? '<span class="fc-arr">→</span>' : ''}`).join('')}</div>
+      <div class="fc-flow">${blocks.map((b, i) =>
+        `<span class="fc-node">${b.node || ''}</span>${i < blocks.length - 1 ? '<span class="fc-arr">→</span>' : ''}`
+      ).join('')}</div>
     </div>
-    <button class="rd-btn" id="ex1-next-btn" onclick="goToRecall()">done reading — next ↓</button>`;
+    <button class="rd-btn" id="read-next" onclick="nextStep()">done reading — next ↓</button>`;
 
-  readDiv.innerHTML = html;
-  cont.appendChild(readDiv);
-  animateBlocks(ex.blocks.length);
+  content.innerHTML = html;
+  animateBlocks(blocks.length);
 }
 
 function animateBlocks(count) {
   const rows = document.querySelectorAll('.block-row');
   const seps = document.querySelectorAll('.block-sep');
   rows.forEach((row, i) => {
-    const delay = parseInt(row.dataset.delay) || 0;
+    const delay = parseInt(row.dataset.delay) || 100;
     setTimeout(() => {
-      row.classList.add('visible');
-      const pill = row.querySelector('[data-node]');
+      row.classList.add('in');
+      const pill = row.querySelector('[data-pill]');
       if (pill) setTimeout(() => pill.classList.add('pop'), 120);
-      const anchor = row.querySelector('.anchor-pill');
-      if (anchor) setTimeout(() => anchor.classList.add('pop'), 150);
       if (seps[i]) setTimeout(() => seps[i].classList.add('show'), 260);
     }, delay);
   });
   const last = 100 + (count - 1) * 170;
-  setTimeout(() => { const d = document.getElementById('ex-divider'); if (d) d.classList.add('slide'); }, last + 320);
-  setTimeout(() => { const f = document.getElementById('ex-fc');      if (f) f.classList.add('up'); },   last + 500);
-  setTimeout(() => {
-    const b = document.getElementById('ex1-next-btn') || document.getElementById('ex2-next-btn');
-    if (b) b.classList.add('up');
-    // For Ex2, also show MCQs
-    const m = document.getElementById('mcq-section');
-    if (m) { m.style.opacity = '0'; m.style.display = 'block'; setTimeout(() => { m.style.transition = 'opacity .45s ease, transform .45s ease'; m.style.opacity = '1'; }, 50); }
-  }, last + 660);
+  setTimeout(() => document.getElementById('ex-divider')?.classList.add('in'), last + 320);
+  setTimeout(() => document.getElementById('ex-fc')?.classList.add('in'), last + 500);
+  setTimeout(() => { document.getElementById('read-next')?.classList.add('in'); }, last + 660);
 }
 
-/* ════════════════════════════════════════
-   EX1 — RECALL PHASE
-════════════════════════════════════════ */
-function goToRecall() {
-  exState.readTime    = Math.floor((Date.now() - exState.readStart) / 1000);
-  exState.recallStart = Date.now();
-  exState.phase       = 'recall';
-  setPhaseTag('recall phase', 'recall');
+/* ════════════════════════════════════════════════════════════
+   EX1 — RECALL (chain only, no block content)
 
-  document.getElementById('phase-read').style.display = 'none';
+   isD1recall = true  → reading Day1's chain on a recall day
+                        blank position = ex1_recall_blanks[currentDay]
+   isD1recall = false → reading today's own chain
+                        Day1: ex1_blank_pos (single blank)
+                        Day3/5: ex1_blank_positions (2 blanks)
+                        Day2/4/6/7 new chain: ex1_blank_positions (2 blanks)
+════════════════════════════════════════════════════════════ */
+function buildEx1Recall(ex, showBanner, isD1recall) {
+  const blocks = ex.ex1_blocks || [];
 
-  const ex = exState.ex;
+  let blankPositions;
+  if (isD1recall) {
+    // Reading Day1's chain on a recall day — admin set per-day blank
+    const b = (ex.ex1_recall_blanks || {})[String(sess.day)];
+    blankPositions = (b !== undefined && b !== null) ? [b] : [];
+  } else if (sess.day === 1) {
+    // Day1 own recall — single blank
+    blankPositions = (ex.ex1_blank_pos !== null && ex.ex1_blank_pos !== undefined)
+      ? [ex.ex1_blank_pos] : [];
+  } else {
+    // Days 2–7 own new chain — two blanks
+    blankPositions = ex.ex1_blank_positions || [];
+  }
+
+  // Build chain HTML — chain nodes only, no block English/Hinglish
   let flowHtml = '';
-  ex.chain.forEach((node, i) => {
-    if (i > 0) flowHtml += '<span class="r-arr">→</span>';
-    if (ex.blanks.includes(i)) {
-      flowHtml += `<input class="rn-blank" id="blank-${i}" placeholder="_ _ _" autocomplete="off" />`;
+  blocks.forEach((b, i) => {
+    if (i > 0) flowHtml += '<span class="cn-arr">→</span>';
+    if (blankPositions.includes(i)) {
+      flowHtml += `<input class="cn-blank" id="blank-${i}" placeholder="_ _ _" autocomplete="off" />`;
     } else {
-      flowHtml += `<span class="rn-given">${node}</span>`;
+      flowHtml += `<span class="cn-given">${b.node || ''}</span>`;
     }
   });
 
-  const recallDiv = document.createElement('div');
-  recallDiv.id = 'phase-recall';
-  recallDiv.className = 'phase-sec show';
-  recallDiv.innerHTML = `
+  const div = document.createElement('div');
+  div.className = 'recall-wrap';
+  div.innerHTML = `
+    ${showBanner ? `<div class="recall-day-banner">🔁 Day 1 Chain Recall</div>` : ''}
     <div class="recall-lbl">fill the chain — from memory</div>
-    <div class="recall-flow">${flowHtml}</div>
-    <button class="rd-btn solid" id="recall-submit-btn" onclick="submitRecall()">submit</button>
+    <div class="chain-flow">${flowHtml}</div>
+    <button class="rd-btn solid" id="recall-submit" onclick="submitEx1Recall(${JSON.stringify(blankPositions)}, ${isD1recall})">submit</button>
     <div class="result-box" id="recall-result"></div>`;
+  document.getElementById('ex-content').appendChild(div);
 
-  document.getElementById('ex-content').appendChild(recallDiv);
-  const first = document.querySelector('.rn-blank');
-  if (first) first.focus();
+  const first = div.querySelector('.cn-blank');
+  if (first) setTimeout(() => first.focus(), 400);
 }
 
-function submitRecall() {
-  exState.recallTime = Math.floor((Date.now() - exState.recallStart) / 1000);
-  const ex = exState.ex;
+function submitEx1Recall(blankPositions, isD1recall) {
+  const ex     = isD1recall ? sess.day1Ex : sess.dayEx;
+  const blocks = ex.ex1_blocks || [];
+  let correct  = 0;
+  let html     = '';
 
-  let correct = 0, html = '';
-  ex.blanks.forEach(i => {
+  blankPositions.forEach(i => {
     const inp = document.getElementById('blank-' + i);
     const val = inp ? inp.value : '';
-    const ok  = closeEnough(val, ex.chain[i]);
+    const ok  = closeEnough(val, blocks[i]?.node || '');
     if (ok) correct++;
-    html += `<div class="result-row">
-      <span class="rr-lbl">node ${i+1}</span>
+    html += `<div class="rr">
+      <span class="rr-lbl">node ${i + 1}</span>
       <span class="rr-user">${val || '—'}</span>
       <span class="${ok ? 'rr-ok' : 'rr-no'}">${ok ? '✓' : '✗'}</span>
-      ${!ok ? `<span class="rr-ans">→ ${ex.chain[i]}</span>` : ''}
+      ${!ok ? `<span class="rr-ans">→ ${blocks[i]?.node || ''}</span>` : ''}
     </div>`;
   });
 
-  const pct = Math.round(correct / ex.blanks.length * 100);
-  exState.ex1Score   = pct;
-  exState.ex1Correct = correct;
-  exState.ex1Total   = ex.blanks.length;
+  const pct = blankPositions.length
+    ? Math.round(correct / blankPositions.length * 100) : 100;
 
-  html += `<div class="score-big">${pct}% &nbsp; ${correct}/${ex.blanks.length}</div>
-    <div class="time-summ">
-      read &nbsp;&nbsp;&nbsp; ${fmt(exState.readTime)}<br>
-      recall &nbsp; ${fmt(exState.recallTime)}<br>
-      total &nbsp;&nbsp; ${fmt(exState.readTime + exState.recallTime)}
-    </div>`;
+  // Store score in the right bucket
+  if (isD1recall) {
+    sess.ex1D1Correct = correct;
+    sess.ex1D1Total   = blankPositions.length;
+    sess.ex1D1Score   = pct;
+  } else {
+    sess.ex1Correct = correct;
+    sess.ex1Total   = blankPositions.length;
+    sess.ex1Score   = pct;
+  }
 
+  html += `<div class="score-big">${pct}%  ${correct}/${blankPositions.length}</div>`;
   const box = document.getElementById('recall-result');
   box.innerHTML = html;
   box.classList.add('show');
 
   const cont = document.createElement('button');
-  cont.className = 'rd-btn solid';
+  cont.className     = 'rd-btn solid';
   cont.style.marginTop = '14px';
-  cont.textContent = 'continue to exercise 2 →';
-  cont.onclick = goToEx2;
+  cont.textContent   = 'continue →';
+  cont.onclick       = nextStep;
   box.appendChild(cont);
-
-  document.getElementById('recall-submit-btn').style.display = 'none';
+  document.getElementById('recall-submit').style.display = 'none';
 }
 
-function closeEnough(u, c) {
-  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g,' ').replace(/\s+/g,' ').trim();
-  const un = norm(u), cn = norm(c);
-  if (un === cn) return true;
-  const cw = cn.split(' '), uw = un.split(' ');
-  return cw.filter(w => uw.includes(w)).length >= Math.ceil(cw.length * .55);
+/* ════════════════════════════════════════════════════════════
+   EX2 — TODAY'S QUESTIONS (passage shown on normal days)
+════════════════════════════════════════════════════════════ */
+function buildEx2(ex, day) {
+  // On recall days, do NOT show the passage. On normal days, show it.
+  const showPassage  = !sess.isRecallDay;
+  const questions    = getQuestionsForDay(ex, day);
+  sess._activeQuestions = questions;
+  sess.userAnswers      = {};
+
+  const content = document.getElementById('ex-content');
+  let html = '';
+
+  if (showPassage && ex.ex2_passage) {
+    html += `<div class="passage-wrap">
+      <div class="passage-label">passage</div>
+      <div class="passage-text">${ex.ex2_passage}</div>
+    </div>
+    <div class="divider in" style="max-width:620px"></div>`;
+  }
+
+  html += `<div class="mcq-section">
+    <div class="mcq-lbl">${sess.isRecallDay ? "Today's new questions" : "Answer all questions"}</div>
+    ${buildQuestionsHtml(questions, '')}
+    <button class="rd-btn solid" id="ex2-submit" onclick="submitEx2()" disabled style="margin-top:1rem">next →</button>
+  </div>`;
+
+  content.innerHTML = html;
 }
 
-/* ════════════════════════════════════════
-   EX2 — GUIDED COMPREHENSION
-════════════════════════════════════════ */
-function goToEx2() {
-  exState.ex2Start = Date.now();
-  exState.phase    = 'ex2';
-  setPhaseTag('comprehension phase', 'ex2');
+/**
+ * For Day1: returns its own 4 questions (those not assigned to recall days, or first 4).
+ * For Day2–7 (own exercise): returns its 4 questions directly.
+ */
+function getQuestionsForDay(ex, day) {
+  const qs  = ex.ex2_questions || [];
+  if (day !== 1) return qs.slice(0, 4);  // Days 2-7 have their own 4 questions
 
-  document.getElementById('phase-recall').style.display = 'none';
+  // Day 1: the "own" questions are those NOT assigned to recall days
+  const map              = ex.ex2_recall_map || {};
+  const assignedIndices  = new Set(Object.values(map).flat().map(Number));
+  const day1Qs           = qs.filter((_, i) => !assignedIndices.has(i));
+  return day1Qs.length ? day1Qs.slice(0, 4) : qs.slice(0, 4);
+}
 
-  const ex = exState.ex;
+/* ════════════════════════════════════════════════════════════
+   EX2 — DAY 1 RECALL QUESTIONS (no passage shown)
+════════════════════════════════════════════════════════════ */
+function buildEx2RecallD1(day1Ex, currentDay) {
+  const qs         = day1Ex.ex2_questions || [];
+  const map        = day1Ex.ex2_recall_map || {};
+  const indices    = (map[String(currentDay)] || []).map(Number);
+  const questions  = indices.map(i => qs[i]).filter(Boolean);
 
-  // Determine which questions to show based on day
-  const day = exState.day;
-  let questions;
-  if (day === 1) {
-    questions = ex.questions.filter(q => q.type === 'factual').slice(0, 2);
-  } else if (day === 2) {
-    const factual = ex.questions.filter(q => q.type === 'factual').slice(0, 1);
-    const interp  = ex.questions.filter(q => q.type === 'interpretive').slice(0, 1);
-    questions = [...factual, ...interp];
-  } else {
-    const interp = ex.questions.filter(q => q.type === 'interpretive').slice(0, 1);
-    const infer  = ex.questions.filter(q => q.type === 'inferential').slice(0, 1);
-    questions = [...interp, ...infer];
-  }
-  // Fallback if not enough tagged questions
-  if (questions.length < 2) questions = ex.questions.slice(0, 2);
-  exState.activeQuestions = questions;
+  // Fallback if admin hasn't assigned
+  const finalQs = questions.length ? questions : qs.slice(4, 8);
+  sess._activeRecallQuestions = finalQs;
+  sess.recallAnswers           = {};
 
-  // Build passage blocks (use same blocks from Ex1, reframed as comprehension)
-  let blocksHtml = '';
-  if (ex.anchor_blocks) {
-    // Admin can optionally supply separate Ex2 blocks with anchor questions
-    ex.anchor_blocks.forEach((b, i) => {
-      const delay = 100 + i * 170;
-      blocksHtml += `<div class="block-row" data-delay="${delay}">
-        <div class="col-anchor"><div class="anchor-pill" data-node>${b.anchor}</div></div>
-        <div class="col-en">${b.en}</div>
-        <div class="col-hi"><span class="hint-label">यानी —</span>${b.hi}</div>
-      </div>`;
-      if (i < ex.anchor_blocks.length - 1) {
-        blocksHtml += `<div class="block-sep" data-sep><div></div><div class="sep-center"><div class="sep-line"></div></div><div></div></div>`;
-      }
-    });
-  } else {
-    // Reuse Ex1 blocks — anchor questions auto-generated from questions array
-    ex.blocks.forEach((b, i) => {
-      const delay = 100 + i * 170;
-      const anchorQ = questions[i % questions.length]?.text || '';
-      blocksHtml += `<div class="block-row" data-delay="${delay}">
-        <div class="col-anchor"><div class="anchor-pill" data-node>${anchorQ}</div></div>
-        <div class="col-en">${b.en}</div>
-        <div class="col-hi"><span class="hint-label">यानी —</span>${b.hi}</div>
-      </div>`;
-      if (i < ex.blocks.length - 1) {
-        blocksHtml += `<div class="block-sep" data-sep><div></div><div class="sep-center"><div class="sep-line"></div></div><div></div></div>`;
-      }
-    });
-  }
+  const content = document.getElementById('ex-content');
+  content.innerHTML = `<div class="mcq-section">
+    <div class="ex-section-hd">🔁 Day 1 Comprehension Recall</div>
+    <div class="mcq-lbl">Questions from Day 1 — answer from memory</div>
+    ${buildQuestionsHtml(finalQs, 'r')}
+    <button class="rd-btn solid" id="ex2-recall-submit" onclick="submitEx2RecallD1()" disabled style="margin-top:1rem">next →</button>
+  </div>`;
+}
 
-  let qHtml = '';
-  questions.forEach((q, qi) => {
-    qHtml += `<div class="q-block">
-      <div class="q-num">Question ${qi+1} <span class="q-type-badge">${q.type}</span></div>
-      <div class="q-text">${q.text}</div>
+/* ════════════════════════════════════════════════════════════
+   SHARED QUESTION HTML BUILDER
+   prefix = '' for today's questions, 'r' for Day1 recall
+════════════════════════════════════════════════════════════ */
+function buildQuestionsHtml(questions, prefix) {
+  return questions.map((q, qi) => `
+    <div class="q-block">
+      <div class="q-num">Question ${qi + 1} <span class="q-type-badge">${q.type || 'factual'}</span></div>
+      <div class="q-text">${q.text || ''}</div>
       <ul class="opt-list">
-        ${q.options.map((o, oi) => `<li class="opt-item" data-q="${qi}" data-val="${oi}" onclick="selectOpt(this)"><span class="opt-key">${'ABCD'[oi]}</span>${o}</li>`).join('')}
+        ${(q.options || []).map((o, oi) =>
+          `<li class="opt-item" data-q="${prefix}${qi}" data-v="${oi}" onclick="selectOpt(this)">
+            <span class="opt-key">${'ABCD'[oi]}</span>${o}
+          </li>`
+        ).join('')}
       </ul>
     </div>
-    ${qi < questions.length - 1 ? '<div class="q-divider"></div>' : ''}`;
-  });
-
-  const ex2Div = document.createElement('div');
-  ex2Div.id = 'phase-ex2';
-  ex2Div.className = 'phase-sec show';
-  ex2Div.innerHTML = `
-    ${blocksHtml}
-    <div class="divider" id="ex-divider" style="opacity:0;animation:divSlide .5s ease .2s forwards"></div>
-    <div id="mcq-section" style="display:none;opacity:0;transform:translateY(10px)">
-      <div class="mcq-lbl">answer both questions — then click next</div>
-      ${qHtml}
-      <button class="rd-btn solid" id="ex2-submit" onclick="goToAnalysis()" disabled>next →</button>
-    </div>`;
-
-  document.getElementById('ex-content').appendChild(ex2Div);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  const blockCount = ex.anchor_blocks ? ex.anchor_blocks.length : ex.blocks.length;
-  animateBlocks(blockCount);
+    ${qi < questions.length - 1 ? '<div class="q-divider"></div>' : ''}`
+  ).join('');
 }
 
 function selectOpt(el) {
-  const q   = parseInt(el.dataset.q);
-  const val = parseInt(el.dataset.val);
-  exState.userAnswers[q] = val;
-  document.querySelectorAll(`[data-q="${q}"]`).forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  const allAnswered = exState.activeQuestions.every((_, i) => exState.userAnswers[i] !== undefined);
-  document.getElementById('ex2-submit').disabled = !allAnswered;
-}
+  const q   = el.dataset.q;
+  const val = parseInt(el.dataset.v);
+  const isRecall = q.startsWith('r');
 
-/* ════════════════════════════════════════
-   ANALYSIS
-════════════════════════════════════════ */
-async function goToAnalysis() {
-  exState.ex2Time = Math.floor((Date.now() - exState.ex2Start) / 1000);
-  clearInterval(timerInterval);
-  document.getElementById('ex-timer').style.display = 'none';
-  document.getElementById('ex-timer-phase').style.display = 'none';
-  setPhaseTag('analysis', '');
-
-  document.getElementById('phase-ex2').style.display = 'none';
-
-  const questions = exState.activeQuestions;
-  let ex2Correct = 0;
-  let inferCorrect = 0, inferTotal = 0, interpCorrect = 0, interpTotal = 0;
-
-  questions.forEach((q, i) => {
-    const ok = exState.userAnswers[i] === q.correct;
-    if (ok) ex2Correct++;
-    if (q.type === 'inferential')  { inferTotal++;  if (ok) inferCorrect++; }
-    if (q.type === 'interpretive') { interpTotal++; if (ok) interpCorrect++; }
-  });
-
-  const ex2Pct = Math.round(ex2Correct / questions.length * 100);
-
-  // Save session
-  const sessionData = {
-    exercise_id: exState.ex.id,
-    day: exState.day, week: exState.week,
-    ex1_read_time: exState.readTime, ex1_recall_time: exState.recallTime,
-    ex1_score: exState.ex1Score, ex1_correct: exState.ex1Correct, ex1_total: exState.ex1Total,
-    ex2_time: exState.ex2Time, ex2_score: ex2Pct,
-    ex2_correct: ex2Correct, ex2_total: questions.length,
-    ex2_infer_correct: inferCorrect, ex2_infer_total: inferTotal,
-    ex2_interp_correct: interpCorrect, ex2_interp_total: interpTotal,
-    total_time: exState.readTime + exState.recallTime + exState.ex2Time
-  };
-  await rdSaveSession(sessionData);
-
-  // Advance day
-  const nextDay  = exState.day >= 7 ? 1 : exState.day + 1;
-  const nextWeek = exState.day >= 7 ? exState.week + 1 : exState.week;
-  await rdUpsertState(currentUser.id, nextDay, nextWeek);
-  userState = { current_day: nextDay, current_week: nextWeek };
-
-  // Build analysis
-  let qHtml = '';
-  questions.forEach((q, i) => {
-    const ua = exState.userAnswers[i];
-    const optsHtml = q.options.map((o, oi) => {
-      let cls = 'an-opt neutral';
-      if (oi === q.correct) cls = 'an-opt correct';
-      else if (oi === ua && oi !== q.correct) cls = 'an-opt wrong';
-      const mark = oi === q.correct ? ' ✓' : (oi === ua && oi !== q.correct) ? ' ✗' : '';
-      return `<div class="${cls}"><span class="an-key">${'ABCD'[oi]}</span>${o}${mark}</div>`;
-    }).join('');
-    qHtml += `<div class="an-block">
-      <div class="an-q-num">Question ${i+1} <span class="q-type-badge">${q.type}</span></div>
-      <div class="an-q-text">${q.text}</div>
-      <div class="an-opts">${optsHtml}</div>
-      <div class="an-reason"><strong>Why ${'ABCD'[q.correct]} is correct:</strong> ${q.reason}</div>
-    </div>
-    ${i < questions.length - 1 ? '<div class="an-divider"></div>' : ''}`;
-  });
-
-  const totalEx1 = exState.readTime + exState.recallTime;
-  const totalAll = totalEx1 + exState.ex2Time;
-
-  const anDiv = document.createElement('div');
-  anDiv.id = 'phase-analysis';
-  anDiv.className = 'phase-sec show';
-  anDiv.innerHTML = `
-    <div class="an-title">Analysis · Day ${exState.day}</div>
-    <div class="score-row">
-      <div class="score-huge">${ex2Pct}%</div>
-      <div class="score-sub">${ex2Correct} of ${questions.length} comprehension correct<br>Ex1 recall: ${exState.ex1Score}%</div>
-    </div>
-    ${qHtml}
-    <div class="session-times">
-      <div><span class="st-lbl">Ex1 read</span><span class="st-val">${fmt(exState.readTime)}</span></div>
-      <div><span class="st-lbl">Ex1 recall</span><span class="st-val">${fmt(exState.recallTime)}</span></div>
-      <div><span class="st-lbl">Ex1 total</span><span class="st-val">${fmt(totalEx1)}</span></div>
-      <div><span class="st-lbl">Ex2 questions</span><span class="st-val">${fmt(exState.ex2Time)}</span></div>
-      <div><span class="st-lbl">Session total</span><span class="st-val">${fmt(totalAll)}</span></div>
-    </div>
-    <div style="margin-top:1.5rem">
-      <button class="rd-btn solid" onclick="finishSession()">back to dashboard</button>
-    </div>`;
-
-  document.getElementById('ex-content').appendChild(anDiv);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/* ════════════════════════════════════════
-   ANCHOR RECALL DAY (Days 4–7)
-════════════════════════════════════════ */
-function buildAnchorDay() {
-  exState.phase = 'anchor';
-  setPhaseTag('anchor recall', 'anchor');
-
-  const ex  = exState.ex;
-  const day = exState.day;
-  // Pick question from anchor_questions bank based on day
-  // Day 4 → index 0 (interpretive), Day 5 → index 1 (inferential), etc.
-  const bankIndex = day - 4;
-  const anchorBank = ex.anchor_questions || ex.questions;
-  const q = anchorBank[Math.min(bankIndex, anchorBank.length - 1)];
-
-  if (!q) {
-    document.getElementById('ex-content').innerHTML = `
-      <div class="anchor-day-wrap">
-        <div class="empty-state"><div class="empty-text">No anchor question configured for this day.</div></div>
-        <button class="rd-btn solid" style="margin-top:1rem;opacity:1" onclick="finishSession()">back to dashboard</button>
-      </div>`;
-    return;
+  if (isRecall) {
+    sess.recallAnswers[q] = val;
+  } else {
+    sess.userAnswers[parseInt(q)] = val;
   }
 
-  exState.activeQuestions = [q];
+  document.querySelectorAll(`[data-q="${q}"]`).forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
 
-  const optHtml = q.options.map((o, oi) =>
-    `<li class="opt-item" data-q="0" data-val="${oi}" onclick="selectAnchorOpt(this)"><span class="opt-key">${'ABCD'[oi]}</span>${o}</li>`
-  ).join('');
-
-  document.getElementById('ex-content').innerHTML = `
-    <div class="anchor-day-wrap">
-      <div class="anchor-intro">Day ${day} · Anchor Recall · Week ${exState.week}</div>
-      <div class="q-block">
-        <div class="q-num">Recall Question <span class="q-type-badge">${q.type}</span></div>
-        <div class="q-text">${q.text}</div>
-        <ul class="opt-list">${optHtml}</ul>
-      </div>
-      <button class="rd-btn solid" id="anchor-submit" onclick="submitAnchor()" disabled style="margin-top:1rem">submit</button>
-      <div class="result-box" id="anchor-result"></div>
-    </div>`;
+  // Enable submit when all answered
+  const step = sess.steps[sess.stepIndex];
+  if (step === 'ex2-recall-d1') {
+    const total    = (sess._activeRecallQuestions || []).length;
+    const answered = Object.keys(sess.recallAnswers).length;
+    const btn = document.getElementById('ex2-recall-submit');
+    if (btn) btn.disabled = answered < total;
+  } else {
+    const total    = (sess._activeQuestions || []).length;
+    const answered = Object.keys(sess.userAnswers).length;
+    const btn = document.getElementById('ex2-submit');
+    if (btn) btn.disabled = answered < total;
+  }
 }
 
-function selectAnchorOpt(el) {
-  document.querySelectorAll('[data-q="0"]').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  exState.userAnswers[0] = parseInt(el.dataset.val);
-  document.getElementById('anchor-submit').disabled = false;
+function submitEx2() {
+  const qs = sess._activeQuestions || [];
+  let correct = 0;
+  qs.forEach((q, i) => { if (sess.userAnswers[i] === q.correct) correct++; });
+  sess.ex2Correct = correct;
+  sess.ex2Total   = qs.length;
+  sess.ex2Score   = qs.length ? Math.round(correct / qs.length * 100) : 100;
+  nextStep();
 }
 
-async function submitAnchor() {
-  const q  = exState.activeQuestions[0];
-  const ua = exState.userAnswers[0];
-  const ok = ua === q.correct;
+function submitEx2RecallD1() {
+  const qs = sess._activeRecallQuestions || [];
+  let correct = 0;
+  qs.forEach((q, i) => { if (sess.recallAnswers[`r${i}`] === q.correct) correct++; });
+  sess.ex2D1Correct = correct;
+  sess.ex2D1Total   = qs.length;
+  sess.ex2D1Score   = qs.length ? Math.round(correct / qs.length * 100) : 100;
+  nextStep();
+}
 
-  const anchorTime = Math.floor((Date.now() - exState.readStart) / 1000);
+/* ════════════════════════════════════════════════════════════
+   ANALYSIS + SAVE
+════════════════════════════════════════════════════════════ */
+async function buildAnalysis() {
+  setPhase('analysis');
   clearInterval(timerInterval);
-  document.getElementById('ex-timer').style.display = 'none';
-  document.getElementById('ex-timer-phase').style.display = 'none';
+  document.getElementById('ex-timer').style.display     = 'none';
+  document.getElementById('ex-timer-lbl').style.display = 'none';
 
-  // Save session (anchor day: only ex2 fields used)
-  await rdSaveSession({
-    exercise_id: exState.ex.id,
-    day: exState.day, week: exState.week,
-    ex1_read_time: 0, ex1_recall_time: 0, ex1_score: null, ex1_correct: 0, ex1_total: 0,
-    ex2_time: anchorTime, ex2_score: ok ? 100 : 0,
-    ex2_correct: ok ? 1 : 0, ex2_total: 1,
-    ex2_infer_correct: q.type === 'inferential' ? (ok ? 1 : 0) : 0,
-    ex2_infer_total:   q.type === 'inferential' ? 1 : 0,
-    ex2_interp_correct: q.type === 'interpretive' ? (ok ? 1 : 0) : 0,
-    ex2_interp_total:   q.type === 'interpretive' ? 1 : 0,
-    total_time: anchorTime
-  });
+  const totalTime = Math.floor((Date.now() - sess.startTime) / 1000);
 
-  const nextDay  = exState.day >= 7 ? 1 : exState.day + 1;
-  const nextWeek = exState.day >= 7 ? exState.week + 1 : exState.week;
+  // ── Compute combined ex1 score for DB ───────────────────────────────
+  // On recall days, ex1Score is today's new chain; ex1D1Score is Day1 chain recall.
+  // For the DB we save today's chain recall as ex1_score, and Day1 recall as a note.
+  // (schema only has one ex1_score column; use today's chain as primary)
+  const dbEx1Score   = sess.ex1Score;
+  const dbEx2Score   = sess.ex2Score;
+
+  // ── Save session ─────────────────────────────────────────────────────
+  try {
+    await rdSaveSession({
+      user_id:         currentUser.id,
+      exercise_id:     sess.dayEx.id,
+      week:            sess.week,
+      day:             sess.day,
+      session_type:    sess.isRecallDay ? 'recall' : 'normal',
+      ex1_recall_time: sess.phaseTimes['ex1-recall']     ||
+                       sess.phaseTimes['ex1-recall-day'] || null,
+      ex1_score:       dbEx1Score,
+      ex1_correct:     sess.ex1Correct,
+      ex1_total:       sess.ex1Total,
+      ex2_time:        sess.phaseTimes['ex2-questions']     ||
+                       sess.phaseTimes['ex2-questions-day'] || null,
+      ex2_score:       dbEx2Score,
+      ex2_correct:     sess.ex2Correct,
+      ex2_total:       sess.ex2Total,
+      total_time:      totalTime,
+    });
+  } catch (e) {
+    console.error('Session save failed:', e);
+  }
+
+  // ── Advance day ──────────────────────────────────────────────────────
+  const nextDay  = sess.day >= 7 ? 1 : sess.day + 1;
+  const nextWeek = sess.day >= 7 ? sess.week + 1 : sess.week;
   await rdUpsertState(currentUser.id, nextDay, nextWeek);
   userState = { current_day: nextDay, current_week: nextWeek };
 
-  // Show result
-  const optsHtml = q.options.map((o, oi) => {
-    let cls = 'an-opt neutral';
-    if (oi === q.correct) cls = 'an-opt correct';
-    else if (oi === ua && oi !== q.correct) cls = 'an-opt wrong';
-    const mark = oi === q.correct ? ' ✓' : (oi === ua && oi !== q.correct) ? ' ✗' : '';
-    return `<div class="${cls}"><span class="an-key">${'ABCD'[oi]}</span>${o}${mark}</div>`;
-  }).join('');
+  // ── Build analysis UI ────────────────────────────────────────────────
+  const content = document.getElementById('ex-content');
 
-  const box = document.getElementById('anchor-result');
-  box.innerHTML = `
-    <div class="an-opts" style="margin-bottom:12px">${optsHtml}</div>
-    <div class="an-reason"><strong>Why ${'ABCD'[q.correct]} is correct:</strong> ${q.reason}</div>
-    <div class="time-summ" style="margin-top:12px">time: ${fmt(anchorTime)}</div>
-    <button class="rd-btn solid" style="margin-top:14px;opacity:1" onclick="finishSession()">back to dashboard</button>`;
-  box.classList.add('show');
-  document.getElementById('anchor-submit').style.display = 'none';
+  const reviewToday  = buildReviewHtml(sess._activeQuestions || [], sess.userAnswers, '', "Today's Questions");
+  const reviewRecall = sess.isRecallDay
+    ? buildReviewHtml(sess._activeRecallQuestions || [], sess.recallAnswers, 'r', '🔁 Day 1 Recall Questions')
+    : '';
+
+  content.innerHTML = `<div style="animation:slideUp .4s ease forwards;opacity:0">
+    <div class="an-title">Analysis · Day ${sess.day}</div>
+    <div class="score-row">
+      <div class="score-huge">${dbEx2Score !== null && dbEx2Score !== undefined ? dbEx2Score + '%' : '—'}</div>
+      <div class="score-sub">
+        ${dbEx2Score !== null && dbEx2Score !== undefined ? `${sess.ex2Correct}/${sess.ex2Total} today's questions correct` : ''}
+        ${sess.ex1Score   !== null ? `<br>Today's chain recall: ${sess.ex1Score}%`  : ''}
+        ${sess.ex1D1Score !== null ? `<br>Day 1 chain recall: ${sess.ex1D1Score}%`  : ''}
+        ${sess.ex2D1Score !== null ? `<br>Day 1 recall questions: ${sess.ex2D1Score}%` : ''}
+      </div>
+    </div>
+    ${reviewRecall}
+    ${reviewRecall && reviewToday ? '<div class="an-divider" style="margin:2rem 0"></div>' : ''}
+    ${reviewToday}
+    <div class="time-tbl">${buildTimeTbl(totalTime)}</div>
+    <div style="margin-top:1.5rem">
+      <button class="rd-btn solid" onclick="finishSession()">back to dashboard</button>
+    </div>
+  </div>`;
 }
 
-/* ════════════════════════════════════════
-   FINISH
-════════════════════════════════════════ */
+function buildReviewHtml(questions, answers, prefix, label) {
+  if (!questions.length) return '';
+  let html = `<div style="margin-bottom:1.5rem"><div class="ex-section-hd">${label}</div></div>`;
+  questions.forEach((q, i) => {
+    const ua  = answers[prefix ? `${prefix}${i}` : i];
+    const ops = (q.options || []).map((o, oi) => {
+      let cls  = 'an-opt neutral';
+      if (oi === q.correct) cls = 'an-opt correct';
+      else if (oi === ua && oi !== q.correct) cls = 'an-opt wrong';
+      const mark = oi === q.correct ? ' ✓' : (oi === ua && oi !== q.correct ? ' ✗' : '');
+      return `<div class="${cls}"><span class="an-key">${'ABCD'[oi]}</span>${o}${mark}</div>`;
+    }).join('');
+    html += `<div class="an-block">
+      <div class="q-num">Q${i + 1} <span class="q-type-badge">${q.type || ''}</span></div>
+      <div class="an-q-text">${q.text || ''}</div>
+      <div class="an-opts">${ops}</div>
+      <div class="an-reason"><strong>Why ${'ABCD'[q.correct]} is correct:</strong> ${q.reason || ''}</div>
+    </div>${i < questions.length - 1 ? '<div class="an-divider"></div>' : ''}`;
+  });
+  return html;
+}
+
+function buildTimeTbl(totalTime) {
+  const labels = {
+    'ex1-read':           'Ex1 reading',
+    'ex1-read-day':       'Ex1 reading',
+    'ex1-recall':         'Ex1 recall',
+    'ex1-recall-day':     'Ex1 recall',
+    'ex1-recall-d1':      'Day 1 chain recall',
+    'ex2-recall-d1':      'Day 1 Q recall',
+    'ex2-questions':      'Ex2 questions',
+    'ex2-questions-day':  'Ex2 questions',
+  };
+  const rows = [];
+  for (const [step, t] of Object.entries(sess.phaseTimes)) {
+    const lbl = labels[step];
+    if (lbl) rows.push(`<div><span class="tl">${lbl}</span><span class="tv">${fmt(t)}</span></div>`);
+  }
+  rows.push(`<div><span class="tl">Session total</span><span class="tv">${fmt(totalTime)}</span></div>`);
+  return rows.join('');
+}
+
 async function finishSession() {
   clearInterval(timerInterval);
-  document.getElementById('ex-timer').style.display = '';
-  document.getElementById('ex-timer-phase').style.display = '';
+  document.getElementById('ex-timer').style.display     = '';
+  document.getElementById('ex-timer-lbl').style.display = '';
   document.getElementById('nav-label').textContent = 'Reading Practice';
   await renderDashboard();
   showScreen('dashboard');
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
+   TIMER
+════════════════════════════════════════════════════════════ */
+let timerInterval = null;
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const s  = Math.floor((Date.now() - sess.phaseStart) / 1000);
+    const el = document.getElementById('ex-timer');
+    el.textContent = fmt(s);
+    el.className   = 'ex-timer' + (s >= 300 ? ' over' : s >= 180 ? ' warn' : '');
+  }, 500);
+}
+
+/* ════════════════════════════════════════════════════════════
    UTILS
-════════════════════════════════════════ */
-function setPhaseTag(tag, timerLabel) {
-  document.getElementById('ex-phase-tag').textContent  = tag;
-  document.getElementById('ex-timer-phase').textContent = timerLabel;
-  document.getElementById('ex-timer').className = 'ex-timer';
-  document.getElementById('ex-timer').textContent = '0:00';
+════════════════════════════════════════════════════════════ */
+const PHASE_LABELS = {
+  'ex1-read':          'reading phase',
+  'ex1-read-day':      'reading phase',
+  'ex1-recall':        'chain recall',
+  'ex1-recall-day':    'chain recall',
+  'ex1-recall-d1':     '🔁 day 1 chain recall',
+  'ex2-questions':     'comprehension',
+  'ex2-questions-day': 'comprehension',
+  'ex2-recall-d1':     '🔁 day 1 q recall',
+  'analysis':          'analysis',
+};
+
+function setPhase(step) {
+  document.getElementById('ex-phase').textContent     = PHASE_LABELS[step] || step;
+  document.getElementById('ex-timer-lbl').textContent = PHASE_LABELS[step] || '';
+  const timerEl = document.getElementById('ex-timer');
+  timerEl.className   = 'ex-timer';
+  timerEl.textContent = '0:00';
+  sess.phaseStart = Date.now();
+}
+
+function closeEnough(u, c) {
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+  const un   = norm(u), cn = norm(c);
+  if (un === cn) return true;
+  const cw = cn.split(' '), uw = un.split(' ');
+  return cw.filter(w => uw.includes(w)).length >= Math.ceil(cw.length * 0.55);
+}
+
+function fmt(s) {
+  if (s === null || s === undefined || s === '') return '—';
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 }
 </script>
 </body>
