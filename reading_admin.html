@@ -1167,7 +1167,7 @@ function parseAndFill() {
       loadDayForm(day);
       allExercises.push(savedEx); // restore
     } else {
-      loadDayForm(day);
+      loadDayForm(day, true);
     }
 
     showToast('fill-toast');
