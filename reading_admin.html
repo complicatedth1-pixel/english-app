@@ -21,12 +21,14 @@
   --red: #A32828; --red-bg: #FCEAEA; --red-border: #E0AAAA;
   --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
   --purple: #6B3FA0; --purple-bg: #F3EDFC; --purple-border: #C9AEED;
+  --amber: #B5760A; --amber-bg: #FDF6E7; --amber-border: #F0D090;
   --radius: 12px; --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; font-size: 15px; }
 
+/* ── NAV ── */
 .top-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; gap: 10px; height: 54px; position: sticky; top: 0; z-index: 300; }
 .nav-brand { font-family: 'Instrument Serif', serif; font-size: 20px; color: var(--text1); letter-spacing: -0.3px; text-decoration: none; }
 .nav-brand span { color: var(--accent); }
@@ -35,6 +37,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .nav-btn { font-size: 12.5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
 .nav-btn:hover { background: var(--bg2); color: var(--text1); }
 
+/* ── SUB NAV ── */
 .sub-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: none; align-items: center; gap: 4px; height: 44px; position: sticky; top: 54px; z-index: 200; }
 .sub-nav.visible { display: flex; }
 .sub-tab { font-size: 13px; padding: 5px 14px; border-radius: 20px; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; }
@@ -47,15 +50,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .sub-av { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text2); background: var(--bg2); flex-shrink: 0; }
 .sub-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
+/* ── SCREENS ── */
 .screen { display: none; }
 .screen.active { display: block; animation: fadeUp .3s ease both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── LAYOUT ── */
 .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
 .section-hd  { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--text1); margin-bottom: 4px; }
 .section-sub { font-size: 13px; color: var(--text3); margin-bottom: 1.75rem; }
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 0.85rem; }
 
+/* ── STATS ── */
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
 .stat-num { font-family: 'Instrument Serif', serif; font-size: 30px; color: var(--text1); line-height: 1; margin-bottom: 4px; }
@@ -64,25 +70,72 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .stat-num.red   { color: var(--red); }
 .stat-lbl { font-size: 12px; color: var(--text3); font-weight: 500; }
 
+/* ── USER LIST ── */
 .user-list { display: flex; flex-direction: column; gap: 10px; }
-.user-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s; }
-.user-row:hover { box-shadow: var(--shadow-md); border-color: var(--border2); transform: translateY(-1px); }
+.user-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; box-shadow: var(--shadow); transition: all 0.15s; }
+.user-row:hover { box-shadow: var(--shadow-md); border-color: var(--border2); }
+.user-row-top { display: flex; align-items: center; gap: 14px; cursor: pointer; }
 .user-av { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg2); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text2); overflow: hidden; flex-shrink: 0; }
 .user-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .user-info { flex: 1; min-width: 0; }
 .user-name { font-size: 14px; font-weight: 600; color: var(--text1); margin-bottom: 2px; }
 .user-meta { font-size: 12px; color: var(--text3); display: flex; gap: 10px; flex-wrap: wrap; }
 .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
-.badge.done  { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-.badge.todo  { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
-.badge.ready { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
-.badge.miss  { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.badge.done   { background: var(--green-bg);   color: var(--green);  border: 1px solid var(--green-border); }
+.badge.todo   { background: var(--accent-bg);  color: var(--accent); border: 1px solid var(--accent-border); }
+.badge.ready  { background: var(--blue-bg);    color: var(--blue);   border: 1px solid var(--blue-border); }
+.badge.miss   { background: var(--red-bg);     color: var(--red);    border: 1px solid var(--red-border); }
+.badge.amber  { background: var(--amber-bg);   color: var(--amber);  border: 1px solid var(--amber-border); }
 .open-btn { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; }
 .open-btn:hover { background: var(--text1); color: #fff; border-color: var(--text1); }
 
+/* ── USER PROFILE EXPANDER ── */
+.user-profile-expander { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; display: none; }
+.user-profile-expander.open { display: block; animation: fadeUp .2s ease both; }
+.profile-expander-title { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.profile-vars-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 10px; }
+.pv-cell { display: flex; flex-direction: column; gap: 3px; }
+.pv-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.pv-input { width: 100%; padding: 5px 7px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text1); outline: none; text-align: center; }
+.pv-input:focus { border-color: var(--accent); }
+.profile-string-preview { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--purple); background: var(--purple-bg); border: 1px solid var(--purple-border); border-radius: 4px; padding: 4px 10px; display: inline-block; margin-bottom: 8px; }
+.expand-toggle { font-size: 11px; color: var(--text3); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 0; border: none; background: none; font-family: 'DM Sans', sans-serif; transition: color .12s; }
+.expand-toggle:hover { color: var(--text1); }
+.expand-toggle i { transition: transform .2s; }
+.expand-toggle.open i { transform: rotate(180deg); }
+
+/* ── CALENDAR SCHEDULING ── */
+.cal-section { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
+.cal-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.cal-row { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.cal-start-block { display: flex; flex-direction: column; gap: 5px; }
+.cal-start-label { font-size: 11px; color: var(--text2); font-weight: 500; }
+.cal-date-input { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text1); outline: none; }
+.cal-date-input:focus { border-color: var(--accent); }
+.cal-holidays-block { flex: 1; min-width: 200px; }
+.cal-holidays-label { font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 5px; }
+.holiday-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.holiday-tag { font-family: 'DM Mono', monospace; font-size: 10px; background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); border-radius: 4px; padding: 3px 8px; display: flex; align-items: center; gap: 5px; }
+.holiday-tag button { border: none; background: none; cursor: pointer; color: var(--amber); font-size: 11px; padding: 0; line-height: 1; }
+.holiday-add-row { display: flex; gap: 6px; align-items: center; }
+.holiday-add-input { padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text1); outline: none; }
+.holiday-add-input:focus { border-color: var(--amber); }
+.btn-add-holiday { font-size: 12px; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--amber-border); background: var(--amber-bg); color: var(--amber); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all .12s; }
+.btn-add-holiday:hover { background: var(--amber); color: #fff; }
+.cal-preview { margin-top: 10px; }
+.cal-preview-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+.week-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.week-chip { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--text3); background: var(--bg2); }
+.week-chip.active-day  { background: var(--text1); color: #fff; border-color: var(--text1); }
+.week-chip.holiday-day { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); text-decoration: line-through; }
+.week-chip.exercise-day { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+.user-save-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+
+/* ── PANELS ── */
 .panel { display: none; }
 .panel.active { display: block; animation: fadeUp .3s ease both; }
 
+/* ── FORM CARDS ── */
 .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
 .form-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.25rem; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -95,6 +148,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .form-hint { font-size: 11.5px; color: var(--text3); margin-top: 4px; line-height: 1.5; }
 
+/* ── DAY TABS ── */
 .day-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .day-tab { font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; position: relative; }
 .day-tab:hover { background: var(--bg2); }
@@ -103,14 +157,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .day-tab.recall-day { border-color: var(--purple-border); }
 .day-tab.recall-day.active { background: var(--purple); border-color: var(--purple); }
 
+/* ── BLOCKS ── */
 .block-form { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
 .block-num { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
 
+/* ── BLANK SELECTOR ── */
 .blank-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 .blank-btn { font-family: 'DM Mono', monospace; font-size: 11px; width: 32px; height: 32px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; color: var(--text2); transition: all .12s; display: flex; align-items: center; justify-content: center; }
 .blank-btn:hover { border-color: var(--border2); }
 .blank-btn.selected { background: var(--text1); color: #fff; border-color: var(--text1); }
 
+/* ── RECALL CONFIG ── */
 .recall-day-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 .recall-day-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .recall-day-label { font-size: 12px; color: var(--text2); font-weight: 500; min-width: 60px; }
@@ -119,60 +176,63 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .chain-blank:hover { background: var(--accent); color: #fff; }
 .chain-blank.active-blank { background: var(--accent); color: #fff; border-style: solid; border-color: var(--accent); }
 .chain-arr { font-size: 10px; color: var(--text3); }
-.chain-node { font-family: 'DM Mono', monospace; font-size: 9px; background: #EEEDFE; color: #3C3489; border-radius: 3px; padding: 3px 8px; text-transform: uppercase; letter-spacing: .08em; }
 
-/* Question form */
+/* ── QUESTIONS ── */
 .q-form-inline { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 10px; }
 .q-form-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .opt-row { display: grid; grid-template-columns: 18px 1fr; gap: 6px; align-items: center; margin-bottom: 6px; }
 .opt-letter { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text3); }
-
-/* Profile editor */
 .profile-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
 .profile-field { display: flex; flex-direction: column; gap: 3px; }
-.profile-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.profile-label-sm { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
 .profile-input { width: 100%; padding: 5px 7px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text1); outline: none; text-align: center; }
 .profile-input:focus { border-color: var(--accent); }
 .profile-string { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--purple); background: var(--purple-bg); border: 1px solid var(--purple-border); border-radius: 4px; padding: 4px 8px; margin-top: 6px; display: inline-block; }
 
-/* Drag-drop */
-.day-bucket { background: var(--bg2); border: 2px dashed var(--border2); border-radius: var(--radius-sm); padding: 12px; min-height: 80px; transition: all 0.15s; }
+/* ── DRAG & DROP BUCKETS — ALL SYMMETRIC ── */
+.recall-assign-header { font-size: 11px; color: var(--text3); margin-bottom: 1rem; }
+.buckets-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1rem; }
+.bucket-col { display: flex; flex-direction: column; gap: 6px; }
+.day-bucket-label { font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; justify-content: space-between; }
+.day-bucket { background: var(--bg2); border: 2px dashed var(--border2); border-radius: var(--radius-sm); padding: 8px; min-height: 90px; transition: all 0.15s; }
 .day-bucket.drag-active { border-color: var(--blue); background: var(--blue-bg); }
-.day-bucket-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
 .day-bucket-count { font-family: 'DM Mono', monospace; font-size: 10px; }
 .day-bucket-count.ok   { color: var(--green); }
 .day-bucket-count.warn { color: var(--accent); }
-.day-bucket-empty { font-size: 12px; color: var(--text3); text-align: center; padding: 1rem; }
-.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 6px; cursor: grab; user-select: none; transition: all 0.15s; position: relative; }
+.day-bucket-empty { font-size: 11px; color: var(--text3); text-align: center; padding: .6rem; }
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 5px; cursor: grab; user-select: none; transition: all 0.15s; position: relative; }
 .q-card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
-.q-card.dragging { opacity: 0.45; transform: rotate(1.5deg); cursor: grabbing; }
-.q-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.q-card-num { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; }
-.q-type-pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
-.q-type-pill.fact      { background: var(--green-bg); color: var(--green); }
-.q-type-pill.vocab     { background: var(--blue-bg); color: var(--blue); }
-.q-type-pill.infer     { background: var(--purple-bg); color: var(--purple); }
-.q-type-pill.assume    { background: var(--purple-bg); color: var(--purple); }
-.q-type-pill.weaken    { background: var(--red-bg); color: var(--red); }
-.q-type-pill.apply     { background: var(--accent-bg); color: var(--accent); }
-.q-type-pill.stance    { background: #FDF6E7; color: #B5760A; }
-.q-type-pill.except    { background: var(--red-bg); color: var(--red); }
-.q-type-pill.imply     { background: var(--blue-bg); color: var(--blue); }
-.q-type-pill.purpose   { background: #FDF6E7; color: #B5760A; }
-.q-type-pill.function  { background: var(--green-bg); color: var(--green); }
-.q-type-pill.wm        { background: var(--purple-bg); color: var(--purple); }
-.q-card-text { font-size: 12px; color: var(--text1); line-height: 1.5; margin-bottom: 4px; }
-.q-card-profile { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); }
-.q-card-drag-handle { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+.q-card.dragging { opacity: 0.4; transform: rotate(1.5deg); cursor: grabbing; }
+.q-card-header { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.q-card-num { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: .1em; }
+.q-type-pill { font-size: 9px; padding: 1px 6px; border-radius: 20px; font-weight: 500; }
+.q-type-pill.fact     { background: var(--green-bg);  color: var(--green); }
+.q-type-pill.vocab    { background: var(--blue-bg);   color: var(--blue); }
+.q-type-pill.infer    { background: var(--purple-bg); color: var(--purple); }
+.q-type-pill.assume   { background: var(--purple-bg); color: var(--purple); }
+.q-type-pill.weaken   { background: var(--red-bg);    color: var(--red); }
+.q-type-pill.apply    { background: var(--accent-bg); color: var(--accent); }
+.q-type-pill.stance   { background: var(--amber-bg);  color: var(--amber); }
+.q-type-pill.except   { background: var(--red-bg);    color: var(--red); }
+.q-type-pill.imply    { background: var(--blue-bg);   color: var(--blue); }
+.q-type-pill.purpose  { background: var(--amber-bg);  color: var(--amber); }
+.q-type-pill.function { background: var(--green-bg);  color: var(--green); }
+.q-type-pill.wm       { background: var(--purple-bg); color: var(--purple); }
+.q-card-text { font-size: 11px; color: var(--text1); line-height: 1.4; margin-bottom: 3px; max-height: 32px; overflow: hidden; }
+.q-card-profile { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--text3); }
+.unassigned-pool { margin-top: 1rem; padding: 1rem; border: 1px dashed var(--border2); border-radius: var(--radius-sm); background: var(--bg2); }
+.unassigned-pool-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+.unassigned-cards-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.unassigned-cards-wrap .q-card { width: calc(20% - 5px); min-width: 120px; flex-shrink: 0; }
 
-/* Prompt copy panel */
+/* ── PROMPTS ── */
 .prompt-card { background: var(--surface); border: 1px solid var(--purple-border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
 .prompt-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple); margin-bottom: 1rem; }
 .prompt-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg2); font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text1); outline: none; resize: vertical; min-height: 140px; line-height: 1.6; }
 .copy-btn { font-size: 12px; padding: 7px 16px; border-radius: var(--radius-sm); border: 1px solid var(--purple-border); background: var(--purple-bg); color: var(--purple); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all .12s; margin-top: 8px; }
 .copy-btn:hover { background: var(--purple); color: #fff; }
 
-/* Analytics */
+/* ── ANALYTICS ── */
 .an-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
 .an-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
 .an-card-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
@@ -191,9 +251,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .sm-cell.bad  .sm-cell-val { color: var(--red); }
 .sm-cell.mid  { border-color: var(--accent-border); background: var(--accent-bg); }
 .sm-cell.mid  .sm-cell-val { color: var(--accent); }
-
-.type-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.type-badge { font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 500; min-width: 60px; text-align: center; }
 .session-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
 .session-table th { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg2); }
 .session-table td { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text2); padding: 9px 12px; border-bottom: 0.5px solid var(--border); }
@@ -203,6 +260,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .td-mid { color: #B5760A; font-weight: 500; }
 .td-bad { color: var(--red); font-weight: 500; }
 
+/* ── BUTTONS / TOASTS ── */
 .btn-primary { background: var(--text1); color: var(--surface); border: none; border-radius: var(--radius-sm); padding: 10px 22px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
 .btn-primary:hover { background: var(--accent); }
 .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -216,11 +274,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-row { display: flex; align-items: center; gap: 10px; padding: 2rem; color: var(--text3); font-size: 13px; }
 .empty-state { text-align: center; padding: 2.5rem 2rem; color: var(--text3); font-size: 13px; }
+
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .an-grid { grid-template-columns: 1fr; }
   .form-row, .form-row-3 { grid-template-columns: 1fr; }
-  .profile-grid { grid-template-columns: repeat(3, 1fr); }
+  .profile-vars-grid { grid-template-columns: repeat(3, 1fr); }
+  .buckets-grid { grid-template-columns: 1fr 1fr; }
+  .unassigned-cards-wrap .q-card { width: calc(50% - 3px); }
 }
 </style>
 </head>
@@ -247,6 +308,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
+<!-- DENIED -->
 <div id="screen-denied" class="screen">
   <div class="wrap" style="text-align:center;padding-top:4rem">
     <div style="font-size:2.5rem;margin-bottom:1rem">🔒</div>
@@ -254,6 +316,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
+<!-- DASHBOARD -->
 <div id="screen-dashboard" class="screen">
   <div class="wrap">
     <div class="section-hd">Reading Admin</div>
@@ -271,6 +334,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
+<!-- USER DETAIL -->
 <div id="screen-user" class="screen">
   <div class="wrap">
 
@@ -327,7 +391,13 @@ let dayFormState = {};
 let dragSrcIdx   = null;
 let dragSrcDay   = null;
 
+// Local user profile + schedule overrides (persisted via rdSaveUserMeta or similar)
+// Structure: userMeta[uid] = { profile:{V,S,W,I,A,G}, startDate:'YYYY-MM-DD', holidays:['YYYY-MM-DD',...] }
+let userMeta = {};
+
 const Q_TYPES = ['fact','vocab','imply','purpose','function','assume','infer','stance','weaken','apply','except','wm'];
+const RECALL_DAYS = [2, 4, 6, 7];
+const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7];
 
 /* ════════════════════════════════════════════════════════════
    INIT
@@ -350,7 +420,16 @@ async function loadAll() {
   const [users, exercises] = await Promise.all([rdGetAllUsers(), rdGetAllExercises()]);
   allUsers     = users;
   allExercises = exercises;
-  for (const u of allUsers) u._sessions = await rdGetUserSessions(u.user_id);
+  for (const u of allUsers) {
+    u._sessions = await rdGetUserSessions(u.user_id);
+    // Load persisted meta (profile + schedule). Gracefully handle if function doesn't exist yet.
+    try {
+      const meta = await rdGetUserMeta(u.user_id);
+      userMeta[u.user_id] = meta || { profile:{V:3,S:3,W:2,I:2,A:2,G:3}, startDate:'', holidays:[] };
+    } catch {
+      userMeta[u.user_id] = { profile:{V:3,S:3,W:2,I:2,A:2,G:3}, startDate:'', holidays:[] };
+    }
+  }
   renderDashboard();
 }
 
@@ -401,19 +480,200 @@ function renderDashboard() {
     const week   = u.current_week || 1;
     const doneT  = (u._sessions || []).some(s => new Date(s.created_at).toISOString().split('T')[0] === today);
     const hasNext = allExercises.some(e => e.week === week && e.day === (day % 7) + 1);
-    return `<div class="user-row" onclick="openUser('${u.user_id}')">
-      <div class="user-av">${avHtml}</div>
-      <div class="user-info">
-        <div class="user-name">${name}</div>
-        <div class="user-meta"><span>Week ${week} · Day ${day}</span><span>${(u._sessions||[]).length} sessions</span></div>
+    const meta   = userMeta[u.user_id] || {};
+    const p      = meta.profile || {};
+    const profStr = `V${p.V||'?'} S${p.S||'?'} W${p.W||'?'} I${p.I||'?'} A${p.A||'?'} G${p.G||'?'}`;
+    const startDate = meta.startDate || '';
+    const holidays  = meta.holidays  || [];
+    return `<div class="user-row" id="urow-${u.user_id}">
+      <div class="user-row-top" onclick="openUser('${u.user_id}')">
+        <div class="user-av">${avHtml}</div>
+        <div class="user-info">
+          <div class="user-name">${name}</div>
+          <div class="user-meta"><span>Week ${week} · Day ${day}</span><span>${(u._sessions||[]).length} sessions</span></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <span class="badge ${doneT ? 'done' : 'todo'}">${doneT ? '✓ Done today' : 'Pending'}</span>
+          <span class="badge ${hasNext ? 'ready' : 'miss'}">${hasNext ? 'Next ready' : 'Next missing'}</span>
+          ${startDate ? `<span class="badge amber">Start ${fmtDate(startDate)}</span>` : ''}
+        </div>
+        <button class="open-btn">Open →</button>
       </div>
-      <div style="display:flex;gap:6px">
-        <span class="badge ${doneT ? 'done' : 'todo'}">${doneT ? '✓ Done today' : 'Pending'}</span>
-        <span class="badge ${hasNext ? 'ready' : 'miss'}">${hasNext ? 'Next ready' : 'Next missing'}</span>
+
+      <!-- Expand toggle -->
+      <div style="display:flex;gap:10px;margin-top:8px;align-items:center">
+        <button class="expand-toggle" id="etog-${u.user_id}" onclick="toggleExpander('${u.user_id}')">
+          <i class="ti ti-chevron-down"></i> Learner profile &amp; schedule
+        </button>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--purple)">${profStr}</span>
       </div>
-      <button class="open-btn">Open →</button>
+
+      <!-- Expander body -->
+      <div class="user-profile-expander" id="exp-${u.user_id}">
+
+        <!-- Profile Variables -->
+        <div class="profile-expander-title">
+          Learner profile variables
+          <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">Used in AI prompt generation</span>
+        </div>
+        <div class="profile-vars-grid">
+          ${[
+            ['V','Vocabulary','1–10'],['S','Sentences','1–10'],['W','Length','1–10'],
+            ['I','Inferential','1–10'],['A','Abstractness','1–10'],['G','Grammar','1–10']
+          ].map(([k,lbl,range]) => `
+            <div class="pv-cell">
+              <span class="pv-label" title="${lbl} (${range})">${k} — ${lbl}</span>
+              <input class="pv-input" type="number" min="1" max="10" value="${p[k]||''}" placeholder="—"
+                oninput="updateUserProfile('${u.user_id}','${k}',+this.value||null)">
+            </div>`).join('')}
+        </div>
+        <div class="profile-string-preview" id="profstr-${u.user_id}">V=${p.V||'?'} · S=${p.S||'?'} · W=${p.W||'?'} · I=${p.I||'?'} · A=${p.A||'?'} · G=${p.G||'?'}</div>
+
+        <!-- Schedule / Calendar -->
+        <div class="cal-section">
+          <div class="cal-section-title">Schedule — Week 1 start date &amp; holidays</div>
+          <div class="cal-row">
+            <div class="cal-start-block">
+              <span class="cal-start-label">Week 1 — Day 1 date</span>
+              <input type="date" class="cal-date-input" value="${startDate}"
+                onchange="updateStartDate('${u.user_id}',this.value)">
+              <span style="font-size:10px;color:var(--text3);margin-top:3px">Days 2–7 follow automatically</span>
+            </div>
+            <div class="cal-holidays-block">
+              <div class="cal-holidays-label">Holidays <span style="font-weight:400;color:var(--text3)">(exercises shift forward)</span></div>
+              <div class="holiday-tags" id="htags-${u.user_id}">
+                ${renderHolidayTags(u.user_id, holidays)}
+              </div>
+              <div class="holiday-add-row">
+                <input type="date" class="holiday-add-input" id="hadd-${u.user_id}">
+                <button class="btn-add-holiday" onclick="addHoliday('${u.user_id}')"><i class="ti ti-plus"></i> Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="cal-preview" id="calpreview-${u.user_id}">
+            ${renderCalPreview(u.user_id)}
+          </div>
+        </div>
+
+        <!-- Save row -->
+        <div class="user-save-row">
+          <button class="btn-primary" style="font-size:12.5px;padding:8px 18px" onclick="saveUserMeta('${u.user_id}')">Save Profile &amp; Schedule</button>
+          <span class="save-toast" id="utost-${u.user_id}">Saved ✓</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
+}
+
+function toggleExpander(uid) {
+  const exp  = document.getElementById(`exp-${uid}`);
+  const tog  = document.getElementById(`etog-${uid}`);
+  const open = exp.classList.toggle('open');
+  tog.classList.toggle('open', open);
+}
+
+/* ── USER META: PROFILE ── */
+function updateUserProfile(uid, key, val) {
+  if (!userMeta[uid]) userMeta[uid] = { profile:{}, startDate:'', holidays:[] };
+  if (!userMeta[uid].profile) userMeta[uid].profile = {};
+  userMeta[uid].profile[key] = val;
+  const p = userMeta[uid].profile;
+  const el = document.getElementById(`profstr-${uid}`);
+  if (el) el.textContent = `V=${p.V||'?'} · S=${p.S||'?'} · W=${p.W||'?'} · I=${p.I||'?'} · A=${p.A||'?'} · G=${p.G||'?'}`;
+}
+
+/* ── USER META: SCHEDULE ── */
+function updateStartDate(uid, val) {
+  if (!userMeta[uid]) userMeta[uid] = { profile:{}, startDate:'', holidays:[] };
+  userMeta[uid].startDate = val;
+  refreshCalPreview(uid);
+}
+
+function addHoliday(uid) {
+  const inp = document.getElementById(`hadd-${uid}`);
+  const d   = inp?.value;
+  if (!d) return;
+  if (!userMeta[uid]) userMeta[uid] = { profile:{}, startDate:'', holidays:[] };
+  if (!userMeta[uid].holidays) userMeta[uid].holidays = [];
+  if (!userMeta[uid].holidays.includes(d)) {
+    userMeta[uid].holidays.push(d);
+    userMeta[uid].holidays.sort();
+  }
+  inp.value = '';
+  refreshHolidayTags(uid);
+  refreshCalPreview(uid);
+}
+
+function removeHoliday(uid, date) {
+  if (!userMeta[uid]?.holidays) return;
+  userMeta[uid].holidays = userMeta[uid].holidays.filter(d => d !== date);
+  refreshHolidayTags(uid);
+  refreshCalPreview(uid);
+}
+
+function renderHolidayTags(uid, holidays) {
+  if (!holidays?.length) return '<span style="font-size:11px;color:var(--text3)">None set</span>';
+  return holidays.map(d => `
+    <span class="holiday-tag">${fmtDate(d)}
+      <button onclick="removeHoliday('${uid}','${d}')" title="Remove"><i class="ti ti-x"></i></button>
+    </span>`).join('');
+}
+
+function refreshHolidayTags(uid) {
+  const el = document.getElementById(`htags-${uid}`);
+  if (el) el.innerHTML = renderHolidayTags(uid, userMeta[uid]?.holidays || []);
+}
+
+function refreshCalPreview(uid) {
+  const el = document.getElementById(`calpreview-${uid}`);
+  if (el) el.innerHTML = renderCalPreview(uid);
+}
+
+function renderCalPreview(uid) {
+  const meta      = userMeta[uid];
+  const startDate = meta?.startDate;
+  if (!startDate) return '<div style="font-size:11px;color:var(--text3);margin-top:4px">Set a start date to preview the schedule.</div>';
+
+  const holidays  = new Set(meta?.holidays || []);
+  const chips     = [];
+  let   cursor    = new Date(startDate + 'T00:00:00');
+  let   exerciseDay = 1;
+  const today     = new Date().toISOString().split('T')[0];
+
+  // Show 21 calendar days (covers ~3 weeks including holidays)
+  for (let cal = 0; cal < 21 && exerciseDay <= 7; cal++) {
+    const iso  = cursor.toISOString().split('T')[0];
+    const dStr = `${cursor.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
+    const isHol = holidays.has(iso);
+    const isToday = iso === today;
+
+    let cls = 'week-chip';
+    let label = dStr;
+    if (isHol) {
+      cls += ' holiday-day';
+      label = `${dStr} (holiday)`;
+    } else {
+      cls += ' exercise-day';
+      label = `D${exerciseDay} ${dStr}`;
+      if (isToday) cls += ' active-day';
+      exerciseDay++;
+    }
+    chips.push(`<span class="${cls}" title="${iso}">${label}</span>`);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return `<div class="cal-preview-label">Preview — first ${Math.min(7, exerciseDay-1)} exercise days</div>
+    <div class="week-chips">${chips.join('')}</div>`;
+}
+
+async function saveUserMeta(uid) {
+  const meta = userMeta[uid];
+  if (!meta) return;
+  try {
+    await rdSaveUserMeta(uid, meta);
+    showToast(`utost-${uid}`);
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -451,7 +711,7 @@ function renderDayTabs() {
   const row = document.getElementById('day-tab-row');
   row.innerHTML = '';
   for (let d = 1; d <= 7; d++) {
-    const isRecall = [2, 4, 6, 7].includes(d);
+    const isRecall = RECALL_DAYS.includes(d);
     const hasData  = allExercises.some(e => e.week === currentWeek && e.day === d);
     const btn = document.createElement('button');
     btn.className = 'day-tab' + (isRecall ? ' recall-day' : '') + (hasData ? ' has-data' : '') + (d === 1 ? ' active' : '');
@@ -474,7 +734,6 @@ function loadDayForm(day, skipStateReset = false) {
 
   if (!skipStateReset) {
     const existing = allExercises.find(e => e.week === currentWeek && e.day === day);
-
     if (existing) {
       dayFormState[day] = {
         id:                 existing.id,
@@ -489,14 +748,14 @@ function loadDayForm(day, skipStateReset = false) {
       };
     } else {
       dayFormState[day] = {
-        topic: '', ex1Blocks: defaultBlocks(day),
+        topic:'', ex1Blocks: defaultBlocks(day),
         ex1BlankPos: null, ex1RecallBlanks: {}, ex1BlankPositions: [],
-        ex2Passage: '', ex2Questions: [], ex2RecallMap: {},
+        ex2Passage:'', ex2Questions:[], ex2RecallMap:{},
       };
     }
   }
 
-  const isRecall  = [2, 4, 6, 7].includes(day);
+  const isRecall  = RECALL_DAYS.includes(day);
   const isDay1    = day === 1;
   const nodeCount = isDay1 ? 5 : 4;
 
@@ -538,7 +797,7 @@ function loadDayForm(day, skipStateReset = false) {
     <div class="form-card">
       <div class="form-card-title">Exercise 2 — Passage</div>
       <div class="form-group">
-        <label class="form-label">Passage text <span style="color:var(--text3);font-weight:400">(shown on normal days, hidden on recall days)</span></label>
+        <label class="form-label">Passage text <span style="color:var(--text3);font-weight:400">(hidden on recall days)</span></label>
         <textarea class="form-textarea" id="f-passage" rows="6" placeholder="100–150 word comprehension passage…">${esc(dayFormState[day].ex2Passage)}</textarea>
       </div>
     </div>
@@ -546,7 +805,7 @@ function loadDayForm(day, skipStateReset = false) {
     <div class="form-card">
       <div class="form-card-title">
         Exercise 2 — Questions
-        <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">${isDay1 ? 'Add 20 questions — assign 4 to each recall day' : '4 questions for Day ' + day}</span>
+        <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">${isDay1 ? 'Add 20 questions — assign 4 to each day below' : '4 questions for Day ' + day}</span>
       </div>
       <div id="ex2-questions-wrap"></div>
       <button class="btn-sm" onclick="addQuestion()" style="margin-top:6px"><i class="ti ti-plus"></i> Add Question</button>
@@ -555,28 +814,12 @@ function loadDayForm(day, skipStateReset = false) {
     ${isDay1 ? `
     <div class="form-card" id="recall-assign-card">
       <div class="form-card-title">
-        Assign Questions to Recall Days
+        Assign Questions to Days
         <span style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">Drag questions into each day's bucket (4 per day)</span>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:1rem">Questions 1–4 are fixed for Day 1. Drag the remaining 16 into Days 2, 4, 6, 7.</div>
-      <div style="margin-bottom:1rem">
-        <div class="day-bucket-label">Day 1 — own questions <span class="day-bucket-count" id="bucket-count-1">0/4</span></div>
-        <div class="day-bucket" id="bucket-day-1" data-day="1">
-          <div class="day-bucket-empty" id="bucket-empty-1">First 4 questions appear here as you add them.</div>
-        </div>
-      </div>
-      <div class="form-row">
-        ${[2, 4, 6, 7].map(rd => `
-        <div>
-          <div class="day-bucket-label">Day ${rd} <span class="day-bucket-count" id="bucket-count-${rd}">0/4</span></div>
-          <div class="day-bucket" id="bucket-day-${rd}" data-day="${rd}"
-               ondragover="bucketDragOver(event,${rd})"
-               ondragleave="bucketDragLeave(event,${rd})"
-               ondrop="bucketDrop(event,${rd})">
-            <div class="day-bucket-empty" id="bucket-empty-${rd}">Drop 4 questions here</div>
-          </div>
-        </div>`).join('')}
-      </div>
+      <p class="recall-assign-header">All 20 questions start unassigned. Drag exactly 4 into each day including Day 1.</p>
+      <div class="buckets-grid" id="buckets-grid"></div>
+      <div id="unassigned-pool-wrap"></div>
     </div>` : ''}
 
     <div style="display:flex;align-items:center;gap:10px;margin-top:1rem;margin-bottom:3rem">
@@ -588,21 +831,21 @@ function loadDayForm(day, skipStateReset = false) {
   renderBlankSelector(day, nodeCount);
   if (isDay1) renderRecallBlankConfig(day);
   renderEx2Questions(day);
-  if (isDay1) renderDay1Buckets();
+  if (isDay1) renderAllBuckets();
 }
 
 function defaultBlocks(day) {
   const n = day === 1 ? 5 : 4;
-  return Array.from({ length: n }, () => ({ node: '', en: '', hi: '' }));
+  return Array.from({ length: n }, () => ({ node:'', en:'', hi:'' }));
 }
 
-/* ── EX1 BLOCKS ─────────────────────────────────────────────── */
+/* ── EX1 BLOCKS ── */
 function renderEx1Blocks(day, nodeCount) {
   const wrap   = document.getElementById('ex1-blocks-wrap');
   const blocks = dayFormState[day].ex1Blocks;
   wrap.innerHTML = '';
   for (let i = 0; i < nodeCount; i++) {
-    const b   = blocks[i] || { node: '', en: '', hi: '' };
+    const b = blocks[i] || { node:'', en:'', hi:'' };
     const div = document.createElement('div');
     div.className = 'block-form';
     div.innerHTML = `
@@ -635,7 +878,7 @@ function updateBlock(day, i, field, val) {
   }
 }
 
-/* ── BLANK SELECTOR ─────────────────────────────────────────── */
+/* ── BLANK SELECTOR ── */
 function renderBlankSelector(day, nodeCount) {
   const sel   = document.getElementById('blank-selector');
   const hint  = document.getElementById('blank-hint');
@@ -644,12 +887,12 @@ function renderBlankSelector(day, nodeCount) {
   const isDay1 = day === 1;
   sel.innerHTML = '';
   for (let i = 0; i < nodeCount; i++) {
-    const label = state.ex1Blocks[i]?.node || `N${i + 1}`;
-    const isDay1Selected  = isDay1 && state.ex1BlankPos === i;
-    const isMultiSelected = !isDay1 && state.ex1BlankPositions.includes(i);
+    const label          = state.ex1Blocks[i]?.node || `N${i + 1}`;
+    const isDay1Selected = isDay1 && state.ex1BlankPos === i;
+    const isMultiSel     = !isDay1 && state.ex1BlankPositions.includes(i);
     const btn = document.createElement('button');
-    btn.type      = 'button';
-    btn.className = 'blank-btn' + ((isDay1Selected || isMultiSelected) ? ' selected' : '');
+    btn.type = 'button';
+    btn.className = 'blank-btn' + ((isDay1Selected || isMultiSel) ? ' selected' : '');
     btn.textContent = i + 1;
     btn.title = label;
     btn.onclick = () => {
@@ -659,7 +902,7 @@ function renderBlankSelector(day, nodeCount) {
         if (state.ex1BlankPositions.includes(i)) {
           state.ex1BlankPositions = state.ex1BlankPositions.filter(x => x !== i);
         } else if (state.ex1BlankPositions.length < 2) {
-          state.ex1BlankPositions = [...state.ex1BlankPositions, i].sort((a, b) => a - b);
+          state.ex1BlankPositions = [...state.ex1BlankPositions, i].sort((a,b) => a-b);
         }
       }
       renderBlankSelector(day, nodeCount);
@@ -671,33 +914,33 @@ function renderBlankSelector(day, nodeCount) {
       ? `Day 1 blank: node ${state.ex1BlankPos + 1} "${state.ex1Blocks[state.ex1BlankPos]?.node || ''}"`
       : 'Click a number to set which node is blank on Day 1';
   } else {
-    const chosen = state.ex1BlankPositions.map(i => `node ${i + 1} "${state.ex1Blocks[i]?.node || ''}"`).join(', ');
+    const chosen = state.ex1BlankPositions.map(i => `node ${i+1} "${state.ex1Blocks[i]?.node||''}"`).join(', ');
     if (hint) hint.textContent = state.ex1BlankPositions.length === 2
       ? `Blanks: ${chosen}`
       : `Select exactly 2 blanks (${state.ex1BlankPositions.length}/2 selected)`;
   }
 }
 
-/* ── RECALL BLANK CONFIG ───────────────────────────────────── */
+/* ── RECALL BLANK CONFIG ── */
 function renderRecallBlankConfig(day) {
   const wrap = document.getElementById('recall-blank-config');
   if (!wrap) return;
   const state  = dayFormState[day];
   const blocks = state.ex1Blocks;
-  wrap.innerHTML = [2, 4, 6, 7].map(rd => {
-    const currentBlank = (state.ex1RecallBlanks[String(rd)] !== undefined)
+  wrap.innerHTML = RECALL_DAYS.map(rd => {
+    const currentBlank = state.ex1RecallBlanks[String(rd)] !== undefined
       ? Number(state.ex1RecallBlanks[String(rd)]) : null;
     const nodes = blocks.map((b, i) => {
       const isBlank = currentBlank === i;
       return `<span class="chain-blank${isBlank ? ' active-blank' : ''}"
-                onclick="setRecallBlank(${day},${rd},${i})">${b.node || `N${i + 1}`}</span>`;
+                onclick="setRecallBlank(${day},${rd},${i})">${b.node || `N${i+1}`}</span>`;
     });
-    const flow = nodes.flatMap((n, i) => i < nodes.length - 1 ? [n, '<span class="chain-arr">→</span>'] : [n]).join('');
+    const flow = nodes.flatMap((n,i) => i < nodes.length-1 ? [n,'<span class="chain-arr">→</span>'] : [n]).join('');
     return `<div class="recall-day-row">
       <span class="recall-day-label">Day ${rd}</span>
       <div class="chain-preview">${flow}</div>
       ${currentBlank !== null
-        ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">blank: node ${currentBlank + 1}</span>`
+        ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">blank: node ${currentBlank+1}</span>`
         : '<span style="font-size:11px;color:var(--accent);margin-left:8px">← pick a blank</span>'}
     </div>`;
   }).join('');
@@ -708,7 +951,7 @@ function setRecallBlank(day, recallDay, pos) {
   renderRecallBlankConfig(day);
 }
 
-/* ── EX2 QUESTIONS ─────────────────────────────────────────── */
+/* ── EX2 QUESTIONS ── */
 function renderEx2Questions(day) {
   const wrap = document.getElementById('ex2-questions-wrap');
   if (!wrap) return;
@@ -721,11 +964,8 @@ function appendQuestionForm(wrap, q, idx, day) {
   const div = document.createElement('div');
   div.className   = 'q-form-inline';
   div.dataset.idx = idx;
-
-  // Build profile string for display
   const p = q.profile || {};
   const profileStr = `${p.i||'?'}.${p.a||'?'}.${p.v||'?'}.${p.g||'?'}.${p.wm||'?'}.${p.sp||'?'}.${p.sq||'?'}.${p.wp||'?'}.${p.wq||'?'}.${p.xp||'?'}`;
-
   div.innerHTML = `
     <div class="q-form-title">
       Question ${idx + 1}
@@ -734,48 +974,40 @@ function appendQuestionForm(wrap, q, idx, day) {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Question text</label>
-        <textarea class="form-textarea" rows="2" oninput="updateQ(${day},${idx},'text',this.value)">${esc(q.text || '')}</textarea>
+        <textarea class="form-textarea" rows="2" oninput="updateQ(${day},${idx},'text',this.value)">${esc(q.text||'')}</textarea>
       </div>
       <div class="form-group">
         <label class="form-label">Type</label>
         <select class="form-select" onchange="updateQ(${day},${idx},'type',this.value)">
-          ${Q_TYPES.map(t => `<option value="${t}"${q.type === t ? ' selected' : ''}>${t}</option>`).join('')}
+          ${Q_TYPES.map(t => `<option value="${t}"${q.type===t?' selected':''}>${t}</option>`).join('')}
         </select>
         <label class="form-label" style="margin-top:8px">Correct (0=A 1=B 2=C 3=D)</label>
-        <input class="form-input" type="number" min="0" max="3" value="${q.correct ?? 0}" oninput="updateQ(${day},${idx},'correct',+this.value)">
+        <input class="form-input" type="number" min="0" max="3" value="${q.correct??0}" oninput="updateQ(${day},${idx},'correct',+this.value)">
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">Options A–D</label>
-      ${['A','B','C','D'].map((l, oi) => `
+      ${['A','B','C','D'].map((l,oi) => `
         <div class="opt-row">
           <span class="opt-letter">${l}</span>
-          <input class="form-input" value="${esc((q.options || [])[oi] || '')}" placeholder="Option ${l}" oninput="updateQOpt(${day},${idx},${oi},this.value)">
+          <input class="form-input" value="${esc((q.options||[])[oi]||'')}" placeholder="Option ${l}" oninput="updateQOpt(${day},${idx},${oi},this.value)">
         </div>`).join('')}
     </div>
     <div class="form-group">
       <label class="form-label">Reason</label>
-      <textarea class="form-textarea" rows="2" oninput="updateQ(${day},${idx},'reason',this.value)">${esc(q.reason || '')}</textarea>
+      <textarea class="form-textarea" rows="2" oninput="updateQ(${day},${idx},'reason',this.value)">${esc(q.reason||'')}</textarea>
     </div>
     <div class="form-group" style="margin-top:8px">
       <label class="form-label" style="color:var(--purple)">Question Profile <span style="font-weight:400;color:var(--text3)">(I · A · V · G · WM · Sp · Sq · Wp · Wq · Xp)</span></label>
       <div class="profile-grid">
         ${[
-          ['i','I','1-5 inferential demand'],
-          ['a','A','1-5 abstractness'],
-          ['v','V','1-5 vocab load'],
-          ['g','G','1-5 grammar complexity'],
-          ['wm','WM','1-5 working memory'],
-          ['sp','Sp','1-10 passage sentence level'],
-          ['sq','Sq','1-10 question sentence level'],
-          ['wp','Wp','1-10 passage word-length level'],
-          ['wq','Wq','1-5 coverage span'],
-          ['xp','Xp','expected seconds'],
-        ].map(([key, label, title]) => `
+          ['i','I','1-5'],['a','A','1-5'],['v','V','1-5'],['g','G','1-5'],['wm','WM','1-5'],
+          ['sp','Sp','1-10'],['sq','Sq','1-10'],['wp','Wp','1-10'],['wq','Wq','1-5'],['xp','Xp','secs'],
+        ].map(([key,lbl]) => `
           <div class="profile-field">
-            <span class="profile-label" title="${title}">${label}</span>
+            <span class="profile-label-sm">${lbl}</span>
             <input class="profile-input" type="number" min="1" max="${key==='xp'?300:key.endsWith('p')&&key!=='xp'?10:5}"
-              value="${p[key] || ''}" placeholder="—"
+              value="${p[key]||''}" placeholder="—"
               oninput="updateQProfile(${day},${idx},'${key}',+this.value||null)">
           </div>`).join('')}
       </div>
@@ -786,26 +1018,26 @@ function appendQuestionForm(wrap, q, idx, day) {
 
 function addQuestion() {
   const day = activeDay;
-  const q   = { text: '', type: 'fact', options: ['', '', '', ''], correct: 0, reason: '', profile: {} };
+  const q   = { text:'', type:'fact', options:['','','',''], correct:0, reason:'', profile:{} };
   dayFormState[day].ex2Questions.push(q);
   const idx  = dayFormState[day].ex2Questions.length - 1;
   const wrap = document.getElementById('ex2-questions-wrap');
   appendQuestionForm(wrap, q, idx, day);
-  if (day === 1) setTimeout(() => renderDay1Buckets(), 50);
+  if (day === 1) setTimeout(() => renderAllBuckets(), 50);
 }
 
 function removeQuestion(idx, day) {
   dayFormState[day].ex2Questions.splice(idx, 1);
   if (day === 1) rebuildRecallMapAfterRemove(idx);
   renderEx2Questions(day);
-  if (day === 1) renderDay1Buckets();
+  if (day === 1) renderAllBuckets();
 }
 
 function rebuildRecallMapAfterRemove(removedIdx) {
   const map = dayFormState[1].ex2RecallMap;
   const newMap = {};
   for (const [rd, indices] of Object.entries(map)) {
-    newMap[rd] = indices.filter(i => i !== removedIdx).map(i => i > removedIdx ? i - 1 : i);
+    newMap[rd] = indices.filter(i => i !== removedIdx).map(i => i > removedIdx ? i-1 : i);
   }
   dayFormState[1].ex2RecallMap = newMap;
 }
@@ -817,7 +1049,7 @@ function updateQ(day, idx, field, val) {
 
 function updateQOpt(day, idx, oi, val) {
   const q = dayFormState[day].ex2Questions[idx];
-  if (q) { if (!q.options) q.options = ['', '', '', '']; q.options[oi] = val; }
+  if (q) { if (!q.options) q.options=[]; q.options[oi] = val; }
 }
 
 function updateQProfile(day, idx, key, val) {
@@ -825,52 +1057,70 @@ function updateQProfile(day, idx, key, val) {
   if (!q) return;
   if (!q.profile) q.profile = {};
   q.profile[key] = val;
-  // Update profile string display
-  const p = q.profile;
+  const p   = q.profile;
   const str = `${p.i||'?'}.${p.a||'?'}.${p.v||'?'}.${p.g||'?'}.${p.wm||'?'}.${p.sp||'?'}.${p.sq||'?'}.${p.wp||'?'}.${p.wq||'?'}.${p.xp||'?'}`;
-  const el = document.getElementById(`ps-${day}-${idx}`);
+  const el  = document.getElementById(`ps-${day}-${idx}`);
   if (el) el.textContent = str;
 }
 
-/* ── DAY 1 BUCKETS ──────────────────────────────────────────── */
-function renderDay1Buckets() {
+/* ════════════════════════════════════════════════════════════
+   SYMMETRIC BUCKETS — ALL 5 DAYS EQUAL
+════════════════════════════════════════════════════════════ */
+function renderAllBuckets() {
   const qs  = dayFormState[1].ex2Questions;
-  const map = dayFormState[1].ex2RecallMap;
-  const assignedSet    = new Set(Object.values(map).flat().map(Number));
-  const day1Indices    = qs.map((_, i) => i).filter(i => !assignedSet.has(i)).slice(0, 4);
-  const unassignedIdxs = qs.map((_, i) => i).filter(i => !assignedSet.has(i) && !day1Indices.includes(i));
+  const map = dayFormState[1].ex2RecallMap; // keys: "1","2","4","6","7"
+  const assignedSet = new Set(Object.values(map).flat().map(Number));
 
-  for (const rd of [1, 2, 4, 6, 7]) {
-    const bucket  = document.getElementById(`bucket-day-${rd}`);
-    const emptyEl = document.getElementById(`bucket-empty-${rd}`);
-    const countEl = document.getElementById(`bucket-count-${rd}`);
-    if (!bucket) continue;
-    const bucketIdxs = rd === 1 ? day1Indices : (map[String(rd)] || []).map(Number);
-    if (emptyEl) emptyEl.style.display = bucketIdxs.length ? 'none' : 'block';
-    if (countEl) {
-      countEl.textContent = `${bucketIdxs.length}/4`;
-      countEl.className   = 'day-bucket-count ' + (bucketIdxs.length === 4 ? 'ok' : 'warn');
-    }
-    bucket.querySelectorAll('.q-card').forEach(c => c.remove());
-    bucketIdxs.forEach(qi => { const card = makeQCard(qi, rd, qs[qi]); if (card) bucket.appendChild(card); });
+  const grid = document.getElementById('buckets-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  // Render one bucket column for each day (1,2,4,6,7)
+  const bucketDays = [1, 2, 4, 6, 7];
+  for (const bDay of bucketDays) {
+    const assigned  = (map[String(bDay)] || []).map(Number);
+    const col       = document.createElement('div');
+    col.className   = 'bucket-col';
+    const isRecall  = RECALL_DAYS.includes(bDay);
+    const countOk   = assigned.length === 4;
+    col.innerHTML   = `
+      <div class="day-bucket-label">
+        Day ${bDay}${isRecall ? ' <span style="color:var(--purple);font-size:9px">↩ recall</span>' : ''}
+        <span class="day-bucket-count ${countOk ? 'ok' : 'warn'}" id="bc-${bDay}">${assigned.length}/4</span>
+      </div>`;
+    const bucket = document.createElement('div');
+    bucket.className    = 'day-bucket';
+    bucket.id           = `bucket-day-${bDay}`;
+    bucket.dataset.day  = bDay;
+    bucket.innerHTML    = `<div class="day-bucket-empty" id="be-${bDay}" style="${assigned.length ? 'display:none' : ''}">Drop 4 questions</div>`;
+    bucket.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect='move'; bucket.classList.add('drag-active'); });
+    bucket.addEventListener('dragleave', () => bucket.classList.remove('drag-active'));
+    bucket.addEventListener('drop',      e => handleBucketDrop(e, bDay));
+    assigned.forEach(qi => { const card = makeQCard(qi, bDay, qs[qi]); if (card) bucket.appendChild(card); });
+    col.appendChild(bucket);
+    grid.appendChild(col);
   }
 
-  let pool = document.getElementById('unassigned-pool');
+  // Unassigned pool
+  const unassignedIdxs = qs.map((_,i) => i).filter(i => !assignedSet.has(i));
+  const poolWrap = document.getElementById('unassigned-pool-wrap');
+  if (!poolWrap) return;
   if (unassignedIdxs.length) {
-    if (!pool) {
-      pool = document.createElement('div');
-      pool.id = 'unassigned-pool';
-      pool.style.cssText = 'margin-top:1rem;padding:1rem;border:1px dashed var(--border2);border-radius:var(--radius-sm);background:var(--bg2)';
-      pool.innerHTML = '<div class="day-bucket-label" style="margin-bottom:8px">Unassigned — drag to a day bucket</div><div id="unassigned-cards"></div>';
-      const card = document.getElementById('recall-assign-card');
-      if (card) card.insertBefore(pool, card.querySelector('.form-row'));
-    }
+    poolWrap.innerHTML = `
+      <div class="unassigned-pool"
+           ondragover="event.preventDefault()"
+           ondrop="handlePoolDrop(event)">
+        <div class="unassigned-pool-title">Unassigned — drag into a day <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--accent)">${unassignedIdxs.length} remaining</span></div>
+        <div class="unassigned-cards-wrap" id="unassigned-cards"></div>
+      </div>`;
     const uCards = document.getElementById('unassigned-cards');
-    if (uCards) {
-      uCards.innerHTML = '';
-      unassignedIdxs.forEach(qi => { const card = makeQCard(qi, null, qs[qi]); if (card) uCards.appendChild(card); });
-    }
-  } else if (pool) { pool.remove(); }
+    unassignedIdxs.forEach(qi => { const card = makeQCard(qi, null, qs[qi]); if (card) uCards.appendChild(card); });
+  } else {
+    const allFull = [1,2,4,6,7].every(d => (map[String(d)]||[]).length === 4);
+    poolWrap.innerHTML = allFull
+      ? `<div style="font-size:12px;color:var(--green);font-weight:500;margin-top:10px">✓ All 20 questions assigned — 4 per day</div>`
+      : `<div style="font-size:12px;color:var(--text3);margin-top:10px">All questions placed.</div>`;
+  }
 }
 
 function makeQCard(qIdx, sourceDay, q) {
@@ -881,41 +1131,63 @@ function makeQCard(qIdx, sourceDay, q) {
   card.dataset.qidx    = qIdx;
   card.dataset.fromDay = sourceDay != null ? String(sourceDay) : '';
   const p = q.profile || {};
-  const profileStr = `${p.i||'?'}.${p.a||'?'}.${p.v||'?'}.${p.g||'?'}.${p.wm||'?'}`;
   card.innerHTML = `
     <div class="q-card-header">
-      <span class="q-card-num">Q${qIdx + 1}</span>
-      <span class="q-type-pill ${q.type || 'fact'}">${q.type || 'fact'}</span>
+      <span class="q-card-num">Q${qIdx+1}</span>
+      <span class="q-type-pill ${q.type||'fact'}">${q.type||'fact'}</span>
     </div>
-    <div class="q-card-text">${q.text || '(no text yet)'}</div>
-    <div class="q-card-profile">${profileStr}</div>
-    <i class="ti ti-grip-horizontal q-card-drag-handle"></i>`;
-  card.addEventListener('dragstart', e => { dragSrcIdx = qIdx; dragSrcDay = sourceDay; card.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    <div class="q-card-text">${q.text || '(no text)'}</div>
+    <div class="q-card-profile">${p.i||'?'}.${p.a||'?'}.${p.v||'?'}.${p.g||'?'}.${p.wm||'?'}</div>`;
+  card.addEventListener('dragstart', e => {
+    dragSrcIdx = qIdx;
+    dragSrcDay = sourceDay;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
   card.addEventListener('dragend', () => card.classList.remove('dragging'));
   return card;
 }
 
-function bucketDragOver(e, day) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; document.getElementById(`bucket-day-${day}`)?.classList.add('drag-active'); }
-function bucketDragLeave(e, day) { document.getElementById(`bucket-day-${day}`)?.classList.remove('drag-active'); }
-function bucketDrop(e, day) {
+function handleBucketDrop(e, targetDay) {
   e.preventDefault();
-  document.getElementById(`bucket-day-${day}`)?.classList.remove('drag-active');
+  document.getElementById(`bucket-day-${targetDay}`)?.classList.remove('drag-active');
   if (dragSrcIdx === null || dragSrcIdx === undefined) return;
+
   const map = dayFormState[1].ex2RecallMap;
-  if (dragSrcDay && dragSrcDay !== 1) {
-    const rdStr = String(dragSrcDay);
-    map[rdStr] = (map[rdStr] || []).filter(i => i !== dragSrcIdx);
+
+  // Remove from source day if it came from a bucket
+  if (dragSrcDay !== null && dragSrcDay !== '') {
+    const srcStr = String(dragSrcDay);
+    if (map[srcStr]) map[srcStr] = map[srcStr].filter(i => i !== dragSrcIdx);
   }
-  if (day !== 1) {
-    const rdStr = String(day);
-    if (!map[rdStr]) map[rdStr] = [];
-    if (!map[rdStr].includes(dragSrcIdx) && map[rdStr].length < 4) map[rdStr].push(dragSrcIdx);
+
+  // Add to target if not already there and bucket not full
+  const tStr = String(targetDay);
+  if (!map[tStr]) map[tStr] = [];
+  if (!map[tStr].includes(dragSrcIdx) && map[tStr].length < 4) {
+    map[tStr].push(dragSrcIdx);
   }
+
   dragSrcIdx = null; dragSrcDay = null;
-  renderDay1Buckets();
+  renderAllBuckets();
 }
 
-/* ── SAVE DAY ───────────────────────────────────────────────── */
+function handlePoolDrop(e) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === undefined) return;
+
+  const map = dayFormState[1].ex2RecallMap;
+  // Remove from source bucket (unassign it)
+  if (dragSrcDay !== null && dragSrcDay !== '') {
+    const srcStr = String(dragSrcDay);
+    if (map[srcStr]) map[srcStr] = map[srcStr].filter(i => i !== dragSrcIdx);
+  }
+
+  dragSrcIdx = null; dragSrcDay = null;
+  renderAllBuckets();
+}
+
+/* ── SAVE DAY ── */
 async function saveDay() {
   const day   = activeDay;
   const state = dayFormState[day];
@@ -941,7 +1213,7 @@ async function saveDay() {
     allExercises = await rdGetAllExercises();
     renderDayTabs();
     showToast('day-toast');
-  } catch (e) {
+  } catch(e) {
     alert('Save failed: ' + e.message);
   }
 }
@@ -952,26 +1224,28 @@ async function saveDay() {
 function renderPromptsPanel() {
   const u    = allUsers.find(x => x.user_id === currentUID);
   const name = u?.profiles?.name || 'User';
+  const meta = userMeta[currentUID] || {};
+  const p    = meta.profile || { V:3,S:3,W:2,I:2,A:2,G:3 };
   const el   = document.getElementById('prompts-content');
 
   el.innerHTML = `
     <div class="form-card" style="border-color:var(--purple-border);background:var(--purple-bg)">
       <div style="font-size:12px;color:var(--purple);line-height:1.7">
-        <strong>How to use:</strong> Copy a prompt below → paste into Claude or any AI → get JSON response →
-        paste JSON into the upload field → all fields auto-fill.
+        <strong>How to use:</strong> Copy a prompt below → paste into Claude or any AI → get JSON → paste back into the upload field → auto-fill.
+        <br>Profile variables used: <strong>V=${p.V||3} S=${p.S||3} W=${p.W||2} I=${p.I||2} A=${p.A||2} G=${p.G||3}</strong>
       </div>
     </div>
 
     <div class="prompt-card">
       <div class="prompt-card-title">Day 1 — Full Exercise Prompt (chain + 20 questions + passage)</div>
-      <textarea class="prompt-textarea" id="prompt-day1" readonly>${buildDay1Prompt(name)}</textarea>
+      <textarea class="prompt-textarea" id="prompt-day1" readonly>${buildDay1Prompt(name, p)}</textarea>
       <button class="copy-btn" onclick="copyPrompt('prompt-day1')"><i class="ti ti-copy"></i> Copy Prompt</button>
     </div>
 
     ${[2,3,4,5,6,7].map(d => `
     <div class="prompt-card">
       <div class="prompt-card-title">Day ${d} — ${[2,4,6,7].includes(d) ? 'Recall + ' : ''}New Exercise Prompt</div>
-      <textarea class="prompt-textarea" id="prompt-day${d}" readonly>${buildDayXPrompt(d, name)}</textarea>
+      <textarea class="prompt-textarea" id="prompt-day${d}" readonly>${buildDayXPrompt(d, name, p)}</textarea>
       <button class="copy-btn" onclick="copyPrompt('prompt-day${d}')"><i class="ti ti-copy"></i> Copy Prompt</button>
     </div>`).join('')}
 
@@ -988,11 +1262,12 @@ function renderPromptsPanel() {
     </div>`;
 }
 
-function buildDay1Prompt(userName) {
+function buildDay1Prompt(userName, p={}) {
+  const V=p.V||3, S=p.S||3, W=p.W||2, I=p.I||2, A=p.A||2, G=p.G||3;
   return `You are generating a structured English reading exercise for a student named ${userName}.
 
 PROFILE VARIABLES (scale 1-10 unless noted):
-V=3 (vocabulary level), S=3 (sentence complexity), W=2 (passage length), I=2 (inferential demand), A=2 (abstractness), G=3 (grammar complexity)
+V=${V} (vocabulary level), S=${S} (sentence complexity), W=${W} (passage length), I=${I} (inferential demand), A=${A} (abstractness), G=${G} (grammar complexity)
 
 EXERCISE STRUCTURE FOR DAY 1:
 
@@ -1003,23 +1278,19 @@ EXERCISE 1 — 5-Node Concept Chain:
 - Nodes must form a logical chain where each connects meaningfully to the next
 
 EXERCISE 2 — Passage + 20 Questions:
-- Write a passage of 120-150 words at S=${3}, W=${2} level
+- Write a passage of 120-150 words at S=${S}, W=${W} level
 - The passage must be ARGUMENTATIVE (not merely descriptive) — it must make a claim
 - Write exactly 20 questions covering this taxonomy:
-  - 4x fact (direct retrieval)
-  - 3x vocab (word/phrase in context)
-  - 3x imply (what does the passage imply)
-  - 2x purpose (author's purpose/challenge)
-  - 2x assume (unstated assumption)
-  - 2x infer (strongest inference)
-  - 2x stance (author would agree/disagree with)
-  - 1x weaken (what undermines the argument)
-  - 1x apply (apply author's logic to new scenario)
-- Each question must have 4 options (A-D), one correct answer, and a reason explaining why correct
-- Each question must have a profile string: I.A.V.G.WM.Sp.Sq.Wp.Wq.Xp
-  Where: I=inferential demand(1-5), A=abstractness(1-5), V=vocab load(1-5), G=grammar complexity of question(1-5), WM=working memory load(1-5), Sp=passage sentence level(1-10), Sq=question sentence level(1-10), Wp=passage word-length level(1-10), Wq=coverage span(1-5), Xp=expected seconds
+  - 4x fact, 3x vocab, 3x imply, 2x purpose, 2x assume, 2x infer, 2x stance, 1x weaken, 1x apply
+- Each question: 4 options (A-D), one correct, reason, profile string I.A.V.G.WM.Sp.Sq.Wp.Wq.Xp
+  Where: I=inferential(1-5), A=abstractness(1-5), V=vocab(1-5), G=grammar(1-5), WM=working memory(1-5),
+  Sp=passage sentence level(1-10), Sq=question sentence level(1-10), Wp=passage word level(1-10),
+  Wq=coverage span(1-5), Xp=expected seconds
 
-WRONG OPTIONS RULE: every wrong option must be plausible but precisely wrong. No obviously wrong distractors.
+WRONG OPTIONS RULE: every wrong option must be plausible but precisely wrong.
+
+NOTE ON QUESTION ASSIGNMENT: The 20 questions will be manually assigned to days (Day 1, 2, 4, 6, 7 — 4 each).
+You do NOT need to decide which goes where; just generate all 20.
 
 OUTPUT FORMAT — respond with ONLY this JSON, no preamble, no markdown fences:
 {
@@ -1038,44 +1309,37 @@ OUTPUT FORMAT — respond with ONLY this JSON, no preamble, no markdown fences:
       "type": "fact",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correct": 0,
-      "reason": "Why A is correct and others are not.",
+      "reason": "Why A is correct.",
       "profile": {"i":1,"a":1,"v":1,"g":1,"wm":1,"sp":3,"sq":2,"wp":2,"wq":1,"xp":25}
     },
     ...20 questions total
-  ],
-  "ex2_recall_map": {
-    "2": [4,5,6,7],
-    "4": [8,9,10,11],
-    "6": [12,13,14,15],
-    "7": [16,17,18,19]
-  }
+  ]
 }`;
 }
 
-function buildDayXPrompt(day, userName) {
-  const isRecall = [2, 4, 6, 7].includes(day);
+function buildDayXPrompt(day, userName, p={}) {
+  const V=p.V||3, S=p.S||3, W=p.W||2, I=p.I||2, A=p.A||2, G=p.G||3;
+  const isRecall = RECALL_DAYS.includes(day);
   return `You are generating a structured English reading exercise for a student named ${userName}.
 
-This is for Day ${day}${isRecall ? ' (a recall day — the student will also be tested on Day 1 material separately, so this exercise is for NEW content only)' : ''}.
+This is for Day ${day}${isRecall ? ' (a recall day — separate recall of Day 1 happens outside; this is for NEW content)' : ''}.
 
-PROFILE VARIABLES (scale 1-10 unless noted):
-V=3, S=3, W=2, I=2, A=2, G=3
+PROFILE VARIABLES: V=${V}, S=${S}, W=${W}, I=${I}, A=${A}, G=${G}
 
 EXERCISE 1 — 4-Node Concept Chain:
-- Pick a topic from any domain (vary from previous days)
-- Create 4 connected concept nodes
-- Each node: label (1-3 words), English sentence (15-25 words), Hinglish note (1 line)
+- Pick a topic from any domain, vary from previous days
+- Create 4 connected concept nodes: label (1-3 words), English sentence (15-25 words), Hinglish note
 - Select exactly 2 positions (0-indexed) to be blanks during recall
 
 EXERCISE 2 — Passage + 4 Questions:
-- Write a passage of 100-130 words, ARGUMENTATIVE in nature
-- Write exactly 4 questions, varied types from: fact, vocab, imply, assume, infer, stance, weaken, apply
-- No two questions of the same type
-- Each question: 4 options, correct answer index, reason, profile string
+- Write a passage of 100-130 words, ARGUMENTATIVE
+- Write exactly 4 questions, varied types (fact/vocab/imply/assume/infer/stance/weaken/apply)
+- No two questions same type
+- Each question: 4 options, correct index, reason, profile string
 
-WRONG OPTIONS RULE: every wrong option must be plausible but precisely wrong.
+WRONG OPTIONS RULE: plausible but precisely wrong.
 
-OUTPUT FORMAT — respond with ONLY this JSON, no preamble, no markdown fences:
+OUTPUT FORMAT — respond with ONLY this JSON:
 {
   "day": ${day},
   "topic": "Topic Name · Domain",
@@ -1116,65 +1380,46 @@ function parseAndFill() {
     const data  = JSON.parse(clean);
     const day   = data.day || activeDay;
 
-    // Ensure state exists for this day
     if (!dayFormState[day]) {
       dayFormState[day] = {
-        topic: '', ex1Blocks: defaultBlocks(day),
-        ex1BlankPos: null, ex1RecallBlanks: {}, ex1BlankPositions: [],
-        ex2Passage: '', ex2Questions: [], ex2RecallMap: {},
+        topic:'', ex1Blocks: defaultBlocks(day),
+        ex1BlankPos:null, ex1RecallBlanks:{}, ex1BlankPositions:[],
+        ex2Passage:'', ex2Questions:[], ex2RecallMap:{},
       };
     }
 
-    // Fill state from JSON
     const s = dayFormState[day];
-    if (data.topic)               s.topic              = data.topic;
-    if (data.ex1_blocks)          s.ex1Blocks          = data.ex1_blocks;
+    if (data.topic)               s.topic             = data.topic;
+    if (data.ex1_blocks)          s.ex1Blocks         = data.ex1_blocks;
     if (data.ex1_blank_pos !== undefined) s.ex1BlankPos = data.ex1_blank_pos;
-    if (data.ex1_recall_blanks)   s.ex1RecallBlanks    = data.ex1_recall_blanks;
-    if (data.ex1_blank_positions) s.ex1BlankPositions  = data.ex1_blank_positions;
-    if (data.ex2_passage)         s.ex2Passage         = data.ex2_passage;
-    if (data.ex2_questions)       s.ex2Questions       = data.ex2_questions;
-    if (data.ex2_recall_map)      s.ex2RecallMap       = data.ex2_recall_map;
+    if (data.ex1_recall_blanks)   s.ex1RecallBlanks   = data.ex1_recall_blanks;
+    if (data.ex1_blank_positions) s.ex1BlankPositions = data.ex1_blank_positions;
+    if (data.ex2_passage)         s.ex2Passage        = data.ex2_passage;
+    if (data.ex2_questions)       s.ex2Questions      = data.ex2_questions;
+    if (data.ex2_recall_map)      s.ex2RecallMap      = data.ex2_recall_map;
 
-    // Switch to upload tab
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     document.querySelector('[data-panel="upload"]').classList.add('active');
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-upload').classList.add('active');
 
-    // ✅ Set activeDay BEFORE rendering, so renderBlankSelector etc. use the right day
     activeDay = day;
+    document.querySelectorAll('.day-tab').forEach((t,i) => t.classList.toggle('active', i === day-1));
 
-    // ✅ Update tab highlight
-    document.querySelectorAll('.day-tab').forEach((t, i) => {
-      t.classList.toggle('active', i === day - 1);
-    });
-
-    // ✅ Render directly from the state we just filled — do NOT call loadDayForm()
-    //    because loadDayForm() resets state from DB before rendering
-    const isRecall  = [2, 4, 6, 7].includes(day);
-    const nodeCount = day === 1 ? 5 : 4;
-    const area      = document.getElementById('day-form-area');
-
-    // Re-use loadDayForm to build the HTML scaffold, but first mark that
-    // dayFormState[day] already has fresh data so it won't get overwritten.
-    // We do this by temporarily removing any matching DB entry from allExercises
-    // so the "existing" branch in loadDayForm doesn't trigger.
     const savedEx = allExercises.find(e => e.week === currentWeek && e.day === day);
     if (savedEx) {
-      // Temporarily hide from allExercises so loadDayForm uses our filled state
       allExercises = allExercises.filter(e => !(e.week === currentWeek && e.day === day));
       loadDayForm(day);
-      allExercises.push(savedEx); // restore
+      allExercises.push(savedEx);
     } else {
       loadDayForm(day, true);
     }
-
     showToast('fill-toast');
   } catch(e) {
     alert('Could not parse JSON: ' + e.message);
   }
 }
+
 /* ════════════════════════════════════════════════════════════
    SCHEDULE PANEL
 ════════════════════════════════════════════════════════════ */
@@ -1187,7 +1432,7 @@ function renderSchedulePanel() {
   let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:2rem">`;
   for (let d = 1; d <= 7; d++) {
     const ex        = weekExs.find(e => e.day === d);
-    const isRecall  = [2, 4, 6, 7].includes(d);
+    const isRecall  = RECALL_DAYS.includes(d);
     const isCurrent = d === (u.current_day || 1);
     const color     = isCurrent ? 'var(--accent)' : ex ? 'var(--green)' : 'var(--red)';
     html += `<div style="background:var(--surface);border:1.5px solid ${color};border-radius:10px;padding:10px 6px;text-align:center">
@@ -1227,18 +1472,15 @@ async function deleteEx(id) {
 async function renderAnalyticsPanel() {
   const u = allUsers.find(x => x.user_id === currentUID);
   if (!u) return;
-  const el       = document.getElementById('analytics-content');
-  el.innerHTML   = '<div class="loading-row"><div class="spinner"></div> Loading…</div>';
+  const el = document.getElementById('analytics-content');
+  el.innerHTML = '<div class="loading-row"><div class="spinner"></div> Loading…</div>';
 
   const sessions = u._sessions || [];
   const qResults = await rdGetUserQuestionResults(u.user_id);
   const vars     = rdComputeVars(sessions);
   const detail   = rdComputeDetailedVars(qResults);
 
-  let html = '';
-
-  // Top-level session stats
-  html += `<div class="an-grid">
+  let html = `<div class="an-grid">
     <div class="an-card">
       <div class="an-card-title">Chain Recall (V)</div>
       <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${vars.V>=70?'var(--green)':vars.V>=40?'#B5760A':'var(--red)'}">${vars.V!==null?vars.V+'%':'—'}</div>
@@ -1257,43 +1499,33 @@ async function renderAnalyticsPanel() {
   </div>`;
 
   if (detail) {
-    // Per-dimension accuracy bars
     const dimDefs = [
-      { key:'I', label:'Inferential (I)', max:5, color:'var(--purple)' },
-      { key:'A', label:'Abstractness (A)', max:5, color:'var(--blue)' },
-      { key:'V', label:'Vocabulary (V)', max:5, color:'var(--accent)' },
-      { key:'G', label:'Grammar (G)', max:5, color:'#B5760A' },
-      { key:'WM', label:'Working Memory', max:5, color:'var(--red)' },
-      { key:'Sp', label:'Passage Sentence Level', max:10, color:'var(--green)' },
-      { key:'Sq', label:'Question Sentence Level', max:10, color:'var(--green)' },
-      { key:'Wp', label:'Passage Word Level', max:10, color:'#B5760A' },
-      { key:'Wq', label:'Coverage Span', max:5, color:'var(--blue)' },
+      {key:'I',label:'Inferential (I)',max:5},{key:'A',label:'Abstractness (A)',max:5},
+      {key:'V',label:'Vocabulary (V)',max:5},{key:'G',label:'Grammar (G)',max:5},
+      {key:'WM',label:'Working Memory',max:5},{key:'Sp',label:'Passage Sentence Level',max:10},
+      {key:'Sq',label:'Question Sentence Level',max:10},{key:'Wp',label:'Passage Word Level',max:10},
+      {key:'Wq',label:'Coverage Span',max:5},
     ];
 
-    html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Accuracy by Dimension Level</div>
-    <div class="an-grid">`;
-
+    html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Accuracy by Dimension Level</div><div class="an-grid">`;
     dimDefs.forEach(dim => {
       const data = detail[dim.key];
       if (!data || !Object.keys(data).length) return;
-      html += `<div class="an-card">
-        <div class="an-card-title">${dim.label}</div>`;
+      html += `<div class="an-card"><div class="an-card-title">${dim.label}</div>`;
       for (let lv = 1; lv <= dim.max; lv++) {
         const val = data[lv];
         if (val === undefined) continue;
-        const pct = val;
-        const fillColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? '#E8A020' : 'var(--red)';
+        const fillColor = val >= 70 ? 'var(--green)' : val >= 40 ? '#E8A020' : 'var(--red)';
         html += `<div class="an-bar-row">
           <span class="an-bar-lbl">${lv}</span>
-          <div class="an-bar-wrap"><div class="an-bar-fill" style="width:${pct}%;background:${fillColor}"></div></div>
-          <span class="an-bar-val">${pct}%</span>
+          <div class="an-bar-wrap"><div class="an-bar-fill" style="width:${val}%;background:${fillColor}"></div></div>
+          <span class="an-bar-val">${val}%</span>
         </div>`;
       }
       html += `</div>`;
     });
     html += `</div>`;
 
-    // Speed matrix
     const sm = detail.speedMatrix;
     html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Speed Matrix</div>
     <div style="max-width:320px;margin-bottom:1.5rem">
@@ -1305,13 +1537,11 @@ async function renderAnalyticsPanel() {
       </div>
     </div>`;
 
-    // WM decay
     const decay = detail.wmDecay;
     const decayKeys = Object.keys(decay).sort((a,b) => +a - +b);
     if (decayKeys.length > 1) {
-      html += `<div class="section-label" style="margin-bottom:.85rem">Within-Session Accuracy by Question Position (WM Decay)</div>
-      <div class="an-card" style="max-width:400px;margin-bottom:1.5rem">
-        <div class="an-card-title">Position 0 = first question</div>`;
+      html += `<div class="section-label" style="margin-bottom:.85rem">Within-Session Accuracy by Position (WM Decay)</div>
+      <div class="an-card" style="max-width:400px;margin-bottom:1.5rem"><div class="an-card-title">Position 0 = first question</div>`;
       decayKeys.forEach(pos => {
         const val = decay[pos];
         const fillColor = val >= 70 ? 'var(--green)' : val >= 40 ? '#E8A020' : 'var(--red)';
@@ -1324,12 +1554,11 @@ async function renderAnalyticsPanel() {
       html += `</div>`;
     }
 
-    // By question type
     const byType = detail.byType;
     if (Object.keys(byType).length) {
       html += `<div class="section-label" style="margin-bottom:.85rem">Accuracy by Question Type</div>
       <div class="an-card" style="max-width:420px;margin-bottom:1.5rem">`;
-      Object.entries(byType).sort((a,b) => a[1]-b[1]).forEach(([type, pct]) => {
+      Object.entries(byType).sort((a,b) => a[1]-b[1]).forEach(([type,pct]) => {
         const fillColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? '#E8A020' : 'var(--red)';
         html += `<div class="an-bar-row">
           <span class="an-bar-lbl" style="min-width:60px;font-size:9px">${type}</span>
@@ -1340,10 +1569,9 @@ async function renderAnalyticsPanel() {
       html += `</div>`;
     }
   } else {
-    html += `<div class="empty-state" style="margin-top:1rem">No question-level data yet. Data appears after first session.</div>`;
+    html += `<div class="empty-state" style="margin-top:1rem">No question-level data yet.</div>`;
   }
 
-  // Session history table
   if (sessions.length) {
     html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Session History</div>
     <table class="session-table">
@@ -1352,7 +1580,7 @@ async function renderAnalyticsPanel() {
     sessions.forEach(s => {
       const e1c  = s.ex1_score >= 80 ? 'td-ok' : s.ex1_score >= 50 ? 'td-mid' : 'td-bad';
       const e2c  = s.ex2_score >= 70 ? 'td-ok' : s.ex2_score >= 40 ? 'td-mid' : 'td-bad';
-      const date = new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      const date = new Date(s.created_at).toLocaleDateString('en-IN', {day:'numeric',month:'short'});
       html += `<tr>
         <td>W${s.week} D${s.day}</td><td>${date}</td><td>${s.session_type||'—'}</td>
         <td class="${e1c}">${s.ex1_score!=null?s.ex1_score+'%':'—'}</td>
@@ -1362,16 +1590,20 @@ async function renderAnalyticsPanel() {
     });
     html += `</tbody></table>`;
   }
-
   el.innerHTML = html;
 }
 
 /* ════════════════════════════════════════════════════════════
    UTILS
 ════════════════════════════════════════════════════════════ */
-function fmt(s)  { if (!s && s !== 0) return '—'; return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
-function esc(s)  { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showToast(id) { const el=document.getElementById(id); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
+function fmt(s)     { if (!s && s !== 0) return '—'; return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function esc(s)     { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-IN', {day:'numeric',month:'short'});
+}
+function showToast(id) { const el=document.getElementById(id); if(!el)return; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
 </script>
 </body>
 </html>
