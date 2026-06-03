@@ -375,7 +375,8 @@ async function startSession() {
     phaseTimes: {},
     userAnswers: {},        // numeric keys for today's Ex2
     recallAnswers: {},      // 'r0','r1',… for Day1 recall questions
-
+    questionStartTime: null,      // set when each question renders
+    questionResults: [],          // [{question_index, question_type, profile, time_taken, correct, chosen, week, day}]
     // Ex1 chain recall — today's own chain (Days 1,3,5 and Days 2,4,6,7 new chain)
     ex1Correct: 0, ex1Total: 0, ex1Score: null,
     // Ex1 chain recall — Day1 chain (on recall days only)
@@ -685,6 +686,7 @@ function buildEx2RecallD1(day1Ex, currentDay) {
    prefix = '' for today's questions, 'r' for Day1 recall
 ════════════════════════════════════════════════════════════ */
 function buildQuestionsHtml(questions, prefix) {
+  sess.questionStartTime = Date.now();
   return questions.map((q, qi) => `
     <div class="q-block">
       <div class="q-num">Question ${qi + 1} <span class="q-type-badge">${q.type || 'factual'}</span></div>
@@ -702,9 +704,11 @@ function buildQuestionsHtml(questions, prefix) {
 }
 
 function selectOpt(el) {
-  const q   = el.dataset.q;
-  const val = parseInt(el.dataset.v);
+  const q      = el.dataset.q;
+  const val    = parseInt(el.dataset.v);
   const isRecall = q.startsWith('r');
+  const qIdx   = isRecall ? parseInt(q.slice(1)) : parseInt(q);
+  const timeTaken = Math.floor((Date.now() - (sess.questionStartTime || Date.now())) / 1000);
 
   if (isRecall) {
     sess.recallAnswers[q] = val;
@@ -714,6 +718,34 @@ function selectOpt(el) {
 
   document.querySelectorAll(`[data-q="${q}"]`).forEach(o => o.classList.remove('sel'));
   el.classList.add('sel');
+
+  // Store question result
+  const questions = isRecall ? (sess._activeRecallQuestions || []) : (sess._activeQuestions || []);
+  const qObj      = questions[qIdx];
+  if (qObj) {
+    sess.questionResults.push({
+      question_index: qIdx,
+      question_type:  qObj.type || 'fact',
+      profile_i:      qObj.profile?.i  || null,
+      profile_a:      qObj.profile?.a  || null,
+      profile_v:      qObj.profile?.v  || null,
+      profile_g:      qObj.profile?.g  || null,
+      profile_wm:     qObj.profile?.wm || null,
+      profile_sp:     qObj.profile?.sp || null,
+      profile_sq:     qObj.profile?.sq || null,
+      profile_wp:     qObj.profile?.wp || null,
+      profile_wq:     qObj.profile?.wq || null,
+      profile_xp:     qObj.profile?.xp || null,
+      time_taken:     timeTaken,
+      correct:        val === qObj.correct,
+      chosen:         val,
+      week:           sess.week,
+      day:            sess.day,
+    });
+  }
+
+  // Reset timer for next question
+  sess.questionStartTime = Date.now();
 
   // Enable submit when all answered
   const step = sess.steps[sess.stepIndex];
@@ -769,8 +801,9 @@ async function buildAnalysis() {
   const dbEx2Score   = sess.ex2Score;
 
   // ── Save session ─────────────────────────────────────────────────────
+  let savedSession = null;
   try {
-    await rdSaveSession({
+    savedSession = await rdSaveSession({
       user_id:         currentUser.id,
       exercise_id:     sess.dayEx.id,
       week:            sess.week,
@@ -791,6 +824,21 @@ async function buildAnalysis() {
   } catch (e) {
     console.error('Session save failed:', e);
   }
+
+  // Save per-question results
+  if (savedSession?.id && sess.questionResults.length) {
+    try {
+      await rdSaveQuestionResults(
+        sess.questionResults.map(r => ({
+          ...r,
+          session_id: savedSession.id,
+          user_id:    currentUser.id,
+        }))
+      );
+    } catch (e) {
+      console.error('Question results save failed:', e);
+    }
+  } 
 
   // ── Advance day ──────────────────────────────────────────────────────
   const nextDay  = sess.day >= 7 ? 1 : sess.day + 1;
