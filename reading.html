@@ -261,6 +261,7 @@ let sess        = {};
    INIT
 ════════════════════════════════════════════════════════════ */
 (async () => {
+  while (!window._supa) await new Promise(r => setTimeout(r, 30));
   currentUser = await rdGetUser();
   if (!currentUser) { window.location.href = 'auth.html'; return; }
 

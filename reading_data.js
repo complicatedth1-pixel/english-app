@@ -2,10 +2,15 @@
    reading_data.js — Supabase helpers for Reading module
    ═══════════════════════════════════════════════════════════════ */
 
-const RD_URL = 'https://ypowdifzhpafluihdfsn.supabase.co';   // set in supabase.js globals
-const RD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwb3dkaWZ6aHBhZmx1aWhkZnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTgzNjIsImV4cCI6MjA5NTUzNDM2Mn0.0MdjzrA3icFInAEtuUJIkFbNA9Z83KW2yiJCMa852Pg';
-
-function rdClient() { return window._supa; }   // reuse supabase.js instance
+/**
+ * Returns the Supabase client.
+ * window._supa is set by supabase.js — we guard against it not being
+ * ready yet by throwing a clear error rather than a cryptic TypeError.
+ */
+function rdClient() {
+  if (!window._supa) throw new Error('Supabase client not initialised yet. Ensure supabase.js loads before reading_data.js.');
+  return window._supa;
+}
 
 /* ── Auth ─────────────────────────────────────────────────────── */
 async function rdGetUser() {
@@ -33,16 +38,19 @@ async function rdGetState(uid) {
 }
 
 async function rdUpsertState(uid, day, week) {
-  await rdClient().from('reading_user_state').upsert({
-    user_id: uid, current_day: day, current_week: week,
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'user_id' });
+  await rdClient().from('reading_user_state').upsert(
+    { user_id: uid, current_day: day, current_week: week, updated_at: new Date().toISOString() },
+    { onConflict: 'user_id' }
+  );
 }
 
 /* ── Exercises ────────────────────────────────────────────────── */
 
 /**
  * Get exercise for a specific week + day.
+ * Column names match the NEW schema:
+ *   ex1_blocks, ex1_blank_pos, ex1_recall_blanks,
+ *   ex1_blank_positions, ex2_passage, ex2_questions, ex2_recall_map
  */
 async function rdGetExercise(week, day) {
   const { data } = await rdClient()
@@ -54,9 +62,7 @@ async function rdGetExercise(week, day) {
   return data;
 }
 
-/**
- * Get all exercises (admin).
- */
+/** Get all exercises (admin). */
 async function rdGetAllExercises() {
   const { data } = await rdClient()
     .from('reading_exercises')
@@ -67,7 +73,8 @@ async function rdGetAllExercises() {
 }
 
 /**
- * Save (upsert) an exercise. Matches on week+day.
+ * Save (upsert) an exercise. Conflict target is week+day unique constraint.
+ * Payload keys must match DB columns exactly.
  */
 async function rdSaveExercise(ex) {
   const { data, error } = await rdClient()
@@ -79,9 +86,7 @@ async function rdSaveExercise(ex) {
   return data;
 }
 
-/**
- * Update a single exercise by id (for drag-drop question reorder).
- */
+/** Update a single exercise by id. */
 async function rdUpdateExercise(id, patch) {
   const { data, error } = await rdClient()
     .from('reading_exercises')
@@ -94,7 +99,8 @@ async function rdUpdateExercise(id, patch) {
 }
 
 async function rdDeleteExercise(id) {
-  await rdClient().from('reading_exercises').delete().eq('id', id);
+  const { error } = await rdClient().from('reading_exercises').delete().eq('id', id);
+  if (error) throw error;
 }
 
 /* ── Sessions ─────────────────────────────────────────────────── */
@@ -114,7 +120,6 @@ async function rdGetUserSessions(uid) {
 }
 
 async function rdGetAllUsers() {
-  // Get all user states joined with profiles
   const { data: states } = await rdClient()
     .from('reading_user_state')
     .select('*');
@@ -128,7 +133,7 @@ async function rdGetAllUsers() {
 
   return states.map(s => ({
     ...s,
-    profiles: profiles?.find(p => p.id === s.user_id) || null
+    profiles: profiles?.find(p => p.id === s.user_id) || null,
   }));
 }
 
@@ -145,9 +150,9 @@ function rdComputeVars(sessions) {
   };
 
   return {
-    V: avg(all,    'ex1_score'),       // vocab recall
-    S: avg(normal, 'ex2_score'),       // comprehension
-    R: avg(recalls,'ex2_score'),       // recall retention
-    L: all.length,                     // consistency
+    V: avg(all,     'ex1_score'),   // chain recall accuracy
+    S: avg(normal,  'ex2_score'),   // comprehension (normal days)
+    R: avg(recalls, 'ex2_score'),   // retention (recall days)
+    L: all.length,                  // consistency (total sessions)
   };
 }

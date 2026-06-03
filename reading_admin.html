@@ -334,6 +334,7 @@ let dragSrcDay  = null;   // which day bucket it came from (1,2,4,6,7 or null if
    INIT
 ════════════════════════════════════════════════════════════ */
 (async () => {
+  while (!window._supa) await new Promise(r => setTimeout(r, 30));
   adminUser = await rdGetUser();
   if (!adminUser) { window.location.href = 'auth.html'; return; }
   const isAdmin = await rdIsAdmin(adminUser.id);
