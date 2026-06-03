@@ -2,8 +2,8 @@
    reading_data.js — Supabase helpers for Reading module
    ═══════════════════════════════════════════════════════════════ */
 
-const RD_URL = SUPABASE_URL;   // set in supabase.js globals
-const RD_KEY = SUPABASE_ANON_KEY;
+const RD_URL = 'https://ypowdifzhpafluihdfsn.supabase.co';   // set in supabase.js globals
+const RD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwb3dkaWZ6aHBhZmx1aWhkZnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTgzNjIsImV4cCI6MjA5NTUzNDM2Mn0.0MdjzrA3icFInAEtuUJIkFbNA9Z83KW2yiJCMa852Pg';
 
 function rdClient() { return window._supa; }   // reuse supabase.js instance
 
