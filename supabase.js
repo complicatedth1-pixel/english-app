@@ -6,7 +6,7 @@ const SUPABASE_URL  = 'https://ypowdifzhpafluihdfsn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwb3dkaWZ6aHBhZmx1aWhkZnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTgzNjIsImV4cCI6MjA5NTUzNDM2Mn0.0MdjzrA3icFInAEtuUJIkFbNA9Z83KW2yiJCMa852Pg';
 
 const SB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
+window._supa = SB;
 /* ── AUTH ── */
 async function sbSignInGoogle() {
   const { error } = await SB.auth.signInWithOAuth({
