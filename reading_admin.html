@@ -1113,35 +1113,65 @@ function parseAndFill() {
     const data  = JSON.parse(clean);
     const day   = data.day || activeDay;
 
-    if (!dayFormState[day]) dayFormState[day] = { topic:'', ex1Blocks: defaultBlocks(day), ex1BlankPos:null, ex1RecallBlanks:{}, ex1BlankPositions:[], ex2Passage:'', ex2Questions:[], ex2RecallMap:{} };
+    // Ensure state exists for this day
+    if (!dayFormState[day]) {
+      dayFormState[day] = {
+        topic: '', ex1Blocks: defaultBlocks(day),
+        ex1BlankPos: null, ex1RecallBlanks: {}, ex1BlankPositions: [],
+        ex2Passage: '', ex2Questions: [], ex2RecallMap: {},
+      };
+    }
 
+    // Fill state from JSON
     const s = dayFormState[day];
-    if (data.topic)              s.topic              = data.topic;
-    if (data.ex1_blocks)         s.ex1Blocks          = data.ex1_blocks;
+    if (data.topic)               s.topic              = data.topic;
+    if (data.ex1_blocks)          s.ex1Blocks          = data.ex1_blocks;
     if (data.ex1_blank_pos !== undefined) s.ex1BlankPos = data.ex1_blank_pos;
-    if (data.ex1_recall_blanks)  s.ex1RecallBlanks    = data.ex1_recall_blanks;
-    if (data.ex1_blank_positions) s.ex1BlankPositions = data.ex1_blank_positions;
-    if (data.ex2_passage)        s.ex2Passage         = data.ex2_passage;
-    if (data.ex2_questions)      s.ex2Questions       = data.ex2_questions;
-    if (data.ex2_recall_map)     s.ex2RecallMap        = data.ex2_recall_map;
+    if (data.ex1_recall_blanks)   s.ex1RecallBlanks    = data.ex1_recall_blanks;
+    if (data.ex1_blank_positions) s.ex1BlankPositions  = data.ex1_blank_positions;
+    if (data.ex2_passage)         s.ex2Passage         = data.ex2_passage;
+    if (data.ex2_questions)       s.ex2Questions       = data.ex2_questions;
+    if (data.ex2_recall_map)      s.ex2RecallMap       = data.ex2_recall_map;
 
-    // Switch to upload tab for that day
+    // Switch to upload tab
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     document.querySelector('[data-panel="upload"]').classList.add('active');
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-upload').classList.add('active');
 
-    // Activate the correct day tab
-    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-    const tabs = document.querySelectorAll('.day-tab');
-    if (tabs[day - 1]) tabs[day - 1].classList.add('active');
-    loadDayForm(day);
+    // ✅ Set activeDay BEFORE rendering, so renderBlankSelector etc. use the right day
+    activeDay = day;
+
+    // ✅ Update tab highlight
+    document.querySelectorAll('.day-tab').forEach((t, i) => {
+      t.classList.toggle('active', i === day - 1);
+    });
+
+    // ✅ Render directly from the state we just filled — do NOT call loadDayForm()
+    //    because loadDayForm() resets state from DB before rendering
+    const isRecall  = [2, 4, 6, 7].includes(day);
+    const nodeCount = day === 1 ? 5 : 4;
+    const area      = document.getElementById('day-form-area');
+
+    // Re-use loadDayForm to build the HTML scaffold, but first mark that
+    // dayFormState[day] already has fresh data so it won't get overwritten.
+    // We do this by temporarily removing any matching DB entry from allExercises
+    // so the "existing" branch in loadDayForm doesn't trigger.
+    const savedEx = allExercises.find(e => e.week === currentWeek && e.day === day);
+    if (savedEx) {
+      // Temporarily hide from allExercises so loadDayForm uses our filled state
+      allExercises = allExercises.filter(e => !(e.week === currentWeek && e.day === day));
+      loadDayForm(day);
+      allExercises.push(savedEx); // restore
+    } else {
+      loadDayForm(day);
+    }
+
     showToast('fill-toast');
   } catch(e) {
     alert('Could not parse JSON: ' + e.message);
   }
 }
-
 /* ════════════════════════════════════════════════════════════
    SCHEDULE PANEL
 ════════════════════════════════════════════════════════════ */
