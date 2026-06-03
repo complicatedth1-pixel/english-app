@@ -469,28 +469,31 @@ function renderDayTabs() {
 /* ════════════════════════════════════════════════════════════
    DAY FORM LOADER
 ════════════════════════════════════════════════════════════ */
-function loadDayForm(day) {
+function loadDayForm(day, skipStateReset = false) {
   activeDay = day;
-  const existing = allExercises.find(e => e.week === currentWeek && e.day === day);
 
-  if (existing) {
-    dayFormState[day] = {
-      id:                 existing.id,
-      topic:              existing.topic || '',
-      ex1Blocks:          existing.ex1_blocks || defaultBlocks(day),
-      ex1BlankPos:        existing.ex1_blank_pos ?? null,
-      ex1RecallBlanks:    existing.ex1_recall_blanks || {},
-      ex1BlankPositions:  existing.ex1_blank_positions || [],
-      ex2Passage:         existing.ex2_passage || '',
-      ex2Questions:       (existing.ex2_questions || []).map(q => ({ ...q })),
-      ex2RecallMap:       existing.ex2_recall_map || {},
-    };
-  } else {
-    dayFormState[day] = {
-      topic: '', ex1Blocks: defaultBlocks(day),
-      ex1BlankPos: null, ex1RecallBlanks: {}, ex1BlankPositions: [],
-      ex2Passage: '', ex2Questions: [], ex2RecallMap: {},
-    };
+  if (!skipStateReset) {
+    const existing = allExercises.find(e => e.week === currentWeek && e.day === day);
+
+    if (existing) {
+      dayFormState[day] = {
+        id:                 existing.id,
+        topic:              existing.topic || '',
+        ex1Blocks:          existing.ex1_blocks || defaultBlocks(day),
+        ex1BlankPos:        existing.ex1_blank_pos ?? null,
+        ex1RecallBlanks:    existing.ex1_recall_blanks || {},
+        ex1BlankPositions:  existing.ex1_blank_positions || [],
+        ex2Passage:         existing.ex2_passage || '',
+        ex2Questions:       (existing.ex2_questions || []).map(q => ({ ...q })),
+        ex2RecallMap:       existing.ex2_recall_map || {},
+      };
+    } else {
+      dayFormState[day] = {
+        topic: '', ex1Blocks: defaultBlocks(day),
+        ex1BlankPos: null, ex1RecallBlanks: {}, ex1BlankPositions: [],
+        ex2Passage: '', ex2Questions: [], ex2RecallMap: {},
+      };
+    }
   }
 
   const isRecall  = [2, 4, 6, 7].includes(day);
