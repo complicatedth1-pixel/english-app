@@ -326,8 +326,8 @@ async function startSession() {
   const week        = userState.current_week;
   const isRecallDay = [2, 4, 6, 7].includes(day);
 
-  const dayEx  = await rdGetExercise(week, day);
-  const day1Ex = (day === 1) ? dayEx : await rdGetExercise(week, 1);
+const dayEx  = await rdGetExercise(week, day, currentUser.id);
+const day1Ex = (day === 1) ? dayEx : await rdGetExercise(week, 1, currentUser.id);
 
   if (!dayEx) {
     btn.textContent = 'No exercise uploaded for today yet.';
