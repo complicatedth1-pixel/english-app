@@ -327,41 +327,23 @@ async function rdGetUserQuestionResults(uid) {
 /* ── Users (admin) ────────────────────────────────────────────── */
 
 async function rdGetAllUsers() {
-
   const { data: profiles } = await rdClient()
-
     .from('profiles')
-
-    .select('id, name, avatar_url');
-
+    .select('id, name, avatar_url, email');  // add email here
   if (!profiles?.length) return [];
 
-
-
   const uids = profiles.map(p => p.id);
-
   const { data: states } = await rdClient()
-
     .from('reading_user_state')
-
     .select('*')
-
     .in('user_id', uids);
 
-
-
   return profiles.map(p => ({
-
     user_id:      p.id,
-
     profiles:     p,
-
     current_day:  states?.find(s => s.user_id === p.id)?.current_day  || 1,
-
     current_week: states?.find(s => s.user_id === p.id)?.current_week || 1,
-
   }));
-
 }
 
 

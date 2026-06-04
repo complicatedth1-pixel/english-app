@@ -527,7 +527,11 @@ function renderDashboard() {
         <div class="user-av">${avHtml}</div>
         <div class="user-info">
           <div class="user-name">${name}</div>
-          <div class="user-meta"><span>Week ${week} · Day ${day}</span><span>${(u._sessions||[]).length} sessions</span></div>
+<div class="user-meta">
+  <span>Week ${week} · Day ${day}</span>
+  <span>${(u._sessions||[]).length} sessions</span>
+  ${u.profiles?.email ? `<span>${u.profiles.email}</span>` : ''}
+</div>
         </div>
         <div style="display:flex;gap:6px">
           <span class="badge ${doneT ? 'done' : 'todo'}">${doneT ? '✓ Done today' : 'Pending'}</span>
