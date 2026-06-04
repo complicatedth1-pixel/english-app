@@ -734,10 +734,15 @@ async function openUser(uid) {
   loadDayForm(1);
   showScreen('user');
 }
-function isDayCompleted(day) {
-  const u = allUsers.find(x => x.user_id === currentUID);
-  if (!u) return false;
-  return (u._sessions || []).some(s => s.week === currentWeek && s.day === day);
+async function isDayCompleted(day) {
+  const { data } = await window._supa
+    .from('reading_question_results')
+    .select('id')
+    .eq('user_id', currentUID)
+    .eq('week', currentWeek)
+    .eq('day', day)
+    .limit(1);
+  return data && data.length > 0;
 }
 /* ════════════════════════════════════════════════════════════
    DAY TABS
@@ -791,7 +796,7 @@ function renderDayTabs() {
 /* ════════════════════════════════════════════════════════════
    DAY FORM LOADER
 ════════════════════════════════════════════════════════════ */
-function loadDayForm(day, skipStateReset = false) {
+async function loadDayForm(day, skipStateReset = false) {
   activeDay = day;
 
   if (!skipStateReset) {
@@ -897,7 +902,7 @@ function loadDayForm(day, skipStateReset = false) {
   if (isDay1) renderAllBuckets();
   
   // Lock form if day already completed
-  if (isDayCompleted(day)) {
+  if (await isDayCompleted(day)) {
     const area = document.getElementById('day-form-area');
     // Add a notice banner at the top
     const banner = document.createElement('div');
