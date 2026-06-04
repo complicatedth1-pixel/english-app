@@ -572,8 +572,8 @@ function buildEx2(ex, day) {
 
   Ex2Screen.start({
     questions: questions,
-    passage:   sess.isRecallDay ? null : (ex.ex2_passage || null),
-    isRecall:  sess.isRecallDay,
+    passage:   ex.ex2_passage || null,
+    isRecall:  false,
     onComplete: (results) => {
       sess._ex2Results = results;
       sess.questionResults.push(...results.map(r => ({ ...r, week: sess.week, day: sess.day })));
@@ -586,7 +586,6 @@ function buildEx2(ex, day) {
     }
   });
 }
-
 function getQuestionsForDay(ex, day) {
   const qs = ex.ex2_questions || [];
   if (day !== 1) return qs.slice(0, 4);
