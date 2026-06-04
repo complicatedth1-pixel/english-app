@@ -185,23 +185,17 @@ async function rdSaveUserMeta(uid, meta) {
 */
 
 async function rdGetExercise(week, day, uid) {
-
-  let q = rdClient()
-
+  if (!uid) throw new Error('uid is required for rdGetExercise');
+  
+  const { data } = await rdClient()
     .from('reading_exercises')
-
     .select('*')
-
+    .eq('user_id', uid)
     .eq('week', week)
-
-    .eq('day',  day);
-
-  if (uid) q = q.eq('user_id', uid);
-
-  const { data } = await q.maybeSingle();
+    .eq('day',  day)
+    .maybeSingle();
 
   return data;
-
 }
 
 
