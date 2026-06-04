@@ -706,6 +706,7 @@ async function openUser(uid) {
   currentUID  = uid;
   const u     = allUsers.find(x => x.user_id === uid);
   if (!u) return;
+  dayFormState = {};
   const name   = u.profiles?.name || uid.slice(0, 8);
   const avatar = u.profiles?.avatar_url;
   currentWeek  = u.current_week || 1;
@@ -713,7 +714,7 @@ async function openUser(uid) {
 
   // Load exercises scoped to this user
   allExercises = await rdGetAllExercises(uid);
-
+  console.log('Loaded exercises for', name, ':', allExercises);
   const avEl = document.getElementById('sub-av');
   avEl.innerHTML = avatar ? `<img src="${avatar}" alt="${name}">` : (name[0]||'?').toUpperCase();
   document.getElementById('sub-name-text').textContent  = name;
@@ -733,7 +734,11 @@ async function openUser(uid) {
   loadDayForm(1);
   showScreen('user');
 }
-
+function isDayCompleted(day) {
+  const u = allUsers.find(x => x.user_id === currentUID);
+  if (!u) return false;
+  return (u._sessions || []).some(s => s.week === currentWeek && s.day === day);
+}
 /* ════════════════════════════════════════════════════════════
    DAY TABS
 ════════════════════════════════════════════════════════════ */
@@ -788,8 +793,10 @@ function renderDayTabs() {
 ════════════════════════════════════════════════════════════ */
 function loadDayForm(day, skipStateReset = false) {
   activeDay = day;
+
   if (!skipStateReset) {
     const existing = allExercises.find(e => e.week === currentWeek && e.day === day);
+    console.log('Loading day', day, 'existing:', existing); // debug
     if (existing) {
       dayFormState[day] = {
         id:                 existing.id,
@@ -888,8 +895,39 @@ function loadDayForm(day, skipStateReset = false) {
   if (isDay1) renderRecallBlankConfig(day);
   renderEx2Questions(day);
   if (isDay1) renderAllBuckets();
-}
+  
+  // Lock form if day already completed
+  if (isDayCompleted(day)) {
+    const area = document.getElementById('day-form-area');
+    // Add a notice banner at the top
+    const banner = document.createElement('div');
+    banner.style.cssText = `
+      background: var(--green-bg); border: 1px solid var(--green-border);
+      border-radius: var(--radius); padding: 10px 16px; margin-bottom: 1rem;
+      font-size: 12.5px; color: var(--green); display: flex; align-items: center; gap: 8px;
+    `;
+    banner.innerHTML = `<i class="ti ti-lock"></i> This day has been attempted by the user — shown read-only.`;
+    area.insertBefore(banner, area.firstChild);
 
+    // Disable all inputs, selects, textareas, buttons except the save button label
+    area.querySelectorAll('input, select, textarea').forEach(el => {
+      el.disabled = true;
+      el.style.opacity = '0.7';
+      el.style.cursor  = 'not-allowed';
+    });
+    // Hide save button, show a note instead
+    const saveRow = area.querySelector('[onclick="saveDay()"]')?.parentElement;
+    if (saveRow) {
+      saveRow.innerHTML = `<span style="font-size:12px;color:var(--text3)">
+        <i class="ti ti-info-circle"></i> Read-only — user has already completed this day.
+      </span>`;
+    }
+    // Hide add question button
+    area.querySelectorAll('.btn-sm').forEach(b => {
+      if (b.textContent.includes('Add Question')) b.style.display = 'none';
+    });
+  }
+}
 function defaultBlocks(day) {
   const n = day === 1 ? 5 : 4;
   return Array.from({ length: n }, () => ({ node:'', en:'', hi:'' }));
