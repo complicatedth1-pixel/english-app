@@ -150,7 +150,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 /* ── DAY TABS ── */
 .day-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.day-tab { font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.12s; position: relative; }
+.day-tab { 
+  font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); 
+  background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; 
+  font-weight: 500; transition: all 0.12s; position: relative; 
+  line-height: 1.3; text-align: center; /* add these two */
+}
 .day-tab:hover { background: var(--bg2); }
 .day-tab.active { background: var(--text1); color: #fff; border-color: var(--text1); }
 .day-tab.has-data::after { content: ''; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
@@ -733,14 +738,41 @@ async function openUser(uid) {
    DAY TABS
 ════════════════════════════════════════════════════════════ */
 function renderDayTabs() {
-  const row = document.getElementById('day-tab-row');
+  const row  = document.getElementById('day-tab-row');
   row.innerHTML = '';
+  const meta      = userMeta[currentUID] || {};
+  const startDate = meta.startDate;
+  const holidays  = new Set(meta.holidays || []);
+
+  // Compute actual calendar date for each exercise day
+  function getDateForDay(targetExDay) {
+    if (!startDate) return null;
+    let cursor      = new Date(startDate + 'T00:00:00');
+    let exerciseDay = 1;
+    for (let cal = 0; cal < 60; cal++) {
+      const iso = cursor.toISOString().split('T')[0];
+      if (!holidays.has(iso)) {
+        if (exerciseDay === targetExDay) return cursor;
+        exerciseDay++;
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return null;
+  }
+
   for (let d = 1; d <= 7; d++) {
     const isRecall = RECALL_DAYS.includes(d);
     const hasData  = allExercises.some(e => e.week === currentWeek && e.day === d);
+    const dateObj  = getDateForDay(d);
+    const dateStr  = dateObj
+      ? dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+      : null;
+
     const btn      = document.createElement('button');
     btn.className  = 'day-tab' + (isRecall ? ' recall-day' : '') + (hasData ? ' has-data' : '') + (d === 1 ? ' active' : '');
-    btn.textContent = `Day ${d}`;
+    btn.innerHTML  = dateStr
+      ? `Day ${d}<span style="display:block;font-family:'DM Mono',monospace;font-size:9px;opacity:0.7;margin-top:1px">${dateStr}</span>`
+      : `Day ${d}`;
     if (isRecall) btn.title = 'Recall day';
     btn.onclick = () => {
       document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
