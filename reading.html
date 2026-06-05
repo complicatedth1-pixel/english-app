@@ -288,7 +288,11 @@ async function renderDashboard() {
   }
 
   const btn  = document.getElementById('start-btn');
-  const done = sessions.some(s => s.day === day && s.week === week);
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+const done  = sessions.some(s => 
+  (s.day === day && s.week === week) ||
+  new Date(s.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === today
+);
   if (done)         { btn.textContent = 'Done for today — see you tomorrow!'; btn.disabled = true; }
   else if (day > 7) { btn.textContent = 'Week complete!'; btn.disabled = true; }
   else              { btn.textContent = `Start Day ${day} →`; btn.disabled = false; }
