@@ -597,13 +597,14 @@ function buildEx2(ex, day) {
   });
 }
 
+// AFTER
 function getQuestionsForDay(ex, day) {
   const qs = ex.ex2_questions || [];
-  if (day !== 1) return qs.slice(0, 4);
+  if (day !== 1) return qs;
   const map             = ex.ex2_recall_map || {};
   const assignedIndices = new Set(Object.values(map).flat().map(Number));
   const day1Qs          = qs.filter((_, i) => !assignedIndices.has(i));
-  return day1Qs.length ? day1Qs.slice(0, 4) : qs.slice(0, 4);
+  return day1Qs.length ? day1Qs : qs;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -614,7 +615,7 @@ function buildEx2RecallD1(day1Ex, currentDay) {
   const map       = day1Ex.ex2_recall_map || {};
   const indices   = (map[String(currentDay)] || []).map(Number);
   const questions = indices.map(i => qs[i]).filter(Boolean);
-  const finalQs   = questions.length ? questions : qs.slice(4, 8);
+  const finalQs   = questions.length ? questions : qs;
   sess._activeRecallQuestions = finalQs;
 
   Ex2Screen.start({
