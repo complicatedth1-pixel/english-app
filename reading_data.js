@@ -392,21 +392,15 @@ function rdComputeDetailedVars(qResults) {
 
 
 
-  const byLevel = (dim) => {
-
-    const out = {};
-
-    for (let lv = 1; lv <= 5; lv++) {
-
-      const rows = qResults.filter(r => r[dim] === lv);
-
-      if (rows.length) out[lv] = accFor(rows);
-
-    }
-
-    return out;
-
-  };
+// AFTER
+const byLevel = (dim, max = 5) => {
+  const out = {};
+  for (let lv = 1; lv <= max; lv++) {
+    const rows = qResults.filter(r => r[dim] === lv);
+    if (rows.length) out[lv] = accFor(rows);
+  }
+  return out;
+};
 
 
 
@@ -480,11 +474,9 @@ function rdComputeDetailedVars(qResults) {
 
     WM:          byLevel('profile_wm'),
 
-    Sp:          byLevel('profile_sp'),
-
-    Sq:          byLevel('profile_sq'),
-
-    Wp:          byLevel('profile_wp'),
+Sp: byLevel('profile_sp', 10),
+Sq: byLevel('profile_sq', 10),
+Wp: byLevel('profile_wp', 10),
 
     Wq:          byLevel('profile_wq'),
 

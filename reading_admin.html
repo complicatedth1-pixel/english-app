@@ -22,6 +22,7 @@
   --blue: #2B5BA8; --blue-bg: #EBF0FB; --blue-border: #A8BDE8;
   --purple: #6B3FA0; --purple-bg: #F3EDFC; --purple-border: #C9AEED;
   --amber: #B5760A; --amber-bg: #FDF6E7; --amber-border: #F0D090;
+  --chain-bg: #EEEDFE; --chain-text: #3C3489;
   --radius: 12px; --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
@@ -259,6 +260,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .usr-incompat-reason { font-size: 10px; color: var(--red); margin-left: auto; }
 
 /* ── ANALYTICS ── */
+.an-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+.an-main  { min-width: 0; }
+.an-sidebar { position: sticky; top: 108px; }
+
+/* stat cards */
 .an-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
 .an-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
 .an-card-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
@@ -267,6 +278,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .an-bar-wrap { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
 .an-bar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
 .an-bar-val { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text2); min-width: 30px; text-align: right; }
+
+/* speed matrix */
 .speed-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .sm-cell { border: 1px solid var(--border); border-radius: 6px; padding: 8px; text-align: center; }
 .sm-cell-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; }
@@ -277,6 +290,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .sm-cell.bad  .sm-cell-val { color: var(--red); }
 .sm-cell.mid  { border-color: var(--accent-border); background: var(--accent-bg); }
 .sm-cell.mid  .sm-cell-val { color: var(--accent); }
+
+/* session table */
 .session-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
 .session-table th { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg2); }
 .session-table td { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text2); padding: 9px 12px; border-bottom: 0.5px solid var(--border); }
@@ -285,6 +300,414 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .td-ok  { color: var(--green); font-weight: 500; }
 .td-mid { color: #B5760A; font-weight: 500; }
 .td-bad { color: var(--red); font-weight: 500; }
+
+/* ── BAR CHART ── */
+.chart-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+.chart-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; flex-wrap: wrap; gap: 8px;
+}
+.chart-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text3);
+}
+.chart-toggle {
+  display: flex; gap: 4px;
+}
+.chart-toggle-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent; color: var(--text3);
+  cursor: pointer; transition: all .12s;
+}
+.chart-toggle-btn.active {
+  background: var(--text1); color: #fff; border-color: var(--text1);
+}
+.chart-legend {
+  display: flex; gap: 14px; margin-bottom: 12px;
+}
+.chart-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3);
+}
+.chart-legend-dot {
+  width: 8px; height: 8px; border-radius: 2px;
+}
+.chart-bars-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 110px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.chart-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 32px;
+}
+.chart-bar-stack {
+  position: relative;
+  width: 28px;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+.chart-bar-bg {
+  width: 100%;
+  background: var(--bg3);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  overflow: hidden;
+  transition: height .4s cubic-bezier(.22,.68,0,1.2);
+}
+.chart-bar-fg {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  border-radius: 3px 3px 0 0;
+  transition: height .4s cubic-bezier(.22,.68,0,1.2) .05s;
+}
+.chart-bar-col.active-day .chart-bar-bg  { background: var(--blue-bg); border: 1px solid var(--blue-border); }
+.chart-bar-col.active-day .chart-bar-fg  { background: var(--blue) !important; }
+.chart-bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; color: var(--text3);
+  text-align: center; white-space: nowrap;
+}
+.chart-bar-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; color: var(--text2);
+  text-align: center;
+}
+
+/* ── CALENDAR SIDEBAR ── */
+.cal-sidebar-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+.cal-sidebar-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cal-nav {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px;
+}
+.cal-nav-btn {
+  width: 22px; height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 4px; background: transparent;
+  cursor: pointer; color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all .12s;
+}
+.cal-nav-btn:hover { background: var(--bg2); color: var(--text1); }
+.cal-month-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; font-weight: 500;
+  color: var(--text1); flex: 1; text-align: center;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-day-hd {
+  font-family: 'DM Mono', monospace;
+  font-size: 7.5px; color: var(--text3);
+  text-align: center; padding: 2px 0;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.cal-cell {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--text3);
+  cursor: default;
+  transition: all .12s;
+  position: relative;
+}
+.cal-cell.other-month { opacity: .25; }
+.cal-cell.today {
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+}
+.cal-cell.has-session {
+  cursor: pointer;
+  font-weight: 500;
+}
+.cal-cell.has-session::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+}
+.cal-cell.session-good  { background: var(--green-bg);  color: var(--green); }
+.cal-cell.session-good::after  { background: var(--green); }
+.cal-cell.session-mid   { background: var(--amber-bg);  color: var(--amber); }
+.cal-cell.session-mid::after   { background: var(--amber); }
+.cal-cell.session-bad   { background: var(--red-bg);    color: var(--red); }
+.cal-cell.session-bad::after   { background: var(--red); }
+.cal-cell.has-exercise-only {
+  background: var(--blue-bg);
+  color: var(--blue);
+  cursor: pointer;
+}
+.cal-cell.selected-day {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.cal-cell:hover:not(.other-month) { opacity: .8; }
+
+/* calendar legend */
+.cal-legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.cal-legend-item {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text3);
+}
+.cal-legend-dot {
+  width: 7px; height: 7px; border-radius: 2px;
+}
+
+/* ── SESSION DETAIL / RESULT SHEET ── */
+.result-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  animation: fadeUp .3s ease both;
+}
+.result-sheet-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.25rem; flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.result-sheet-title {
+  font-size: 14px; font-weight: 600; color: var(--text1); flex: 1;
+}
+.result-sheet-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--text3);
+}
+.result-sheet-close {
+  width: 24px; height: 24px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: transparent; cursor: pointer; color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; transition: all .12s;
+}
+.result-sheet-close:hover { background: var(--bg2); color: var(--text1); }
+
+/* score summary row */
+.rs-scores {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem;
+}
+.rs-score-cell {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  text-align: center;
+  flex: 1; min-width: 80px;
+}
+.rs-score-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px; font-weight: 500;
+  color: var(--text1); line-height: 1;
+  margin-bottom: 3px;
+}
+.rs-score-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+
+/* exercise section header */
+.rs-ex-hd {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px; margin-top: 1rem;
+}
+.rs-ex-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px; padding: 2px 8px;
+  border-radius: 3px; font-weight: 500;
+}
+.rs-ex-badge.ex1 { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+.rs-ex-badge.ex2 { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+.rs-ex-badge.recall { background: var(--chain-bg); color: var(--chain-text); border: 1px solid #C8C5E8; }
+.rs-ex-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 500;
+  margin-left: auto;
+}
+
+/* chain recall result */
+.rs-chain {
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.rs-chain-node {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px; padding: 3px 8px;
+  border-radius: 3px; text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.rs-chain-node.given  { background: var(--chain-bg); color: var(--chain-text); }
+.rs-chain-node.correct-blank { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.rs-chain-node.wrong-blank   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+.rs-chain-arr { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+
+/* question result card */
+.rs-q-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.rs-q-head {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.rs-q-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px; color: var(--text3);
+  flex-shrink: 0; margin-top: 1px;
+}
+.rs-q-text {
+  font-size: 12px; color: var(--text1);
+  line-height: 1.55; flex: 1;
+}
+.rs-q-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; padding: 2px 7px;
+  border-radius: 3px; flex-shrink: 0;
+  font-weight: 600;
+}
+.rs-q-status.correct { background: var(--green-bg); color: var(--green); }
+.rs-q-status.wrong   { background: var(--red-bg);   color: var(--red);   }
+.rs-q-status.skip    { background: var(--bg3);       color: var(--text3); }
+.rs-q-opts {
+  padding: 8px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.rs-opt {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 6px 9px;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px; line-height: 1.55;
+  border: 1px solid transparent;
+}
+.rs-opt.opt-correct { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+.rs-opt.opt-wrong   { background: var(--red-bg);   color: var(--red);   border-color: var(--red-border);   }
+.rs-opt.opt-neutral { background: var(--bg2); color: var(--text3); }
+.rs-opt-key { font-weight: 700; min-width: 12px; flex-shrink: 0; }
+.rs-q-reason {
+  padding: 7px 12px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--text2);
+  line-height: 1.65;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.rs-q-timing {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; color: var(--text3);
+  padding: 0 12px 8px;
+  background: var(--surface);
+  display: flex; gap: 12px;
+}
+.rs-timing-fast   { color: var(--green); }
+.rs-timing-slow   { color: var(--red); }
+.rs-timing-normal { color: var(--text3); }
+
+/* passage in result sheet */
+.rs-passage {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: 'Merriweather', serif;
+  font-size: 11.5px; line-height: 1.85;
+  color: var(--text2); font-weight: 300;
+  margin-bottom: 12px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.rs-passage-toggle {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px; color: var(--purple);
+  cursor: pointer; margin-bottom: 10px;
+  display: inline-flex; align-items: center; gap: 4px;
+  border: none; background: none; padding: 0;
+}
+
+/* nav between days in result sheet */
+.rs-day-nav {
+  display: flex; gap: 6px; align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.rs-day-nav-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px; background: transparent;
+  cursor: pointer; color: var(--text2);
+  transition: all .12s;
+  display: flex; align-items: center; gap: 4px;
+}
+.rs-day-nav-btn:hover { background: var(--bg2); color: var(--text1); }
+.rs-day-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+.rs-day-nav-info {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--text3);
+  flex: 1; text-align: center;
+}
+
+@media (max-width: 820px) {
+  .an-layout { grid-template-columns: 1fr; }
+  .an-sidebar { position: static; }
+}
 
 /* ── BUTTONS / TOASTS ── */
 .btn-primary { background: var(--text1); color: var(--surface); border: none; border-radius: var(--radius-sm); padding: 10px 22px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
@@ -1696,32 +2119,76 @@ async function deleteEx(id) {
 /* ════════════════════════════════════════════════════════════
    ANALYTICS PANEL
 ════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   ANALYTICS PANEL — full replacement
+════════════════════════════════════════════════════════════ */
+
+// State for analytics panel
+let _anSessions    = [];   // reading_sessions rows
+let _anQResults    = [];   // reading_question_results rows
+let _anExercises   = [];   // exercises for this user (already in allExercises)
+let _calYear       = new Date().getFullYear();
+let _calMonth      = new Date().getMonth();   // 0-indexed
+let _selectedDay   = null; // ISO string 'YYYY-MM-DD'
+let _chartMode     = 'week'; // 'week' | 'month'
+let _resultSheetSessions = []; // ordered list for prev/next nav
+let _resultSheetIdx      = 0;
+
 async function renderAnalyticsPanel() {
-  const u = allUsers.find(x => x.user_id === currentUID);
+  const u  = allUsers.find(x => x.user_id === currentUID);
   if (!u) return;
   const el = document.getElementById('analytics-content');
   el.innerHTML = '<div class="loading-row"><div class="spinner"></div> Loading…</div>';
-  const sessions = u._sessions || [];
-  const qResults = await rdGetUserQuestionResults(u.user_id);
-  const vars     = rdComputeVars(sessions);
-  const detail   = rdComputeDetailedVars(qResults);
 
-  let html = `<div class="an-grid">
+  // Load data
+  _anSessions  = u._sessions || [];
+  _anQResults  = await rdGetUserQuestionResults(u.user_id);
+  _anExercises = allExercises; // already scoped to currentUID
+
+  // Build layout shell
+  el.innerHTML = `
+    <div class="an-layout">
+      <div class="an-main" id="an-main-col"></div>
+      <div class="an-sidebar" id="an-sidebar-col"></div>
+    </div>`;
+
+  _renderAnMain();
+  _renderAnSidebar();
+}
+
+/* ── MAIN COLUMN ── */
+function _renderAnMain() {
+  const main = document.getElementById('an-main-col');
+  if (!main) return;
+
+  const vars   = rdComputeVars(_anSessions);
+  const detail = rdComputeDetailedVars(_anQResults);
+
+  let html = '';
+
+  // ── Top stat cards ──
+  html += `<div class="an-grid">
     <div class="an-card">
       <div class="an-card-title">Chain Recall (V)</div>
-      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${vars.V>=70?'var(--green)':vars.V>=40?'#B5760A':'var(--red)'}">${vars.V!==null?vars.V+'%':'—'}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">Avg ex1 score across all sessions</div>
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${_scoreColor(vars.V)}">${vars.V!=null?vars.V+'%':'—'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">avg ex1 across all sessions</div>
     </div>
     <div class="an-card">
-      <div class="an-card-title">Comprehension (normal days)</div>
-      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${vars.S>=70?'var(--green)':vars.S>=40?'#B5760A':'var(--red)'}">${vars.S!==null?vars.S+'%':'—'}</div>
+      <div class="an-card-title">Comprehension (normal)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${_scoreColor(vars.S)}">${vars.S!=null?vars.S+'%':'—'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">avg ex2 on normal days</div>
     </div>
     <div class="an-card">
-      <div class="an-card-title">Retention (recall days)</div>
-      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${vars.R>=70?'var(--green)':vars.R>=40?'#B5760A':'var(--red)'}">${vars.R!==null?vars.R+'%':'—'}</div>
+      <div class="an-card-title">Retention (recall)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:${_scoreColor(vars.R)}">${vars.R!=null?vars.R+'%':'—'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">avg ex2 on recall days</div>
     </div>
   </div>`;
 
+  // ── Bar Chart ──
+  html += _buildChartHtml();
+
+  // ── Detailed dimension bars ──
   if (detail) {
     const dimDefs = [
       {key:'I',label:'Inferential (I)',max:5},{key:'A',label:'Abstractness (A)',max:5},
@@ -1738,13 +2205,14 @@ async function renderAnalyticsPanel() {
       for (let lv = 1; lv <= dim.max; lv++) {
         const val = data[lv];
         if (val === undefined) continue;
-        const fc = val >= 70 ? 'var(--green)' : val >= 40 ? '#E8A020' : 'var(--red)';
+        const fc = _scoreColor(val);
         html += `<div class="an-bar-row"><span class="an-bar-lbl">${lv}</span><div class="an-bar-wrap"><div class="an-bar-fill" style="width:${val}%;background:${fc}"></div></div><span class="an-bar-val">${val}%</span></div>`;
       }
       html += `</div>`;
     });
     html += `</div>`;
 
+    // Speed matrix
     const sm = detail.speedMatrix;
     html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Speed Matrix</div>
     <div style="max-width:320px;margin-bottom:1.5rem"><div class="speed-matrix">
@@ -1754,25 +2222,27 @@ async function renderAnalyticsPanel() {
       <div class="sm-cell bad"><div class="sm-cell-val">${sm.slowWrong}</div><div class="sm-cell-lbl">Slow + Wrong</div></div>
     </div></div>`;
 
-    const decay     = detail.wmDecay;
-    const decayKeys = Object.keys(decay).sort((a,b) => +a - +b);
+    // WM Decay
+    const decay = detail.wmDecay;
+    const decayKeys = Object.keys(decay).sort((a,b)=>+a-+b);
     if (decayKeys.length > 1) {
       html += `<div class="section-label" style="margin-bottom:.85rem">Within-Session Accuracy (WM Decay)</div>
       <div class="an-card" style="max-width:400px;margin-bottom:1.5rem">`;
       decayKeys.forEach(pos => {
         const val = decay[pos];
-        const fc  = val >= 70 ? 'var(--green)' : val >= 40 ? '#E8A020' : 'var(--red)';
+        const fc  = _scoreColor(val);
         html += `<div class="an-bar-row"><span class="an-bar-lbl">Q${+pos+1}</span><div class="an-bar-wrap"><div class="an-bar-fill" style="width:${val}%;background:${fc}"></div></div><span class="an-bar-val">${val}%</span></div>`;
       });
       html += `</div>`;
     }
 
+    // By question type
     const byType = detail.byType;
     if (Object.keys(byType).length) {
       html += `<div class="section-label" style="margin-bottom:.85rem">Accuracy by Question Type</div>
       <div class="an-card" style="max-width:420px;margin-bottom:1.5rem">`;
-      Object.entries(byType).sort((a,b) => a[1]-b[1]).forEach(([type,pct]) => {
-        const fc = pct >= 70 ? 'var(--green)' : pct >= 40 ? '#E8A020' : 'var(--red)';
+      Object.entries(byType).sort((a,b)=>a[1]-b[1]).forEach(([type,pct]) => {
+        const fc = _scoreColor(pct);
         html += `<div class="an-bar-row"><span class="an-bar-lbl" style="min-width:60px;font-size:9px">${type}</span><div class="an-bar-wrap"><div class="an-bar-fill" style="width:${pct}%;background:${fc}"></div></div><span class="an-bar-val">${pct}%</span></div>`;
       });
       html += `</div>`;
@@ -1781,21 +2251,566 @@ async function renderAnalyticsPanel() {
     html += `<div class="empty-state" style="margin-top:1rem">No question-level data yet.</div>`;
   }
 
-  if (sessions.length) {
+  // ── Session history table ──
+  if (_anSessions.length) {
     html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Session History</div>
     <table class="session-table">
-      <thead><tr><th>Day</th><th>Date</th><th>Type</th><th>Ex1 %</th><th>Ex2 %</th><th>Time</th></tr></thead><tbody>`;
-    sessions.forEach(s => {
-      const e1c  = s.ex1_score >= 80 ? 'td-ok' : s.ex1_score >= 50 ? 'td-mid' : 'td-bad';
-      const e2c  = s.ex2_score >= 70 ? 'td-ok' : s.ex2_score >= 40 ? 'td-mid' : 'td-bad';
+      <thead><tr><th>Day</th><th>Date</th><th>Type</th><th>Ex1</th><th>Ex2</th><th>Time</th><th></th></tr></thead><tbody>`;
+    _anSessions.forEach((s, i) => {
+      const e1c  = _scoreCls(s.ex1_score);
+      const e2c  = _scoreCls(s.ex2_score);
       const date = new Date(s.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-      html += `<tr><td>W${s.week} D${s.day}</td><td>${date}</td><td>${s.session_type||'—'}</td><td class="${e1c}">${s.ex1_score!=null?s.ex1_score+'%':'—'}</td><td class="${e2c}">${s.ex2_score!=null?s.ex2_score+'%':'—'}</td><td>${fmt(s.total_time||0)}</td></tr>`;
+      html += `<tr style="cursor:pointer" onclick="_openResultSheet(${i}, 'session')">
+        <td>W${s.week} D${s.day}</td>
+        <td>${date}</td>
+        <td>${s.session_type||'—'}</td>
+        <td class="${e1c}">${s.ex1_score!=null?s.ex1_score+'%':'—'}</td>
+        <td class="${e2c}">${s.ex2_score!=null?s.ex2_score+'%':'—'}</td>
+        <td>${fmt(s.total_time||0)}</td>
+        <td style="color:var(--text3);font-size:10px">→</td>
+      </tr>`;
     });
     html += `</tbody></table>`;
   }
+
+  // Result sheet placeholder (injected dynamically)
+  html += `<div id="an-result-sheet" style="margin-top:1.25rem"></div>`;
+
+  main.innerHTML = html;
+
+  // Wire up chart toggle buttons after render
+  _bindChartToggles();
+  _drawChart(_chartMode);
+}
+
+/* ── SIDEBAR ── */
+function _renderAnSidebar() {
+  const sb = document.getElementById('an-sidebar-col');
+  if (!sb) return;
+  sb.innerHTML = `
+    <div class="cal-sidebar-card">
+      <div class="cal-sidebar-title">
+        Session Calendar
+      </div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="_calPrev()"><i class="ti ti-chevron-left" style="font-size:10px"></i></button>
+        <div class="cal-month-label" id="cal-month-label"></div>
+        <button class="cal-nav-btn" onclick="_calNext()"><i class="ti ti-chevron-right" style="font-size:10px"></i></button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-bg);border:1px solid var(--green-border)"></div> ≥70%</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--amber-bg);border:1px solid var(--amber-border)"></div> 40–69%</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red-bg);border:1px solid var(--red-border)"></div> <40%</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--blue-bg);border:1px solid var(--blue-border)"></div> exercise only</div>
+      </div>
+    </div>
+    <div id="cal-day-tooltip" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text2);box-shadow:var(--shadow-md)"></div>`;
+  _renderCalGrid();
+}
+
+/* ── CALENDAR GRID ── */
+function _renderCalGrid() {
+  const label = document.getElementById('cal-month-label');
+  const grid  = document.getElementById('cal-grid');
+  if (!label || !grid) return;
+
+  const monthName = new Date(_calYear, _calMonth, 1)
+    .toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }).toUpperCase();
+  label.textContent = monthName;
+
+  // Build session map: ISO date → session
+  const sessionMap = {};
+  _anSessions.forEach(s => {
+    const iso = new Date(s.created_at).toISOString().split('T')[0];
+    if (!sessionMap[iso]) sessionMap[iso] = s;
+  });
+
+  // Build exercise date map from userMeta
+  const meta      = userMeta[currentUID] || {};
+  const startDate = meta.startDate;
+  const holidays  = new Set(meta.holidays || []);
+  const exDateMap = {}; // ISO → exercise day number
+  if (startDate) {
+    let cursor = new Date(startDate + 'T00:00:00');
+    let exDay  = 1;
+    for (let cal = 0; cal < 60 && exDay <= 7; cal++) {
+      const iso = cursor.toISOString().split('T')[0];
+      if (!holidays.has(iso)) { exDateMap[iso] = exDay; exDay++; }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+
+  const today   = new Date().toISOString().split('T')[0];
+  const first   = new Date(_calYear, _calMonth, 1);
+  const lastDay = new Date(_calYear, _calMonth + 1, 0).getDate();
+  const startDow = (first.getDay() + 6) % 7; // Mon=0
+
+  const days = ['M','T','W','T','F','S','S'];
+  let html = days.map(d => `<div class="cal-day-hd">${d}</div>`).join('');
+
+  // Padding cells before first
+  for (let p = 0; p < startDow; p++) {
+    const prevDate = new Date(_calYear, _calMonth, -startDow + p + 1);
+    html += `<div class="cal-cell other-month">${prevDate.getDate()}</div>`;
+  }
+
+  for (let d = 1; d <= lastDay; d++) {
+    const iso    = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const s      = sessionMap[iso];
+    const isToday = iso === today;
+    const sel    = iso === _selectedDay;
+    const hasEx  = !!exDateMap[iso];
+
+    let cls = 'cal-cell';
+    let score = null;
+    let titleAttr = '';
+
+    if (s) {
+      score = s.ex2_score != null ? s.ex2_score : s.ex1_score;
+      cls += ' has-session';
+      if (score >= 70)      cls += ' session-good';
+      else if (score >= 40) cls += ' session-mid';
+      else                  cls += ' session-bad';
+      titleAttr = `W${s.week} D${s.day} · ${score != null ? score+'%' : '—'}`;
+    } else if (hasEx) {
+      cls += ' has-exercise-only';
+      titleAttr = `Exercise day ${exDateMap[iso]}`;
+    }
+
+    if (isToday) cls += ' today';
+    if (sel)     cls += ' selected-day';
+
+    const clickable = s || hasEx;
+    html += `<div class="${cls}"
+      ${clickable ? `onclick="_calDayClick('${iso}')" onmouseenter="_calTooltip('${iso}',this)" onmouseleave="_calTooltipHide()"` : ''}
+      title="${titleAttr}">${d}</div>`;
+  }
+
+  // Trailing cells
+  const totalCells = startDow + lastDay;
+  const trailing   = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let t = 1; t <= trailing; t++) {
+    html += `<div class="cal-cell other-month">${t}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function _calPrev() {
+  _calMonth--;
+  if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+  _renderCalGrid();
+}
+function _calNext() {
+  _calMonth++;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  _renderCalGrid();
+}
+
+function _calDayClick(iso) {
+  const sessionMap = {};
+  _anSessions.forEach((s, i) => {
+    const d = new Date(s.created_at).toISOString().split('T')[0];
+    if (!sessionMap[d]) sessionMap[d] = i;
+  });
+  _selectedDay = iso;
+  _renderCalGrid();
+  if (sessionMap[iso] !== undefined) {
+    _openResultSheet(sessionMap[iso], 'session');
+    // scroll result sheet into view
+    setTimeout(() => {
+      document.getElementById('an-result-sheet')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  }
+}
+
+function _calTooltip(iso, el) {
+  const tt = document.getElementById('cal-day-tooltip');
+  if (!tt) return;
+  const s = _anSessions.find(x => new Date(x.created_at).toISOString().split('T')[0] === iso);
+  if (!s) { tt.style.display = 'none'; return; }
+  const score = s.ex2_score != null ? s.ex2_score : s.ex1_score;
+  tt.style.display = 'block';
+  tt.innerHTML = `<div style="margin-bottom:4px;font-weight:600;color:var(--text1)">W${s.week} · Day ${s.day}</div>
+    <div>Type: ${s.session_type||'normal'}</div>
+    ${s.ex1_score!=null?`<div>Ex1: ${s.ex1_score}%</div>`:''}
+    ${s.ex2_score!=null?`<div>Ex2: ${s.ex2_score}%</div>`:''}
+    <div>Time: ${fmt(s.total_time||0)}</div>`;
+}
+function _calTooltipHide() {
+  const tt = document.getElementById('cal-day-tooltip');
+  if (tt) tt.style.display = 'none';
+}
+
+/* ── BAR CHART ── */
+function _buildChartHtml() {
+  return `<div class="chart-wrap" id="chart-wrap">
+    <div class="chart-header">
+      <div class="chart-title">Questions Attempted</div>
+      <div class="chart-toggle">
+        <button class="chart-toggle-btn active" data-mode="week" onclick="_chartSwitch('week',this)">Week</button>
+        <button class="chart-toggle-btn" data-mode="month" onclick="_chartSwitch('month',this)">Month</button>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--bg3)"></div>Total questions</div>
+      <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--green)"></div>Correct</div>
+    </div>
+    <div class="chart-bars-area" id="chart-bars-area"></div>
+  </div>`;
+}
+
+function _bindChartToggles() {
+  // already wired via onclick in HTML above — nothing extra
+}
+
+function _chartSwitch(mode, btn) {
+  _chartMode = mode;
+  document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _drawChart(mode);
+}
+
+function _drawChart(mode) {
+  const area = document.getElementById('chart-bars-area');
+  if (!area) return;
+
+  // Build per-day buckets from qResults
+  const dayMap = {}; // ISO → { total, correct }
+  _anQResults.forEach(r => {
+    const iso = new Date(r.created_at).toISOString().split('T')[0];
+    if (!dayMap[iso]) dayMap[iso] = { total: 0, correct: 0 };
+    dayMap[iso].total++;
+    if (r.correct) dayMap[iso].correct++;
+  });
+
+  // Also fold in session data for days that have sessions but no qResults
+  _anSessions.forEach(s => {
+    const iso = new Date(s.created_at).toISOString().split('T')[0];
+    if (!dayMap[iso] && (s.ex1_total || s.ex2_total)) {
+      dayMap[iso] = {
+        total:   (s.ex1_total||0) + (s.ex2_total||0),
+        correct: (s.ex1_correct||0) + (s.ex2_correct||0),
+      };
+    }
+  });
+
+  // Build date range
+  const today = new Date();
+  const dates = [];
+  if (mode === 'week') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+  } else {
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth(), i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+  }
+
+  const maxTotal = Math.max(1, ...dates.map(d => (dayMap[d]?.total || 0)));
+  const todayIso = today.toISOString().split('T')[0];
+
+  area.innerHTML = dates.map(iso => {
+    const data    = dayMap[iso] || { total: 0, correct: 0 };
+    const bgH     = Math.max(4, Math.round((data.total  / maxTotal) * 100));
+    const fgH     = data.total ? Math.round((data.correct / data.total) * bgH) : 0;
+    const isToday = iso === todayIso;
+    const fgColor = data.total
+      ? (data.correct/data.total >= 0.7 ? 'var(--green)' : data.correct/data.total >= 0.4 ? '#E8A020' : 'var(--red)')
+      : 'var(--green)';
+    const d   = new Date(iso + 'T00:00:00');
+    const lbl = mode === 'week'
+      ? d.toLocaleDateString('en-IN',{weekday:'short'}).slice(0,2)
+      : String(d.getDate());
+    const pct = data.total ? Math.round(data.correct/data.total*100) : null;
+    return `<div class="chart-bar-col${isToday?' active-day':''}" title="${iso}: ${data.correct}/${data.total} correct">
+      <div class="chart-bar-stack" style="height:${bgH+4}px">
+        <div class="chart-bar-bg" style="height:${bgH}px">
+          <div class="chart-bar-fg" style="height:${fgH}px;background:${fgColor}"></div>
+        </div>
+      </div>
+      <div class="chart-bar-label">${lbl}</div>
+      ${pct!=null?`<div class="chart-bar-pct">${pct}%</div>`:'<div class="chart-bar-pct" style="opacity:0">—</div>'}
+    </div>`;
+  }).join('');
+}
+
+/* ── RESULT SHEET ── */
+function _openResultSheet(sessionIdx, _source) {
+  _resultSheetSessions = _anSessions.map((_, i) => i); // all session indices
+  _resultSheetIdx = sessionIdx;
+  _renderResultSheet();
+}
+
+function _renderResultSheet() {
+  const el = document.getElementById('an-result-sheet');
+  if (!el) return;
+  const s = _anSessions[_resultSheetIdx];
+  if (!s) { el.innerHTML = ''; return; }
+
+  const date = new Date(s.created_at).toLocaleString('en-IN',{
+    day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+
+  // Get question results for this session
+  // Match by session_id first, fall back to week+day+user
+  let qRows = _anQResults.filter(r => r.session_id === s.id);
+  if (!qRows.length) {
+    qRows = _anQResults.filter(r => r.week === s.week && r.day === s.day);
+  }
+
+  // Split into ex1 recall rows (those are chain blanks — not in qResults currently)
+  // and ex2 question rows (all qResults are ex2 for now)
+  const ex2Rows = qRows; // all question_results are Ex2 until exercise_type column is added
+
+  // Get exercise for passage + question text
+  const ex = _anExercises.find(e => e.week === s.week && e.day === s.day);
+
+  // Build scores summary
+  const ex1Score = s.ex1_score;
+  const ex2Score = s.ex2_score;
+  const totalTime = fmt(s.total_time||0);
+
+  let html = `<div class="result-sheet">
+    <div class="result-sheet-head">
+      <div>
+        <div class="result-sheet-title">Week ${s.week} · Day ${s.day} — ${s.session_type==='recall'?'Recall Session':'Normal Session'}</div>
+        <div class="result-sheet-meta">${date} &nbsp;·&nbsp; ${totalTime} total</div>
+      </div>
+      <button class="result-sheet-close" onclick="_closeResultSheet()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="rs-scores">
+      ${ex1Score!=null?`<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(ex1Score)}">${ex1Score}%</div><div class="rs-score-lbl">Ex1 Recall</div></div>`:''}
+      ${ex2Score!=null?`<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</div><div class="rs-score-lbl">Ex2 Comprehension</div></div>`:''}
+      ${s.ex2_correct!=null?`<div class="rs-score-cell"><div class="rs-score-val">${s.ex2_correct}/${s.ex2_total||0}</div><div class="rs-score-lbl">Ex2 Questions</div></div>`:''}
+      <div class="rs-score-cell"><div class="rs-score-val">${totalTime}</div><div class="rs-score-lbl">Total Time</div></div>
+    </div>`;
+
+  // ── Ex1 Chain Recall ──
+  if (ex && ex.ex1_blocks) {
+    const blocks        = ex.ex1_blocks || [];
+    const isRecallDay   = [2,4,6,7].includes(s.day);
+    const blankPositions = isRecallDay
+      ? (s.day===1 ? (ex.ex1_blank_pos!=null?[ex.ex1_blank_pos]:[]) : ex.ex1_blank_positions||[])
+      : (ex.ex1_blank_positions||[]);
+    const score = ex1Score;
+    html += `<div class="rs-ex-hd">
+      <span class="rs-ex-badge ex1">Ex1 — Chain Recall</span>
+      ${score!=null?`<span class="rs-ex-score" style="color:${_scoreColor(score)}">${score}%</span>`:''}
+    </div>
+    <div class="rs-chain">`;
+    blocks.forEach((b, i) => {
+      if (i > 0) html += `<span class="rs-chain-arr">→</span>`;
+      const isBlank = blankPositions.includes(i);
+      if (isBlank) {
+        // We don't store chain recall inputs in DB currently — show blank marker
+        html += `<span class="rs-chain-node correct-blank" title="blank position">${b.node||'?'} ⓘ</span>`;
+      } else {
+        html += `<span class="rs-chain-node given">${b.node||''}</span>`;
+      }
+    });
+    html += `</div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
+      ⓘ Chain recall answers are not stored per-question — only the score is saved.
+    </div>`;
+  }
+
+  // ── Ex2 Questions ──
+  if (ex2Rows.length) {
+    const passage = ex?.ex2_passage;
+    const qs      = ex?.ex2_questions || [];
+
+    // Figure out which questions map to this day
+    let dayQs = qs;
+    if (s.day !== 1 && qs.length > 4) dayQs = qs.slice(0, 4);
+    if (s.day === 1) {
+      const map = ex?.ex2_recall_map || {};
+      const assigned = new Set(Object.values(map).flat().map(Number));
+      dayQs = qs.filter((_,i) => !assigned.has(i)).slice(0,4);
+    }
+
+    html += `<div class="rs-ex-hd">
+      <span class="rs-ex-badge ex2">Ex2 — Comprehension</span>
+      ${ex2Score!=null?`<span class="rs-ex-score" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</span>`:''}
+    </div>`;
+
+    if (passage) {
+      html += `<button class="rs-passage-toggle" onclick="_togglePassage(this)">
+        <i class="ti ti-book" style="font-size:10px"></i> Show passage
+      </button>
+      <div class="rs-passage" id="rs-passage-${_resultSheetIdx}" style="display:none">${passage}</div>`;
+    }
+
+    // Sort rows by question_index
+    const rowByIdx = {};
+    ex2Rows.forEach(r => { rowByIdx[r.question_index] = r; });
+
+    dayQs.forEach((q, qi) => {
+      const r     = rowByIdx[qi];
+      const status = !r ? 'skip' : r.correct ? 'correct' : 'wrong';
+      const chosen = r?.chosen;
+      const timeTaken = r?.time_taken;
+      const xp     = r?.profile_xp || q?.profile?.xp;
+      let timingCls = 'rs-timing-normal', timingNote = '';
+      if (timeTaken != null && xp) {
+        const ratio = timeTaken / xp;
+        if (ratio < 0.85) { timingCls = 'rs-timing-fast'; timingNote = 'faster than expected'; }
+        else if (ratio > 1.5) { timingCls = 'rs-timing-slow'; timingNote = 'slower than expected'; }
+        else { timingNote = 'within expected range'; }
+      }
+
+      html += `<div class="rs-q-card">
+        <div class="rs-q-head">
+          <div class="rs-q-num">Q${qi+1} · ${q?.type||'—'}</div>
+          <div class="rs-q-text">${q?.text||'(question text not stored)'}</div>
+          <div class="rs-q-status ${status}">${status==='correct'?'✓ Correct':status==='wrong'?'✗ Wrong':'— Skipped'}</div>
+        </div>`;
+
+      if (q?.options?.length) {
+        html += `<div class="rs-q-opts">`;
+        q.options.forEach((opt, oi) => {
+          let cls = 'rs-opt opt-neutral';
+          if (oi === q.correct)               cls = 'rs-opt opt-correct';
+          else if (oi === chosen && r)         cls = 'rs-opt opt-wrong';
+          const mark = oi === q.correct ? ' ✓' : (oi === chosen && oi !== q.correct && r ? ' ✗' : '');
+          html += `<div class="${cls}"><span class="rs-opt-key">${'ABCD'[oi]}</span>${opt}${mark}</div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (timeTaken != null) {
+        html += `<div class="rs-q-timing">
+          <span>Time: <strong>${timeTaken}s</strong></span>
+          ${xp?`<span>Expected: ~${xp}s</span>`:''}
+          ${timingNote?`<span class="${timingCls}">${timingNote}</span>`:''}
+        </div>`;
+      }
+
+      if (q?.reason) {
+        html += `<div class="rs-q-reason"><strong>Why ${('ABCD')[q.correct]} is correct:</strong> ${q.reason}</div>`;
+      }
+
+      html += `</div>`; // rs-q-card
+    });
+
+    // Recall day — also show the recall questions for Day 1
+    if (s.session_type === 'recall' && ex && s.day !== 1) {
+      const day1Ex   = _anExercises.find(e => e.week === s.week && e.day === 1);
+      if (day1Ex) {
+        const rMap      = day1Ex.ex2_recall_map || {};
+        const recallIdxs = (rMap[String(s.day)] || []).map(Number);
+        const recallQs   = recallIdxs.map(i => day1Ex.ex2_questions[i]).filter(Boolean);
+        // Rows from qResults that are from this session and NOT in today's questions
+        // (ex2Rows already contains everything; we distinguish by question_index offset)
+        if (recallQs.length) {
+          html += `<div class="rs-ex-hd" style="margin-top:1.25rem">
+            <span class="rs-ex-badge recall">🔁 Day 1 Recall Questions</span>
+            ${s.ex2_d1_score!=null?`<span class="rs-ex-score" style="color:${_scoreColor(s.ex2_d1_score)}">${s.ex2_d1_score}%</span>`:''}
+          </div>`;
+          // These questions' indices in the full ex2_questions array start at recallIdxs[0]
+          // But in qResults they're stored at question_index 0..3 in a separate batch
+          // Best we can do without exercise_type column: show the question content, mark unanswered
+          recallQs.forEach((q, qi) => {
+            html += `<div class="rs-q-card">
+              <div class="rs-q-head">
+                <div class="rs-q-num">Recall Q${qi+1} · ${q.type||'—'}</div>
+                <div class="rs-q-text">${q.text||''}</div>
+                <div class="rs-q-status skip">— needs exercise_type column</div>
+              </div>`;
+            if (q.options?.length) {
+              html += `<div class="rs-q-opts">`;
+              q.options.forEach((opt, oi) => {
+                const isCorrect = oi === q.correct;
+                html += `<div class="rs-opt ${isCorrect?'opt-correct':'opt-neutral'}"><span class="rs-opt-key">${'ABCD'[oi]}</span>${opt}${isCorrect?' ✓':''}</div>`;
+              });
+              html += `</div>`;
+            }
+            if (q.reason) {
+              html += `<div class="rs-q-reason"><strong>Why ${'ABCD'[q.correct]}:</strong> ${q.reason}</div>`;
+            }
+            html += `</div>`;
+          });
+          html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:6px;margin-bottom:12px">
+            ⓘ Recall question answers indistinguishable from today's answers until
+            <code style="background:var(--bg2);padding:1px 4px;border-radius:2px">exercise_type</code> column is added (Bug #2 fix).
+          </div>`;
+        }
+      }
+    }
+  } else {
+    html += `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:1rem 0">
+      No question-level data saved for this session.
+      ${!s.id?'(session row missing from reading_sessions — Bug #1)':''}
+    </div>`;
+  }
+
+  // Day nav
+  const total = _resultSheetSessions.length;
+  html += `<div class="rs-day-nav">
+    <button class="rs-day-nav-btn" onclick="_rsNav(-1)" ${_resultSheetIdx===0?'disabled':''}>
+      <i class="ti ti-chevron-left" style="font-size:10px"></i> Prev
+    </button>
+    <div class="rs-day-nav-info">Session ${_resultSheetIdx+1} of ${total}</div>
+    <button class="rs-day-nav-btn" onclick="_rsNav(1)" ${_resultSheetIdx>=total-1?'disabled':''}>
+      Next <i class="ti ti-chevron-right" style="font-size:10px"></i>
+    </button>
+  </div>`;
+
+  html += `</div>`; // result-sheet
   el.innerHTML = html;
 }
 
+function _rsNav(dir) {
+  const newIdx = _resultSheetIdx + dir;
+  if (newIdx < 0 || newIdx >= _anSessions.length) return;
+  _resultSheetIdx = newIdx;
+  // Highlight corresponding calendar cell
+  const s = _anSessions[_resultSheetIdx];
+  if (s) {
+    _selectedDay = new Date(s.created_at).toISOString().split('T')[0];
+    const d = new Date(_selectedDay + 'T00:00:00');
+    _calYear  = d.getFullYear();
+    _calMonth = d.getMonth();
+    _renderCalGrid();
+  }
+  _renderResultSheet();
+  document.getElementById('an-result-sheet')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function _closeResultSheet() {
+  _selectedDay = null;
+  document.getElementById('an-result-sheet').innerHTML = '';
+  _renderCalGrid();
+}
+
+function _togglePassage(btn) {
+  const id  = `rs-passage-${_resultSheetIdx}`;
+  const el  = document.getElementById(id);
+  if (!el) return;
+  const visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+  btn.innerHTML = visible
+    ? '<i class="ti ti-book" style="font-size:10px"></i> Show passage'
+    : '<i class="ti ti-book" style="font-size:10px"></i> Hide passage';
+}
+
+/* ── UTILS ── */
+function _scoreColor(v) {
+  if (v == null) return 'var(--text3)';
+  return v >= 70 ? 'var(--green)' : v >= 40 ? '#B5760A' : 'var(--red)';
+}
+function _scoreCls(v) {
+  if (v == null) return '';
+  return v >= 70 ? 'td-ok' : v >= 40 ? 'td-mid' : 'td-bad';
+}
 /* ════════════════════════════════════════════════════════════
    UTILS
 ════════════════════════════════════════════════════════════ */
