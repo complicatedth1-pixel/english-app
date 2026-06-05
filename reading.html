@@ -576,7 +576,13 @@ function buildEx2(ex, day) {
     isRecall:  false,
     onComplete: (results) => {
       sess._ex2Results = results;
-      sess.questionResults.push(...results.map(r => ({ ...r, week: sess.week, day: sess.day })));
+      sess.questionResults.push(...results.map(r => ({ 
+        ...r, 
+        week:          sess.week, 
+        day:           sess.day,
+        exercise_type: 'ex2',
+        is_recall:     false,
+      })));
       let correct = 0;
       results.forEach(r => { if (r.correct) correct++; });
       sess.ex2Correct = correct;
@@ -586,6 +592,7 @@ function buildEx2(ex, day) {
     }
   });
 }
+
 function getQuestionsForDay(ex, day) {
   const qs = ex.ex2_questions || [];
   if (day !== 1) return qs.slice(0, 4);
@@ -612,7 +619,13 @@ function buildEx2RecallD1(day1Ex, currentDay) {
     isRecall:  true,
     onComplete: (results) => {
       sess._ex2RecallResults = results;
-      sess.questionResults.push(...results.map(r => ({ ...r, week: sess.week, day: sess.day })));
+      sess.questionResults.push(...results.map(r => ({ 
+        ...r, 
+        week:          sess.week, 
+        day:           sess.day,
+        exercise_type: 'ex2',
+        is_recall:     true,
+      })));
       let correct = 0;
       results.forEach(r => { if (r.correct) correct++; });
       sess.ex2D1Correct = correct;
@@ -662,13 +675,15 @@ async function buildAnalysis() {
   // ── Save per-question results ─────────────────────────────────────
   if (savedSession?.id && sess.questionResults.length) {
     try {
-      await rdSaveQuestionResults(
-        sess.questionResults.map(r => ({
-          ...r,
-          session_id: savedSession.id,
-          user_id:    currentUser.id,
-        }))
-      );
+await rdSaveQuestionResults(
+  sess.questionResults.map(r => ({
+    ...r,
+    session_id:    savedSession.id,
+    user_id:       currentUser.id,
+    exercise_type: r.exercise_type || 'ex2',
+    is_recall:     r.is_recall     || false,
+  }))
+);
     } catch (e) {
       console.error('Question results save failed:', e);
     }
