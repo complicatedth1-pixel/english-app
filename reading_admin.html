@@ -924,10 +924,12 @@ function switchPanel(id, btn) {
    DASHBOARD
 ════════════════════════════════════════════════════════════ */
 function renderDashboard() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   let doneToday = 0, missToday = 0;
   allUsers.forEach(u => {
-    const done = (u._sessions || []).some(x => new Date(x.created_at).toISOString().split('T')[0] === today);
+   const done = (u._sessions || []).some(x => 
+  new Date(x.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === today
+);
     if (done) doneToday++; else missToday++;
   });
   document.getElementById('st-users').textContent = allUsers.length;
@@ -944,7 +946,9 @@ function renderDashboard() {
     const avHtml = avatar ? `<img src="${avatar}" alt="${name}">` : (name[0] || '?').toUpperCase();
     const day    = u.current_day  || 1;
     const week   = u.current_week || 1;
-    const doneT  = (u._sessions || []).some(s => new Date(s.created_at).toISOString().split('T')[0] === today);
+    const doneT = (u._sessions || []).some(s => 
+  new Date(s.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === today
+);
     const meta   = userMeta[u.user_id] || {};
     const p      = meta.profile || {};
     const profStr = `V${p.V||'?'} S${p.S||'?'} W${p.W||'?'} I${p.I||'?'} A${p.A||'?'} G${p.G||'?'}`;
