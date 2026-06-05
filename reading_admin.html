@@ -1413,7 +1413,17 @@ function toggleUserSelect(uid) {
     oldPanel.replaceWith(temp.firstElementChild);
   }
 }
-
+function cleanJson(raw) {
+  let s = raw.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+  // Only strip fences if they exist
+  const fenceMatch = s.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) return fenceMatch[1].trim();
+  // No fences — find the first { and last } and extract that
+  const start = s.indexOf('{');
+  const end   = s.lastIndexOf('}');
+  if (start !== -1 && end !== -1) return s.slice(start, end + 1).trim();
+  return s;
+}
 /* ── Save exercise to all selected users ── */
 async function parseAndSaveToSelected() {
   const raw = document.getElementById('json-paste')?.value.trim();
@@ -1424,7 +1434,11 @@ async function parseAndSaveToSelected() {
 
   let data;
   try {
-    const clean = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'');
+    const clean = cleanJson(raw);
+    if (!clean.startsWith('{')) {
+      alert('Could not find JSON object in pasted text. Make sure you copied the full response.');
+      return;
+    }
     data = JSON.parse(clean);
   } catch(e) {
     alert('Could not parse JSON: ' + e.message);
@@ -1447,7 +1461,6 @@ async function parseAndSaveToSelected() {
     created_by:          adminUser.id,
   };
 
-  // Validate: only save to users on this day
   const eligibleUIDs = [...promptSelectedUIDs].filter(uid => {
     const u = allUsers.find(x => x.user_id === uid);
     return u && (u.current_day || 1) === day;
@@ -1470,7 +1483,6 @@ async function parseAndSaveToSelected() {
     }
   }
 
-  // If current user was one of them, refresh exercises
   if (eligibleUIDs.includes(currentUID)) {
     allExercises = await rdGetAllExercises(currentUID);
     renderDayTabs();
@@ -1480,14 +1492,17 @@ async function parseAndSaveToSelected() {
   showToast('fill-toast');
 }
 
-/* ── parseAndFill: fill the upload form only (existing behaviour) ── */
 function parseAndFill() {
   const raw = document.getElementById('json-paste')?.value.trim();
   if (!raw) return;
   try {
-    const clean = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'');
-    const data  = JSON.parse(clean);
-    const day   = data.day || activeDay;
+    const clean = cleanJson(raw);
+    if (!clean.startsWith('{')) {
+      alert('Could not find JSON object in pasted text. Make sure you copied the full response.');
+      return;
+    }
+    const data = JSON.parse(clean);
+    const day  = data.day || activeDay;
     if (!dayFormState[day]) {
       dayFormState[day] = {
         topic:'', ex1Blocks: defaultBlocks(day),
@@ -1524,7 +1539,6 @@ function parseAndFill() {
     alert('Could not parse JSON: ' + e.message);
   }
 }
-
 function buildDay1Prompt(userName, p={}) {
   const V=p.V||3, S=p.S||3, W=p.W||2, I=p.I||2, A=p.A||2, G=p.G||3;
   return `You are generating a structured English reading exercise for a student named ${userName}.
