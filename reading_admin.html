@@ -2629,13 +2629,12 @@ function _renderResultSheet() {
     const passage = ex?.ex2_passage;
     const qs      = ex?.ex2_questions || [];
 
-    let dayQs = qs;
-    if (s.day !== 1 && qs.length > 4) dayQs = qs.slice(0, 4);
-    if (s.day === 1) {
-      const map = ex?.ex2_recall_map || {};
-      const assigned = new Set(Object.values(map).flat().map(Number));
-      dayQs = qs.filter((_,i) => !assigned.has(i)).slice(0,4);
-    }
+let dayQs = qs;
+if (s.day === 1) {
+  const map = ex?.ex2_recall_map || {};
+  const assigned = new Set(Object.values(map).flat().map(Number));
+  dayQs = qs.filter((_,i) => !assigned.has(i));
+}
 
     html += `<div class="rs-ex-hd">
       <span class="rs-ex-badge ex2">Ex2 — Comprehension</span>
