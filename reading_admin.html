@@ -919,7 +919,113 @@ function switchPanel(id, btn) {
   if (id === 'schedule')  renderSchedulePanel();
   if (id === 'analytics') renderAnalyticsPanel();
 }
+function exportAnalytics() {
+  const u    = allUsers.find(x => x.user_id === currentUID);
+  const name = u?.profiles?.name || 'Unknown';
+  const email = u?.profiles?.email || '';
+  const meta  = userMeta[currentUID] || {};
+  const p     = meta.profile || {};
+  const periodVal = document.getElementById('export-period')?.value || 'all';
 
+  let sessions = [..._anSessions];
+  let qResults = [..._anQResults];
+  if (periodVal !== 'all') {
+    const wk = parseInt(periodVal);
+    sessions = sessions.filter(s => s.week === wk);
+    qResults = qResults.filter(r => r.week === wk);
+  }
+
+  const hr  = '─'.repeat(60);
+  const lines = [];
+  lines.push('LEARNSMART READING ANALYTICS EXPORT');
+  lines.push(`Generated : ${new Date().toLocaleString('en-IN')}`);
+  lines.push(`Period    : ${periodVal === 'all' ? 'All weeks' : 'Week ' + periodVal}`);
+  lines.push(hr);
+  lines.push('\nLEARNER');
+  lines.push(`Name    : ${name}`);
+  lines.push(`Email   : ${email}`);
+  lines.push(`Profile : V=${p.V||'?'} S=${p.S||'?'} W=${p.W||'?'} I=${p.I||'?'} A=${p.A||'?'} G=${p.G||'?'}`);
+  lines.push(`Start   : ${meta.startDate || '—'}`);
+  lines.push(hr);
+
+  // Summary
+  const vars = rdComputeVars(sessions);
+  lines.push('\nSUMMARY');
+  lines.push(`Sessions    : ${sessions.length}`);
+  lines.push(`Ex1 recall  : ${vars.V != null ? vars.V + '%' : '—'} avg`);
+  lines.push(`Ex2 (normal): ${vars.S != null ? vars.S + '%' : '—'} avg`);
+  lines.push(`Ex2 (recall): ${vars.R != null ? vars.R + '%' : '—'} avg`);
+  const allQ  = qResults.length;
+  const corrQ = qResults.filter(r => r.correct).length;
+  lines.push(`Q accuracy  : ${allQ ? Math.round(corrQ/allQ*100)+'% ('+corrQ+'/'+allQ+')' : '—'}`);
+  lines.push(`Total time  : ${fmt(sessions.reduce((a, s) => a + (s.total_time||0), 0))}`);
+  lines.push(hr);
+
+  // Sessions
+  lines.push('\nSESSIONS');
+  lines.push(`${'Wk/Day'.padEnd(8)} ${'Type'.padEnd(9)} ${'Ex1'.padEnd(7)} ${'Ex2'.padEnd(7)} ${'Q'.padEnd(7)} Time      Date`);
+  lines.push('─'.repeat(72));
+  sessions.forEach(s => {
+    lines.push(
+      `W${s.week} D${s.day}`.padEnd(8) + ' ' +
+      (s.session_type||'normal').padEnd(9) + ' ' +
+      (s.ex1_score != null ? s.ex1_score+'%' : '—').padEnd(7) +
+      (s.ex2_score != null ? s.ex2_score+'%' : '—').padEnd(7) +
+      (s.ex2_correct != null ? s.ex2_correct+'/'+s.ex2_total : '—').padEnd(7) +
+      fmt(s.total_time||0).padEnd(10) +
+      new Date(s.created_at).toLocaleDateString('en-IN')
+    );
+  });
+  lines.push(hr);
+
+  // Per-question
+  if (qResults.length) {
+    lines.push('\nPER-QUESTION RESULTS');
+    lines.push(`${'Wk/Day'.padEnd(7)} ${'Q#'.padEnd(4)} ${'Type'.padEnd(10)} ${'Ans'.padEnd(4)} ${'Time'.padEnd(6)} ${'Exp'.padEnd(6)} Status`);
+    lines.push('─'.repeat(65));
+    qResults.forEach(r => {
+      lines.push(
+        `W${r.week} D${r.day}`.padEnd(7) + ' ' +
+        ('Q'+(r.question_index+1)).padEnd(4) + ' ' +
+        (r.question_type||'—').padEnd(10) +
+        ('ABCD'[r.chosen]||'?').padEnd(4) +
+        (r.time_taken != null ? r.time_taken+'s' : '—').padEnd(6) +
+        (r.profile_xp != null ? r.profile_xp+'s' : '—').padEnd(6) +
+        (r.correct ? '✓ correct' : '✗ wrong')
+      );
+    });
+    lines.push('');
+    lines.push('Accuracy by question type:');
+    const byType = {};
+    qResults.forEach(r => { if (!byType[r.question_type]) byType[r.question_type]=[]; byType[r.question_type].push(r.correct); });
+    Object.entries(byType).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([t, rs]) => {
+      const pct = Math.round(rs.filter(Boolean).length / rs.length * 100);
+      lines.push(`  ${t.padEnd(12)} ${pct}% (${rs.filter(Boolean).length}/${rs.length})`);
+    });
+    lines.push(hr);
+  }
+
+  // Ex1 answers (if stored)
+  const sessWithAnswers = sessions.filter(s => s.ex1_answers?.length);
+  if (sessWithAnswers.length) {
+    lines.push('\nEX1 CHAIN RECALL — PER-BLANK ANSWERS');
+    sessWithAnswers.forEach(s => {
+      lines.push(`\nW${s.week} D${s.day} (${s.session_type}) — ${s.ex1_score}%`);
+      s.ex1_answers.forEach(a => {
+        lines.push(`  Node ${a.node_idx+1}: "${a.user_answer}" → ${a.ok ? '✓ correct' : '✗ wrong (answer: '+a.correct_answer+')'}`);
+      });
+    });
+    lines.push(hr);
+  }
+
+  lines.push('\n[End of export]');
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `${name.replace(/\s+/g,'_')}_analytics_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 /* ════════════════════════════════════════════════════════════
    DASHBOARD
 ════════════════════════════════════════════════════════════ */
@@ -2279,7 +2385,19 @@ function _renderAnMain() {
     });
     html += `</tbody></table>`;
   }
-
+html += `
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:1.5rem 0 1rem">
+  <div class="section-label" style="margin:0">Export data</div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <select id="export-period" style="font-size:12px;padding:5px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text1)">
+      <option value="all">All weeks</option>
+      <option value="1">Week 1 only</option>
+      <option value="2">Week 2 only</option>
+      <option value="3">Week 3 only</option>
+    </select>
+    <button class="btn-sm" onclick="exportAnalytics()"><i class="ti ti-download"></i> Download .txt</button>
+  </div>
+</div>`;
   // Result sheet placeholder (injected dynamically)
   html += `<div id="an-result-sheet" style="margin-top:1.25rem"></div>`;
 
@@ -2618,10 +2736,23 @@ function _renderResultSheet() {
         html += `<span class="rs-chain-node given">${b.node||''}</span>`;
       }
     });
-    html += `</div>
-    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
-      ⓘ Chain recall answers are not stored per-question — only the score is saved.
+const ex1Answers = s.ex1_answers;
+if (ex1Answers?.length) {
+  html += `<div style="margin-bottom:12px">`;
+  ex1Answers.forEach(a => {
+    html += `<div style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 0;border-bottom:0.5px solid var(--border);display:flex;gap:10px">
+      <span style="color:var(--text3);min-width:70px">node ${a.node_idx+1}</span>
+      <span style="color:var(--text1)">${a.user_answer || '—'}</span>
+      <span style="${a.ok ? 'color:var(--green)' : 'color:var(--red)'}">${a.ok ? '✓' : '✗'}</span>
+      ${!a.ok ? `<span style="color:var(--text3)">→ ${a.correct_answer}</span>` : ''}
     </div>`;
+  });
+  html += `</div>`;
+} else {
+  html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
+    ⓘ No per-blank answers stored yet — deploy Fix 2 first.
+  </div>`;
+}
   }
 
   // ── Ex2 Questions ──

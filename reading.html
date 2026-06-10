@@ -287,19 +287,23 @@ async function renderDashboard() {
     grid.appendChild(cell);
   }
 
-  const btn  = document.getElementById('start-btn');
+  const btn   = document.getElementById('start-btn');
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-const done  = sessions.some(s => 
-  (s.day === day && s.week === week) ||
-  new Date(s.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === today
-);
-  if (done)         { btn.textContent = 'Done for today — see you tomorrow!'; btn.disabled = true; }
-  else if (day > 7) { btn.textContent = 'Week complete!'; btn.disabled = true; }
-  else              { btn.textContent = `Start Day ${day} →`; btn.disabled = false; }
+  const done  = sessions.some(s =>
+    (s.day === day && s.week === week) ||
+    new Date(s.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === today
+  );
+
+  if (done) {
+    btn.textContent = 'Done for today — see you tomorrow!';
+    btn.disabled    = true;
+  } else {
+    btn.textContent = `Start Day ${day} →`;
+    btn.disabled    = false;
+  }
 
   renderSessionHistory(sessions);
 }
-
 function renderSessionHistory(sessions) {
   const el = document.getElementById('session-history');
   if (!sessions.length) {
@@ -527,16 +531,34 @@ function submitEx1Recall(blankPositions, isD1recall) {
   let correct  = 0;
   let html     = '';
 
-  blankPositions.forEach(i => {
+  // Collect per-blank answers BEFORE reading input values
+  const answers = blankPositions.map(i => {
     const inp = document.getElementById('blank-' + i);
-    const val = inp ? inp.value : '';
+    const val = inp ? inp.value.trim() : '';
     const ok  = closeEnough(val, blocks[i]?.node || '');
     if (ok) correct++;
+    return {
+      node_idx:       i,
+      user_answer:    val,
+      correct_answer: blocks[i]?.node || '',
+      ok,
+    };
+  });
+
+  // Store on session object
+  if (isD1recall) {
+    sess.ex1D1Answers = answers;
+  } else {
+    sess.ex1Answers   = answers;
+  }
+
+  // Build result HTML
+  answers.forEach(a => {
     html += `<div class="rr">
-      <span class="rr-lbl">node ${i + 1}</span>
-      <span class="rr-user">${val || '—'}</span>
-      <span class="${ok ? 'rr-ok' : 'rr-no'}">${ok ? '✓' : '✗'}</span>
-      ${!ok ? `<span class="rr-ans">→ ${blocks[i]?.node || ''}</span>` : ''}
+      <span class="rr-lbl">node ${a.node_idx + 1}</span>
+      <span class="rr-user">${a.user_answer || '—'}</span>
+      <span class="${a.ok ? 'rr-ok' : 'rr-no'}">${a.ok ? '✓' : '✗'}</span>
+      ${!a.ok ? `<span class="rr-ans">→ ${a.correct_answer}</span>` : ''}
     </div>`;
   });
 
@@ -554,15 +576,16 @@ function submitEx1Recall(blankPositions, isD1recall) {
   }
 
   html += `<div class="score-big">${pct}%  ${correct}/${blankPositions.length}</div>`;
+
   const box = document.getElementById('recall-result');
   box.innerHTML = html;
   box.classList.add('show');
 
-  const cont = document.createElement('button');
-  cont.className       = 'rd-btn solid';
+  const cont         = document.createElement('button');
+  cont.className     = 'rd-btn solid';
   cont.style.marginTop = '14px';
-  cont.textContent     = 'continue →';
-  cont.onclick         = nextStep;
+  cont.textContent   = 'continue →';
+  cont.onclick       = nextStep;
   box.appendChild(cont);
   document.getElementById('recall-submit').style.display = 'none';
 }
@@ -658,20 +681,28 @@ async function buildAnalysis() {
   let savedSession = null;
   try {
     savedSession = await rdSaveSession({
-      user_id:         currentUser.id,
-      exercise_id:     sess.dayEx.id,
-      week:            sess.week,
-      day:             sess.day,
-      session_type:    sess.isRecallDay ? 'recall' : 'normal',
-      ex1_recall_time: sess.phaseTimes['ex1-recall'] || sess.phaseTimes['ex1-recall-day'] || null,
-      ex1_score:       dbEx1Score,
-      ex1_correct:     sess.ex1Correct,
-      ex1_total:       sess.ex1Total,
-      ex2_time:        sess.phaseTimes['ex2-questions'] || sess.phaseTimes['ex2-questions-day'] || null,
-      ex2_score:       dbEx2Score,
-      ex2_correct:     sess.ex2Correct,
-      ex2_total:       sess.ex2Total,
-      total_time:      totalTime,
+      user_id:          currentUser.id,
+      exercise_id:      sess.dayEx.id,
+      week:             sess.week,
+      day:              sess.day,
+      session_type:     sess.isRecallDay ? 'recall' : 'normal',
+      ex1_recall_time:  sess.phaseTimes['ex1-recall'] || sess.phaseTimes['ex1-recall-day'] || null,
+      ex1_score:        dbEx1Score,
+      ex1_correct:      sess.ex1Correct,
+      ex1_total:        sess.ex1Total,
+      ex1_answers:      sess.ex1Answers    || null,
+      ex1_d1_score:     sess.ex1D1Score    || null,
+      ex1_d1_correct:   sess.ex1D1Correct  || null,
+      ex1_d1_total:     sess.ex1D1Total    || null,
+      ex1_d1_answers:   sess.ex1D1Answers  || null,
+      ex2_time:         sess.phaseTimes['ex2-questions'] || sess.phaseTimes['ex2-questions-day'] || null,
+      ex2_score:        dbEx2Score,
+      ex2_correct:      sess.ex2Correct,
+      ex2_total:        sess.ex2Total,
+      ex2_d1_score:     sess.ex2D1Score    || null,
+      ex2_d1_correct:   sess.ex2D1Correct  || null,
+      ex2_d1_total:     sess.ex2D1Total    || null,
+      total_time:       totalTime,
     });
   } catch (e) {
     console.error('Session save failed:', e);
@@ -680,15 +711,15 @@ async function buildAnalysis() {
   // ── Save per-question results ─────────────────────────────────────
   if (savedSession?.id && sess.questionResults.length) {
     try {
-await rdSaveQuestionResults(
-  sess.questionResults.map(r => ({
-    ...r,
-    session_id:    savedSession.id,
-    user_id:       currentUser.id,
-    exercise_type: r.exercise_type || 'ex2',
-    is_recall:     r.is_recall     || false,
-  }))
-);
+      await rdSaveQuestionResults(
+        sess.questionResults.map(r => ({
+          ...r,
+          session_id:    savedSession.id,
+          user_id:       currentUser.id,
+          exercise_type: r.exercise_type || 'ex2',
+          is_recall:     r.is_recall     || false,
+        }))
+      );
     } catch (e) {
       console.error('Question results save failed:', e);
     }
@@ -701,32 +732,61 @@ await rdSaveQuestionResults(
   userState = { current_day: nextDay, current_week: nextWeek };
 
   // ── Build analysis UI ─────────────────────────────────────────────
-  // Convert results arrays to answer maps keyed by question_index
-  const todayAnswers  = Object.fromEntries((sess._ex2Results || []).map(r => [r.question_index, r.chosen]));
+  const todayAnswers  = Object.fromEntries((sess._ex2Results       || []).map(r => [r.question_index, r.chosen]));
   const recallAnswers = Object.fromEntries((sess._ex2RecallResults || []).map(r => [r.question_index, r.chosen]));
-  const todayTimes    = Object.fromEntries((sess._ex2Results || []).map(r => [r.question_index, r.time_taken]));
+  const todayTimes    = Object.fromEntries((sess._ex2Results       || []).map(r => [r.question_index, r.time_taken]));
   const recallTimes   = Object.fromEntries((sess._ex2RecallResults || []).map(r => [r.question_index, r.time_taken]));
 
-  const reviewToday  = buildReviewHtml(sess._activeQuestions || [], todayAnswers, todayTimes, "Today's Questions");
+  const reviewToday  = buildReviewHtml(sess._activeQuestions       || [], todayAnswers,  todayTimes,  "Today's Questions");
   const reviewRecall = sess.isRecallDay
     ? buildReviewHtml(sess._activeRecallQuestions || [], recallAnswers, recallTimes, '🔁 Day 1 Recall Questions')
     : '';
 
+  // ── Ex1 chain answer review ───────────────────────────────────────
+  function buildEx1ReviewHtml(answers, label) {
+    if (!answers?.length) return '';
+    let html = `<div style="margin-bottom:1.5rem">
+      <div class="ex-section-hd">${label}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">`;
+    answers.forEach(a => {
+      const ok = a.ok;
+      html += `<div style="display:flex;align-items:baseline;gap:12px;font-family:'DM Mono',monospace;font-size:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid ${ok ? 'var(--green-border)' : 'var(--red-border)'};background:${ok ? 'var(--green-bg)' : 'var(--red-bg)'}">
+        <span style="color:var(--text3);min-width:60px">node ${a.node_idx + 1}</span>
+        <span style="color:var(--text1);flex:1">${a.user_answer || '—'}</span>
+        <span style="color:${ok ? 'var(--green)' : 'var(--red)'}; font-weight:600">${ok ? '✓' : '✗'}</span>
+        ${!ok ? `<span style="color:var(--text3)">→ ${a.correct_answer}</span>` : ''}
+      </div>`;
+    });
+    html += `</div></div>`;
+    return html;
+  }
+
+  const ex1Review    = buildEx1ReviewHtml(sess.ex1Answers,   "Ex1 — Today's Chain Recall");
+  const ex1D1Review  = buildEx1ReviewHtml(sess.ex1D1Answers, 'Ex1 — 🔁 Day 1 Chain Recall');
+
   const content = document.getElementById('ex-content');
   content.innerHTML = `<div style="animation:slideUp .4s ease forwards;opacity:0">
-    <div class="an-title">Analysis · Day ${sess.day}</div>
+    <div class="an-title">Analysis · Week ${sess.week} Day ${sess.day}</div>
+
     <div class="score-row">
       <div class="score-huge">${dbEx2Score != null ? dbEx2Score + '%' : '—'}</div>
       <div class="score-sub">
-        ${dbEx2Score != null ? `${sess.ex2Correct}/${sess.ex2Total} today's questions correct` : ''}
-        ${sess.ex1Score   != null ? `<br>Today's chain recall: ${sess.ex1Score}%`       : ''}
-        ${sess.ex1D1Score != null ? `<br>Day 1 chain recall: ${sess.ex1D1Score}%`       : ''}
-        ${sess.ex2D1Score != null ? `<br>Day 1 recall questions: ${sess.ex2D1Score}%`   : ''}
+        ${dbEx2Score    != null ? `${sess.ex2Correct}/${sess.ex2Total} today's questions correct` : ''}
+        ${sess.ex1Score    != null ? `<br>Today's chain recall: ${sess.ex1Score}%`     : ''}
+        ${sess.ex1D1Score  != null ? `<br>Day 1 chain recall: ${sess.ex1D1Score}%`     : ''}
+        ${sess.ex2D1Score  != null ? `<br>Day 1 recall questions: ${sess.ex2D1Score}%` : ''}
       </div>
     </div>
+
+    ${ex1D1Review}
+    ${ex1D1Review && ex1Review ? '<div class="an-divider" style="margin:1.5rem 0"></div>' : ''}
+    ${ex1Review}
+    ${(ex1D1Review || ex1Review) && (reviewRecall || reviewToday) ? '<div class="an-divider" style="margin:1.5rem 0"></div>' : ''}
+
     ${reviewRecall}
     ${reviewRecall && reviewToday ? '<div class="an-divider" style="margin:2rem 0"></div>' : ''}
     ${reviewToday}
+
     <div class="time-tbl">${buildTimeTbl(totalTime)}</div>
     <div style="margin-top:1.5rem">
       <button class="rd-btn solid" onclick="finishSession()">back to dashboard</button>
