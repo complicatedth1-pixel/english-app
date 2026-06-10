@@ -804,14 +804,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div id="panel-upload" class="panel active">
       <div class="section-hd" id="upload-heading">Upload Exercise</div>
       <div class="section-sub" id="upload-sub">Select a day to upload or edit its exercise.</div>
-      <div class="form-card" style="margin-bottom:1.25rem">
-        <div class="form-card-title">Select Day to Edit</div>
-        <div class="day-tabs" id="day-tab-row"></div>
-        <div style="font-size:11.5px;color:var(--text3)">
-          <span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block"></span> has exercise</span>
-          <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:var(--purple);display:inline-block"></span> recall day (2,4,6,7)</span>
-        </div>
-      </div>
+<div class="form-card" style="margin-bottom:1.25rem">
+  <div class="form-card-title">Select Day to Edit</div>
+
+  <!-- Week selector -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:500;color:var(--text2)">Week</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="week-tab-row"></div>
+    <button class="btn-sm" onclick="addWeek()" style="color:var(--green);border-color:var(--green-border)">
+      <i class="ti ti-plus"></i> Add week
+    </button>
+  </div>
+
+  <div class="day-tabs" id="day-tab-row"></div>
+  <div style="font-size:11.5px;color:var(--text3)">
+    <span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block"></span> has exercise</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:var(--purple);display:inline-block"></span> recall day (2,4,6,7)</span>
+  </div>
+</div>
       <div id="day-form-area"></div>
     </div>
 
@@ -1263,8 +1273,9 @@ async function openUser(uid) {
   promptSelectedUIDs = new Set([uid]);
   promptTargetDay    = activeDay;
 
-  renderDayTabs();
-  loadDayForm(1);
+renderWeekTabs();
+renderDayTabs();
+loadDayForm(1);
   showScreen('user');
 }
 async function isDayCompleted(day) {
@@ -1280,22 +1291,77 @@ async function isDayCompleted(day) {
 /* ════════════════════════════════════════════════════════════
    DAY TABS
 ════════════════════════════════════════════════════════════ */
-function renderDayTabs() {
-  const row  = document.getElementById('day-tab-row');
+/* ════════════════════════════════════════════════════════════
+   WEEK TABS
+════════════════════════════════════════════════════════════ */
+function renderWeekTabs() {
+  const row = document.getElementById('week-tab-row');
+  if (!row) return;
+
+  // Find all weeks that have exercises for this user, plus currentWeek
+  const weeksWithData = [...new Set(allExercises.map(e => e.week))];
+  const u             = allUsers.find(x => x.user_id === currentUID);
+  const userWeek      = u?.current_week || 1;
+
+  // Show weeks 1 through max(userWeek, highest uploaded week, currentWeek)
+  const maxWeek = Math.max(userWeek, currentWeek, ...weeksWithData, 1);
+  const weeks   = Array.from({ length: maxWeek }, (_, i) => i + 1);
+
   row.innerHTML = '';
+  weeks.forEach(w => {
+    const hasData  = allExercises.some(e => e.week === w);
+    const isActive = w === currentWeek;
+    const btn      = document.createElement('button');
+    btn.className  = 'day-tab' + (isActive ? ' active' : '') + (hasData ? ' has-data' : '');
+    btn.textContent = `W${w}`;
+    btn.title       = hasData ? `Week ${w} — has exercises` : `Week ${w} — no exercises yet`;
+    btn.onclick     = () => switchWeek(w);
+    row.appendChild(btn);
+  });
+}
+
+function switchWeek(w) {
+  currentWeek  = w;
+  activeDay    = 1;
+  dayFormState = {};
+  document.getElementById('upload-sub').textContent = `Week ${currentWeek} · Select a day tab below`;
+  renderWeekTabs();
+  renderDayTabs();
+  loadDayForm(1);
+}
+
+function addWeek() {
+  const weeksWithData = [...new Set(allExercises.map(e => e.week))];
+  const u             = allUsers.find(x => x.user_id === currentUID);
+  const userWeek      = u?.current_week || 1;
+  const maxWeek       = Math.max(userWeek, currentWeek, ...weeksWithData, 1);
+  switchWeek(maxWeek + 1);
+}
+
+/* ════════════════════════════════════════════════════════════
+   DAY TABS
+════════════════════════════════════════════════════════════ */
+function renderDayTabs() {
+  const row       = document.getElementById('day-tab-row');
+  if (!row) return;
+  row.innerHTML   = '';
+
   const meta      = userMeta[currentUID] || {};
   const startDate = meta.startDate;
   const holidays  = new Set(meta.holidays || []);
 
-  // Compute actual calendar date for each exercise day
+  // Compute actual calendar date for a given exercise day, accounting for week offset
   function getDateForDay(targetExDay) {
     if (!startDate) return null;
-    let cursor      = new Date(startDate + 'T00:00:00');
-    let exerciseDay = 1;
-    for (let cal = 0; cal < 60; cal++) {
+    // Each week adds 7 exercise days worth of calendar days (roughly)
+    // Find the (currentWeek-1)*7 + targetExDay -th exercise day from startDate
+    const globalExDay = (currentWeek - 1) * 7 + targetExDay;
+    let cursor        = new Date(startDate + 'T00:00:00');
+    let exerciseDay   = 1;
+    for (let cal = 0; cal < 200; cal++) {
       const iso = cursor.toISOString().split('T')[0];
       if (!holidays.has(iso)) {
-        if (exerciseDay === targetExDay) return cursor;
+        if (exerciseDay === globalExDay) return cursor;
         exerciseDay++;
       }
       cursor.setDate(cursor.getDate() + 1);
@@ -1312,7 +1378,10 @@ function renderDayTabs() {
       : null;
 
     const btn      = document.createElement('button');
-    btn.className  = 'day-tab' + (isRecall ? ' recall-day' : '') + (hasData ? ' has-data' : '') + (d === 1 ? ' active' : '');
+    btn.className  = 'day-tab'
+      + (isRecall ? ' recall-day' : '')
+      + (hasData  ? ' has-data'   : '')
+      + (d === activeDay ? ' active' : '');
     btn.innerHTML  = dateStr
       ? `Day ${d}<span style="display:block;font-family:'DM Mono',monospace;font-size:9px;opacity:0.7;margin-top:1px">${dateStr}</span>`
       : `Day ${d}`;
@@ -1823,9 +1892,10 @@ async function saveDay() {
   };
   try {
     await rdSaveExercise(payload);
-    allExercises = await rdGetAllExercises(currentUID);
-    renderDayTabs();
-    showToast('day-toast');
+allExercises = await rdGetAllExercises(currentUID);
+renderWeekTabs();
+renderDayTabs();
+showToast('day-toast');
   } catch(e) {
     alert('Save failed: ' + e.message);
   }
@@ -2048,8 +2118,9 @@ async function parseAndSaveToSelected() {
   }
 
   if (eligibleUIDs.includes(currentUID)) {
-    allExercises = await rdGetAllExercises(currentUID);
-    renderDayTabs();
+allExercises = await rdGetAllExercises(currentUID);
+renderWeekTabs();
+renderDayTabs();
   }
 
   if (statusEl) statusEl.innerHTML = results.join(' &nbsp;·&nbsp; ');
