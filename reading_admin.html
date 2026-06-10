@@ -2743,104 +2743,203 @@ function _openResultSheet(sessionIdx, _source) {
   _resultSheetIdx = sessionIdx;
   _renderResultSheet();
 }
+// Gets the questions a user actually answered on a given day
+// (mirrors the logic in reading.html getQuestionsForDay)
+function getAdminQuestionsForDay(ex, day) {
+  const qs = ex.ex2_questions || [];
+  if (day !== 1) return qs;
+  const map             = ex.ex2_recall_map || {};
+  const assignedIndices = new Set(Object.values(map).flat().map(Number));
+  const day1Qs          = qs.filter((_, i) => !assignedIndices.has(i));
+  return day1Qs.length ? day1Qs : qs;
+}
 
+// Renders a single question card with user's answer highlighted
+function _buildQCardHtml(q, qi, r) {
+  const status    = !r ? 'skip' : r.correct ? 'correct' : 'wrong';
+  const chosen    = r?.chosen;
+  const timeTaken = r?.time_taken;
+  const xp        = r?.profile_xp || q?.profile?.xp;
+
+  let timingCls = 'rs-timing-normal', timingNote = '';
+  if (timeTaken != null && xp) {
+    const ratio = timeTaken / xp;
+    if (ratio < 0.85)     { timingCls = 'rs-timing-fast'; timingNote = 'faster than expected'; }
+    else if (ratio > 1.5) { timingCls = 'rs-timing-slow'; timingNote = 'slower than expected'; }
+    else                  { timingNote = 'within expected range'; }
+  }
+
+  let html = `<div class="rs-q-card">
+    <div class="rs-q-head">
+      <div class="rs-q-num">Q${qi + 1} · ${q?.type || '—'}</div>
+      <div class="rs-q-text">${q?.text || '(no text)'}</div>
+      <div class="rs-q-status ${status}">${status === 'correct' ? '✓ Correct' : status === 'wrong' ? '✗ Wrong' : '— Skipped'}</div>
+    </div>`;
+
+  if (q?.options?.length) {
+    html += `<div class="rs-q-opts">`;
+    q.options.forEach((opt, oi) => {
+      let cls  = 'rs-opt opt-neutral';
+      if (oi === q.correct)                    cls = 'rs-opt opt-correct';
+      else if (oi === chosen && r)             cls = 'rs-opt opt-wrong';
+      const mark = oi === q.correct ? ' ✓' : (oi === chosen && oi !== q.correct && r ? ' ✗' : '');
+      html += `<div class="${cls}"><span class="rs-opt-key">${'ABCD'[oi]}</span>${opt}${mark}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (timeTaken != null) {
+    html += `<div class="rs-q-timing">
+      <span>Time: <strong>${timeTaken}s</strong></span>
+      ${xp ? `<span>Expected: ~${xp}s</span>` : ''}
+      ${timingNote ? `<span class="${timingCls}">${timingNote}</span>` : ''}
+    </div>`;
+  }
+
+  if (q?.reason) {
+    html += `<div class="rs-q-reason"><strong>Why ${'ABCD'[q.correct]} is correct:</strong> ${q.reason}</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
 function _renderResultSheet() {
   const el = document.getElementById('an-result-sheet');
   if (!el) return;
   const s = _anSessions[_resultSheetIdx];
   if (!s) { el.innerHTML = ''; return; }
 
-  const date = new Date(s.created_at).toLocaleString('en-IN',{
-    day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+  const date = new Date(s.created_at).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
   });
 
-  // Get question results for this session
-  let qRows = _anQResults.filter(r => r.session_id === s.id);
-  if (!qRows.length) {
-    qRows = _anQResults.filter(r => r.week === s.week && r.day === s.day);
+  // Split question results by is_recall flag
+  let allQRows = _anQResults.filter(r => r.session_id === s.id);
+  if (!allQRows.length) {
+    allQRows = _anQResults.filter(r => r.week === s.week && r.day === s.day);
   }
+  const todayQRows  = allQRows.filter(r => !r.is_recall);
+  const recallQRows = allQRows.filter(r =>  r.is_recall);
 
-  const ex2Rows = qRows;
-
-  // Get exercise for passage + question text
   const ex = _anExercises.find(e => e.week === s.week && e.day === s.day);
 
-  const ex1Score = s.ex1_score;
-  const ex2Score = s.ex2_score;
-  const totalTime = fmt(s.total_time||0);
+  // For recall days, also get the Day 1 exercise to find passage + question text
+  const day1Ex = s.day === 1
+    ? ex
+    : _anExercises.find(e => e.week === s.week && e.day === 1);
+
+  const ex1Score  = s.ex1_score;
+  const ex2Score  = s.ex2_score;
+  const totalTime = fmt(s.total_time || 0);
 
   let html = `<div class="result-sheet">
     <div class="result-sheet-head">
       <div>
-        <div class="result-sheet-title">Week ${s.week} · Day ${s.day} — ${s.session_type==='recall'?'Recall Session':'Normal Session'}</div>
+        <div class="result-sheet-title">Week ${s.week} · Day ${s.day} — ${s.session_type === 'recall' ? 'Recall Session' : 'Normal Session'}</div>
         <div class="result-sheet-meta">${date} &nbsp;·&nbsp; ${totalTime} total</div>
       </div>
       <button class="result-sheet-close" onclick="_closeResultSheet()"><i class="ti ti-x"></i></button>
     </div>
 
     <div class="rs-scores">
-      ${ex1Score!=null?`<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(ex1Score)}">${ex1Score}%</div><div class="rs-score-lbl">Ex1 Recall</div></div>`:''}
-      ${ex2Score!=null?`<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</div><div class="rs-score-lbl">Ex2 Comprehension</div></div>`:''}
-      ${s.ex2_correct!=null?`<div class="rs-score-cell"><div class="rs-score-val">${s.ex2_correct}/${s.ex2_total||0}</div><div class="rs-score-lbl">Ex2 Questions</div></div>`:''}
+      ${ex1Score  != null ? `<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(ex1Score)}">${ex1Score}%</div><div class="rs-score-lbl">Ex1 Recall</div></div>` : ''}
+      ${ex2Score  != null ? `<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</div><div class="rs-score-lbl">Ex2 ${s.session_type === 'recall' ? 'Retention' : 'Comprehension'}</div></div>` : ''}
+      ${s.ex2_d1_score != null ? `<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(s.ex2_d1_score)}">${s.ex2_d1_score}%</div><div class="rs-score-lbl">Day 1 Recall Q</div></div>` : ''}
+      ${s.ex2_correct != null ? `<div class="rs-score-cell"><div class="rs-score-val">${s.ex2_correct}/${s.ex2_total || 0}</div><div class="rs-score-lbl">Today's Qs</div></div>` : ''}
       <div class="rs-score-cell"><div class="rs-score-val">${totalTime}</div><div class="rs-score-lbl">Total Time</div></div>
     </div>`;
 
-  // ── Ex1 Chain Recall ──
+  // ── Ex1 Chain Recall ──────────────────────────────────────────────
   if (ex && ex.ex1_blocks) {
-    const blocks        = ex.ex1_blocks || [];
-    const isRecallDay   = [2,4,6,7].includes(s.day);
+    const blocks         = ex.ex1_blocks || [];
+    const isRecallDay    = [2, 4, 6, 7].includes(s.day);
     const blankPositions = isRecallDay
-      ? (s.day===1 ? (ex.ex1_blank_pos!=null?[ex.ex1_blank_pos]:[]) : ex.ex1_blank_positions||[])
-      : (ex.ex1_blank_positions||[]);
-    const score = ex1Score;
+      ? (ex.ex1_blank_positions || [])
+      : (ex.ex1_blank_pos != null ? [ex.ex1_blank_pos] : []);
+
     html += `<div class="rs-ex-hd">
       <span class="rs-ex-badge ex1">Ex1 — Chain Recall</span>
-      ${score!=null?`<span class="rs-ex-score" style="color:${_scoreColor(score)}">${score}%</span>`:''}
-    </div>
-    <div class="rs-chain">`;
-    blocks.forEach((b, i) => {
-      if (i > 0) html += `<span class="rs-chain-arr">→</span>`;
-      const isBlank = blankPositions.includes(i);
-      if (isBlank) {
-        html += `<span class="rs-chain-node correct-blank" title="blank position">${b.node||'?'} ⓘ</span>`;
-      } else {
-        html += `<span class="rs-chain-node given">${b.node||''}</span>`;
-      }
-    });
-const ex1Answers = s.ex1_answers;
-if (ex1Answers?.length) {
-  html += `<div style="margin-bottom:12px">`;
-  ex1Answers.forEach(a => {
-    html += `<div style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 0;border-bottom:0.5px solid var(--border);display:flex;gap:10px">
-      <span style="color:var(--text3);min-width:70px">node ${a.node_idx+1}</span>
-      <span style="color:var(--text1)">${a.user_answer || '—'}</span>
-      <span style="${a.ok ? 'color:var(--green)' : 'color:var(--red)'}">${a.ok ? '✓' : '✗'}</span>
-      ${!a.ok ? `<span style="color:var(--text3)">→ ${a.correct_answer}</span>` : ''}
+      ${ex1Score != null ? `<span class="rs-ex-score" style="color:${_scoreColor(ex1Score)}">${ex1Score}%</span>` : ''}
     </div>`;
-  });
-  html += `</div>`;
-} else {
-  html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
-    ⓘ No per-blank answers stored yet — deploy Fix 2 first.
-  </div>`;
-}
+
+    // Show per-blank answers if stored (after the fix is deployed)
+    const ex1Answers = s.ex1_answers;
+    if (ex1Answers?.length) {
+      html += `<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">`;
+      ex1Answers.forEach(a => {
+        html += `<div style="display:flex;align-items:baseline;gap:12px;font-family:'DM Mono',monospace;font-size:10px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid ${a.ok ? 'var(--green-border)' : 'var(--red-border)'};background:${a.ok ? 'var(--green-bg)' : 'var(--red-bg)'}">
+          <span style="color:var(--text3);min-width:65px">node ${a.node_idx + 1}</span>
+          <span style="color:var(--text1);flex:1">${a.user_answer || '—'}</span>
+          <span style="color:${a.ok ? 'var(--green)' : 'var(--red)'};font-weight:600">${a.ok ? '✓' : '✗'}</span>
+          ${!a.ok ? `<span style="color:var(--text3)">→ ${a.correct_answer}</span>` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    } else {
+      // Fallback — show the chain with blanks marked
+      html += `<div class="rs-chain">`;
+      blocks.forEach((b, i) => {
+        if (i > 0) html += `<span class="rs-chain-arr">→</span>`;
+        if (blankPositions.includes(i)) {
+          html += `<span class="rs-chain-node correct-blank" title="blank">${b.node || '?'}</span>`;
+        } else {
+          html += `<span class="rs-chain-node given">${b.node || ''}</span>`;
+        }
+      });
+      html += `</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
+        ⓘ Per-blank answers not stored yet — only score saved. Deploy the submitEx1Recall fix to capture answers.
+      </div>`;
+    }
+
+    // Day 1 chain recall (on recall days)
+    if (s.session_type === 'recall' && day1Ex && s.ex1_d1_score != null) {
+      const d1Blocks      = day1Ex.ex1_blocks || [];
+      const d1BlankPos    = (day1Ex.ex1_recall_blanks || {})[String(s.day)];
+      const d1Blanks      = d1BlankPos != null ? [d1BlankPos] : [];
+      const d1Answers     = s.ex1_d1_answers;
+
+      html += `<div class="rs-ex-hd" style="margin-top:1rem">
+        <span class="rs-ex-badge recall">🔁 Day 1 Chain Recall</span>
+        <span class="rs-ex-score" style="color:${_scoreColor(s.ex1_d1_score)}">${s.ex1_d1_score}%</span>
+      </div>`;
+
+      if (d1Answers?.length) {
+        html += `<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">`;
+        d1Answers.forEach(a => {
+          html += `<div style="display:flex;align-items:baseline;gap:12px;font-family:'DM Mono',monospace;font-size:10px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid ${a.ok ? 'var(--green-border)' : 'var(--red-border)'};background:${a.ok ? 'var(--green-bg)' : 'var(--red-bg)'}">
+            <span style="color:var(--text3);min-width:65px">node ${a.node_idx + 1}</span>
+            <span style="color:var(--text1);flex:1">${a.user_answer || '—'}</span>
+            <span style="color:${a.ok ? 'var(--green)' : 'var(--red)'};font-weight:600">${a.ok ? '✓' : '✗'}</span>
+            ${!a.ok ? `<span style="color:var(--text3)">→ ${a.correct_answer}</span>` : ''}
+          </div>`;
+        });
+        html += `</div>`;
+      } else {
+        html += `<div class="rs-chain">`;
+        d1Blocks.forEach((b, i) => {
+          if (i > 0) html += `<span class="rs-chain-arr">→</span>`;
+          if (d1Blanks.includes(i)) {
+            html += `<span class="rs-chain-node correct-blank">${b.node || '?'}</span>`;
+          } else {
+            html += `<span class="rs-chain-node given">${b.node || ''}</span>`;
+          }
+        });
+        html += `</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">ⓘ Score: ${s.ex1_d1_score}% — per-blank answers not stored yet.</div>`;
+      }
+    }
   }
 
-  // ── Ex2 Questions ──
-  if (ex2Rows.length) {
-    const passage = ex?.ex2_passage;
-    const qs      = ex?.ex2_questions || [];
+  // ── Ex2 — Today's new questions ───────────────────────────────────
+  const todayEx    = ex;
+  const todayQs    = todayEx ? getAdminQuestionsForDay(todayEx, s.day) : [];
+  const passage    = todayEx?.ex2_passage;
 
-let dayQs = qs;
-if (s.day === 1) {
-  const map = ex?.ex2_recall_map || {};
-  const assigned = new Set(Object.values(map).flat().map(Number));
-  dayQs = qs.filter((_,i) => !assigned.has(i));
-}
-
-    html += `<div class="rs-ex-hd">
-      <span class="rs-ex-badge ex2">Ex2 — Comprehension</span>
-      ${ex2Score!=null?`<span class="rs-ex-score" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</span>`:''}
+  if (todayQs.length) {
+    html += `<div class="rs-ex-hd" style="margin-top:1.25rem">
+      <span class="rs-ex-badge ex2">Ex2 — ${s.session_type === 'recall' ? 'New Questions' : 'Comprehension'}</span>
+      ${ex2Score != null ? `<span class="rs-ex-score" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</span>` : ''}
     </div>`;
 
     if (passage) {
@@ -2851,115 +2950,58 @@ if (s.day === 1) {
     }
 
     const rowByIdx = {};
-    ex2Rows.forEach(r => { rowByIdx[r.question_index] = r; });
+    todayQRows.forEach(r => { rowByIdx[r.question_index] = r; });
 
-    dayQs.forEach((q, qi) => {
-      const r     = rowByIdx[qi];
-      const status = !r ? 'skip' : r.correct ? 'correct' : 'wrong';
-      const chosen = r?.chosen;
-      const timeTaken = r?.time_taken;
-      const xp     = r?.profile_xp || q?.profile?.xp;
-      let timingCls = 'rs-timing-normal', timingNote = '';
-      if (timeTaken != null && xp) {
-        const ratio = timeTaken / xp;
-        if (ratio < 0.85) { timingCls = 'rs-timing-fast'; timingNote = 'faster than expected'; }
-        else if (ratio > 1.5) { timingCls = 'rs-timing-slow'; timingNote = 'slower than expected'; }
-        else { timingNote = 'within expected range'; }
-      }
-
-      html += `<div class="rs-q-card">
-        <div class="rs-q-head">
-          <div class="rs-q-num">Q${qi+1} · ${q?.type||'—'}</div>
-          <div class="rs-q-text">${q?.text||'(question text not stored)'}</div>
-          <div class="rs-q-status ${status}">${status==='correct'?'✓ Correct':status==='wrong'?'✗ Wrong':'— Skipped'}</div>
-        </div>`;
-
-      if (q?.options?.length) {
-        html += `<div class="rs-q-opts">`;
-        q.options.forEach((opt, oi) => {
-          let cls = 'rs-opt opt-neutral';
-          if (oi === q.correct)               cls = 'rs-opt opt-correct';
-          else if (oi === chosen && r)         cls = 'rs-opt opt-wrong';
-          const mark = oi === q.correct ? ' ✓' : (oi === chosen && oi !== q.correct && r ? ' ✗' : '');
-          html += `<div class="${cls}"><span class="rs-opt-key">${'ABCD'[oi]}</span>${opt}${mark}</div>`;
-        });
-        html += `</div>`;
-      }
-
-      if (timeTaken != null) {
-        html += `<div class="rs-q-timing">
-          <span>Time: <strong>${timeTaken}s</strong></span>
-          ${xp?`<span>Expected: ~${xp}s</span>`:''}
-          ${timingNote?`<span class="${timingCls}">${timingNote}</span>`:''}
-        </div>`;
-      }
-
-      if (q?.reason) {
-        html += `<div class="rs-q-reason"><strong>Why ${('ABCD')[q.correct]} is correct:</strong> ${q.reason}</div>`;
-      }
-
-      html += `</div>`; // rs-q-card
+    todayQs.forEach((q, qi) => {
+      html += _buildQCardHtml(q, qi, rowByIdx[qi]);
     });
+  }
 
-    // Recall day — also show the recall questions for Day 1
-    if (s.session_type === 'recall' && ex && s.day !== 1) {
-      const day1Ex   = _anExercises.find(e => e.week === s.week && e.day === 1);
-      if (day1Ex) {
-        const rMap      = day1Ex.ex2_recall_map || {};
-        const recallIdxs = (rMap[String(s.day)] || []).map(Number);
-        const recallQs   = recallIdxs.map(i => day1Ex.ex2_questions[i]).filter(Boolean);
-        if (recallQs.length) {
-          html += `<div class="rs-ex-hd" style="margin-top:1.25rem">
-            <span class="rs-ex-badge recall">🔁 Day 1 Recall Questions</span>
-            ${s.ex2_d1_score!=null?`<span class="rs-ex-score" style="color:${_scoreColor(s.ex2_d1_score)}">${s.ex2_d1_score}%</span>`:''}
-          </div>`;
-          recallQs.forEach((q, qi) => {
-            html += `<div class="rs-q-card">
-              <div class="rs-q-head">
-                <div class="rs-q-num">Recall Q${qi+1} · ${q.type||'—'}</div>
-                <div class="rs-q-text">${q.text||''}</div>
-                <div class="rs-q-status skip">— needs exercise_type column</div>
-              </div>`;
-            if (q.options?.length) {
-              html += `<div class="rs-q-opts">`;
-              q.options.forEach((opt, oi) => {
-                const isCorrect = oi === q.correct;
-                html += `<div class="rs-opt ${isCorrect?'opt-correct':'opt-neutral'}"><span class="rs-opt-key">${'ABCD'[oi]}</span>${opt}${isCorrect?' ✓':''}</div>`;
-              });
-              html += `</div>`;
-            }
-            if (q.reason) {
-              html += `<div class="rs-q-reason"><strong>Why ${'ABCD'[q.correct]}:</strong> ${q.reason}</div>`;
-            }
-            html += `</div>`;
-          });
-          html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:6px;margin-bottom:12px">
-            ⓘ Recall question answers indistinguishable from today's answers until
-            <code style="background:var(--bg2);padding:1px 4px;border-radius:2px">exercise_type</code> column is added (Bug #2 fix).
-          </div>`;
-        }
-      }
+  // ── Ex2 — Day 1 recall questions (on recall days) ─────────────────
+  if (s.session_type === 'recall' && day1Ex) {
+    const map          = day1Ex.ex2_recall_map || {};
+    const recallIdxs   = (map[String(s.day)] || []).map(Number);
+    const recallQs     = recallIdxs.map(i => day1Ex.ex2_questions?.[i]).filter(Boolean);
+
+    if (recallQs.length) {
+      html += `<div class="rs-ex-hd" style="margin-top:1.5rem">
+        <span class="rs-ex-badge recall">🔁 Day 1 Recall Questions</span>
+        ${s.ex2_d1_score != null ? `<span class="rs-ex-score" style="color:${_scoreColor(s.ex2_d1_score)}">${s.ex2_d1_score}%</span>` : ''}
+      </div>`;
+
+      // No passage on recall days — intentional
+      html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:10px">Passage hidden on recall days — testing retention from memory.</div>`;
+
+      const recallRowByIdx = {};
+      recallQRows.forEach(r => { recallRowByIdx[r.question_index] = r; });
+
+      recallQs.forEach((q, qi) => {
+        // question_index in DB is the original index in day1Ex.ex2_questions
+        const origIdx = recallIdxs[qi];
+        html += _buildQCardHtml(q, qi, recallRowByIdx[origIdx] || recallQRows[qi]);
+      });
     }
-  } else {
+  }
+
+  if (!todayQs.length && !(s.session_type === 'recall')) {
     html += `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:1rem 0">
       No question-level data saved for this session.
-      ${!s.id?'(session row missing from reading_sessions — Bug #1)':''}
     </div>`;
   }
 
-  // Day nav
+  // ── Day nav ───────────────────────────────────────────────────────
   const total = _resultSheetSessions.length;
   html += `<div class="rs-day-nav">
-    <button class="rs-day-nav-btn" onclick="_rsNav(-1)" ${_resultSheetIdx===0?'disabled':''}>
+    <button class="rs-day-nav-btn" onclick="_rsNav(-1)" ${_resultSheetIdx === 0 ? 'disabled' : ''}>
       <i class="ti ti-chevron-left" style="font-size:10px"></i> Prev
     </button>
-    <div class="rs-day-nav-info">Session ${_resultSheetIdx+1} of ${total}</div>
-    <button class="rs-day-nav-btn" onclick="_rsNav(1)" ${_resultSheetIdx>=total-1?'disabled':''}>
+    <div class="rs-day-nav-info">Session ${_resultSheetIdx + 1} of ${total}</div>
+    <button class="rs-day-nav-btn" onclick="_rsNav(1)" ${_resultSheetIdx >= total - 1 ? 'disabled' : ''}>
       Next <i class="ti ti-chevron-right" style="font-size:10px"></i>
     </button>
   </div>`;
 
-  html += `</div>`; // result-sheet
+  html += `</div>`;
   el.innerHTML = html;
 }
 
