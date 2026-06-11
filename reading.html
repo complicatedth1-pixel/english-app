@@ -687,21 +687,21 @@ async function buildAnalysis() {
       day:              sess.day,
       session_type:     sess.isRecallDay ? 'recall' : 'normal',
       ex1_recall_time:  sess.phaseTimes['ex1-recall'] || sess.phaseTimes['ex1-recall-day'] || null,
-      ex1_score:        dbEx1Score,
-      ex1_correct:      sess.ex1Correct,
-      ex1_total:        sess.ex1Total,
-      ex1_answers:      sess.ex1Answers    || null,
-      ex1_d1_score:     sess.ex1D1Score    || null,
-      ex1_d1_correct:   sess.ex1D1Correct  || null,
-      ex1_d1_total:     sess.ex1D1Total    || null,
-      ex1_d1_answers:   sess.ex1D1Answers  || null,
+      ex1_score:        dbEx1Score != null ? dbEx1Score : null,
+      ex1_correct:      sess.ex1Correct  != null ? sess.ex1Correct  : null,
+      ex1_total:        sess.ex1Total    != null ? sess.ex1Total    : null,
+      ex1_answers:      sess.ex1Answers  ?? null,
+      ex1_d1_score:     sess.ex1D1Score  != null ? sess.ex1D1Score  : null,
+      ex1_d1_correct:   sess.ex1D1Correct != null ? sess.ex1D1Correct : null,
+      ex1_d1_total:     sess.ex1D1Total  != null ? sess.ex1D1Total  : null,
+      ex1_d1_answers:   sess.ex1D1Answers ?? null,
       ex2_time:         sess.phaseTimes['ex2-questions'] || sess.phaseTimes['ex2-questions-day'] || null,
-      ex2_score:        dbEx2Score,
-      ex2_correct:      sess.ex2Correct,
-      ex2_total:        sess.ex2Total,
-      ex2_d1_score:     sess.ex2D1Score    || null,
-      ex2_d1_correct:   sess.ex2D1Correct  || null,
-      ex2_d1_total:     sess.ex2D1Total    || null,
+      ex2_score:        dbEx2Score != null ? dbEx2Score : null,
+      ex2_correct:      sess.ex2Correct  != null ? sess.ex2Correct  : null,
+      ex2_total:        sess.ex2Total    != null ? sess.ex2Total    : null,
+      ex2_d1_score:     sess.ex2D1Score  != null ? sess.ex2D1Score  : null,
+      ex2_d1_correct:   sess.ex2D1Correct != null ? sess.ex2D1Correct : null,
+      ex2_d1_total:     sess.ex2D1Total  != null ? sess.ex2D1Total  : null,
       total_time:       totalTime,
     });
   } catch (e) {
@@ -761,8 +761,8 @@ async function buildAnalysis() {
     return html;
   }
 
-  const ex1Review    = buildEx1ReviewHtml(sess.ex1Answers,   "Ex1 — Today's Chain Recall");
-  const ex1D1Review  = buildEx1ReviewHtml(sess.ex1D1Answers, 'Ex1 — 🔁 Day 1 Chain Recall');
+  const ex1Review   = buildEx1ReviewHtml(sess.ex1Answers,   "Ex1 — Today's Chain Recall");
+  const ex1D1Review = buildEx1ReviewHtml(sess.ex1D1Answers, 'Ex1 — 🔁 Day 1 Chain Recall');
 
   const content = document.getElementById('ex-content');
   content.innerHTML = `<div style="animation:slideUp .4s ease forwards;opacity:0">

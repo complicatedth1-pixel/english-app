@@ -2823,8 +2823,6 @@ function _renderResultSheet() {
   const recallQRows = allQRows.filter(r =>  r.is_recall);
 
   const ex = _anExercises.find(e => e.week === s.week && e.day === s.day);
-
-  // For recall days, also get the Day 1 exercise to find passage + question text
   const day1Ex = s.day === 1
     ? ex
     : _anExercises.find(e => e.week === s.week && e.day === 1);
@@ -2852,22 +2850,22 @@ function _renderResultSheet() {
 
   // ── Ex1 Chain Recall ──────────────────────────────────────────────
   if (ex && ex.ex1_blocks) {
-    const blocks         = ex.ex1_blocks || [];
-    const isRecallDay    = [2, 4, 6, 7].includes(s.day);
-    const blankPositions = isRecallDay
+    const blocks      = ex.ex1_blocks || [];
+    const isRecallDay = [2, 4, 6, 7].includes(s.day);
+    const todayBlanks = isRecallDay
       ? (ex.ex1_blank_positions || [])
       : (ex.ex1_blank_pos != null ? [ex.ex1_blank_pos] : []);
 
     html += `<div class="rs-ex-hd">
-      <span class="rs-ex-badge ex1">Ex1 — Chain Recall</span>
-      ${ex1Score != null ? `<span class="rs-ex-score" style="color:${_scoreColor(ex1Score)}">${ex1Score}%</span>` : ''}
+      <span class="rs-ex-badge ex1">Ex1 — Today's Chain Recall</span>
+      ${ex1Score != null
+        ? `<span class="rs-ex-score" style="color:${_scoreColor(ex1Score)}">${ex1Score}% · ${s.ex1_correct ?? '?'}/${s.ex1_total ?? '?'}</span>`
+        : '<span class="rs-ex-score" style="color:var(--text3)">no score saved</span>'}
     </div>`;
 
-    // Show per-blank answers if stored (after the fix is deployed)
-    const ex1Answers = s.ex1_answers;
-    if (ex1Answers?.length) {
+    if (s.ex1_answers?.length) {
       html += `<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">`;
-      ex1Answers.forEach(a => {
+      s.ex1_answers.forEach(a => {
         html += `<div style="display:flex;align-items:baseline;gap:12px;font-family:'DM Mono',monospace;font-size:10px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid ${a.ok ? 'var(--green-border)' : 'var(--red-border)'};background:${a.ok ? 'var(--green-bg)' : 'var(--red-bg)'}">
           <span style="color:var(--text3);min-width:65px">node ${a.node_idx + 1}</span>
           <span style="color:var(--text1);flex:1">${a.user_answer || '—'}</span>
@@ -2877,37 +2875,36 @@ function _renderResultSheet() {
       });
       html += `</div>`;
     } else {
-      // Fallback — show the chain with blanks marked
       html += `<div class="rs-chain">`;
       blocks.forEach((b, i) => {
         if (i > 0) html += `<span class="rs-chain-arr">→</span>`;
-        if (blankPositions.includes(i)) {
-          html += `<span class="rs-chain-node correct-blank" title="blank">${b.node || '?'}</span>`;
-        } else {
-          html += `<span class="rs-chain-node given">${b.node || ''}</span>`;
-        }
+        const isBlank = todayBlanks.includes(i);
+        html += `<span class="rs-chain-node ${isBlank ? 'correct-blank' : 'given'}">${b.node || ''}</span>`;
       });
-      html += `</div>
-      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
-        ⓘ Per-blank answers not stored yet — only score saved. Deploy the submitEx1Recall fix to capture answers.
+      html += `</div>`;
+      html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
+        ${ex1Score != null
+          ? `Score: ${ex1Score}% (${s.ex1_correct}/${s.ex1_total}) — per-blank answers not stored for this session.`
+          : 'No score stored for this session.'}
       </div>`;
     }
 
-    // Day 1 chain recall (on recall days)
-    if (s.session_type === 'recall' && day1Ex && s.ex1_d1_score != null) {
-      const d1Blocks      = day1Ex.ex1_blocks || [];
-      const d1BlankPos    = (day1Ex.ex1_recall_blanks || {})[String(s.day)];
-      const d1Blanks      = d1BlankPos != null ? [d1BlankPos] : [];
-      const d1Answers     = s.ex1_d1_answers;
+    // ── Day 1 Chain Recall (recall days only) ──
+    if (isRecallDay && day1Ex) {
+      const d1Blocks   = day1Ex.ex1_blocks || [];
+      const d1BlankPos = (day1Ex.ex1_recall_blanks || {})[String(s.day)];
+      const d1Blanks   = d1BlankPos != null ? [Number(d1BlankPos)] : [];
 
       html += `<div class="rs-ex-hd" style="margin-top:1rem">
         <span class="rs-ex-badge recall">🔁 Day 1 Chain Recall</span>
-        <span class="rs-ex-score" style="color:${_scoreColor(s.ex1_d1_score)}">${s.ex1_d1_score}%</span>
+        ${s.ex1_d1_score != null
+          ? `<span class="rs-ex-score" style="color:${_scoreColor(s.ex1_d1_score)}">${s.ex1_d1_score}% · ${s.ex1_d1_correct ?? '?'}/${s.ex1_d1_total ?? '?'}</span>`
+          : '<span class="rs-ex-score" style="color:var(--text3)">no score saved</span>'}
       </div>`;
 
-      if (d1Answers?.length) {
+      if (s.ex1_d1_answers?.length) {
         html += `<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">`;
-        d1Answers.forEach(a => {
+        s.ex1_d1_answers.forEach(a => {
           html += `<div style="display:flex;align-items:baseline;gap:12px;font-family:'DM Mono',monospace;font-size:10px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid ${a.ok ? 'var(--green-border)' : 'var(--red-border)'};background:${a.ok ? 'var(--green-bg)' : 'var(--red-bg)'}">
             <span style="color:var(--text3);min-width:65px">node ${a.node_idx + 1}</span>
             <span style="color:var(--text1);flex:1">${a.user_answer || '—'}</span>
@@ -2920,26 +2917,35 @@ function _renderResultSheet() {
         html += `<div class="rs-chain">`;
         d1Blocks.forEach((b, i) => {
           if (i > 0) html += `<span class="rs-chain-arr">→</span>`;
-          if (d1Blanks.includes(i)) {
-            html += `<span class="rs-chain-node correct-blank">${b.node || '?'}</span>`;
-          } else {
-            html += `<span class="rs-chain-node given">${b.node || ''}</span>`;
-          }
+          const isBlank = d1Blanks.includes(i);
+          html += `<span class="rs-chain-node ${isBlank ? 'correct-blank' : 'given'}">${b.node || ''}</span>`;
         });
-        html += `</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">ⓘ Score: ${s.ex1_d1_score}% — per-blank answers not stored yet.</div>`;
+        html += `</div>`;
+        html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px">
+          ${s.ex1_d1_score != null
+            ? `Score: ${s.ex1_d1_score}% (${s.ex1_d1_correct}/${s.ex1_d1_total}) — per-blank answers not stored.`
+            : 'No score stored — this session predates the recall data fix.'}
+        </div>`;
       }
     }
   }
 
   // ── Ex2 — Today's new questions ───────────────────────────────────
-  const todayEx    = ex;
-  const todayQs    = todayEx ? getAdminQuestionsForDay(todayEx, s.day) : [];
-  const passage    = todayEx?.ex2_passage;
+  const todayEx = ex;
+  const todayQs = todayEx ? getAdminQuestionsForDay(todayEx, s.day) : [];
+  const passage = todayEx?.ex2_passage;
 
   if (todayQs.length) {
+    const computedEx2Score = todayQRows.length
+      ? Math.round(todayQRows.filter(r => r.correct).length / todayQRows.length * 100)
+      : null;
+    const displayEx2Score = ex2Score ?? computedEx2Score;
+
     html += `<div class="rs-ex-hd" style="margin-top:1.25rem">
       <span class="rs-ex-badge ex2">Ex2 — ${s.session_type === 'recall' ? 'New Questions' : 'Comprehension'}</span>
-      ${ex2Score != null ? `<span class="rs-ex-score" style="color:${_scoreColor(ex2Score)}">${ex2Score}%</span>` : ''}
+      ${displayEx2Score != null
+        ? `<span class="rs-ex-score" style="color:${_scoreColor(displayEx2Score)}">${displayEx2Score}% · ${todayQRows.filter(r=>r.correct).length}/${todayQRows.length}</span>`
+        : '<span class="rs-ex-score" style="color:var(--text3)">no score saved</span>'}
     </div>`;
 
     if (passage) {
@@ -2951,39 +2957,50 @@ function _renderResultSheet() {
 
     const rowByIdx = {};
     todayQRows.forEach(r => { rowByIdx[r.question_index] = r; });
-
     todayQs.forEach((q, qi) => {
       html += _buildQCardHtml(q, qi, rowByIdx[qi]);
     });
   }
 
-  // ── Ex2 — Day 1 recall questions (on recall days) ─────────────────
+  // ── Ex2 — Day 1 recall questions ─────────────────────────────────
   if (s.session_type === 'recall' && day1Ex) {
-    const map          = day1Ex.ex2_recall_map || {};
-    const recallIdxs   = (map[String(s.day)] || []).map(Number);
-    const recallQs     = recallIdxs.map(i => day1Ex.ex2_questions?.[i]).filter(Boolean);
+    const map        = day1Ex.ex2_recall_map || {};
+    const recallIdxs = (map[String(s.day)] || []).map(Number);
+    const recallQs   = recallIdxs.map(i => day1Ex.ex2_questions?.[i]).filter(Boolean);
 
-    if (recallQs.length) {
+    if (recallQs.length || recallQRows.length) {
+      const computedD1Score = recallQRows.length
+        ? Math.round(recallQRows.filter(r => r.correct).length / recallQRows.length * 100)
+        : null;
+      const displayD1Score = s.ex2_d1_score ?? computedD1Score;
+
       html += `<div class="rs-ex-hd" style="margin-top:1.5rem">
         <span class="rs-ex-badge recall">🔁 Day 1 Recall Questions</span>
-        ${s.ex2_d1_score != null ? `<span class="rs-ex-score" style="color:${_scoreColor(s.ex2_d1_score)}">${s.ex2_d1_score}%</span>` : ''}
+        ${displayD1Score != null
+          ? `<span class="rs-ex-score" style="color:${_scoreColor(displayD1Score)}">${displayD1Score}% · ${recallQRows.filter(r=>r.correct).length}/${recallQRows.length}</span>`
+          : '<span class="rs-ex-score" style="color:var(--text3)">no score saved</span>'}
       </div>`;
 
-      // No passage on recall days — intentional
-      html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:10px">Passage hidden on recall days — testing retention from memory.</div>`;
+      html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:10px">
+        Passage hidden on recall days — testing retention from memory.
+      </div>`;
 
-      const recallRowByIdx = {};
-      recallQRows.forEach(r => { recallRowByIdx[r.question_index] = r; });
-
-      recallQs.forEach((q, qi) => {
-        // question_index in DB is the original index in day1Ex.ex2_questions
-        const origIdx = recallIdxs[qi];
-        html += _buildQCardHtml(q, qi, recallRowByIdx[origIdx] || recallQRows[qi]);
-      });
+      if (recallQs.length) {
+        const recallRowByOrigIdx = {};
+        recallQRows.forEach(r => { recallRowByOrigIdx[r.question_index] = r; });
+        recallQs.forEach((q, qi) => {
+          const origIdx = recallIdxs[qi];
+          html += _buildQCardHtml(q, qi, recallRowByOrigIdx[origIdx] ?? recallQRows[qi]);
+        });
+      } else if (recallQRows.length) {
+        html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);padding:8px 0">
+          ${recallQRows.length} recall question${recallQRows.length !== 1 ? 's' : ''} answered — exercise not found to show full question text.
+        </div>`;
+      }
     }
   }
 
-  if (!todayQs.length && !(s.session_type === 'recall')) {
+  if (!todayQs.length && s.session_type !== 'recall') {
     html += `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:1rem 0">
       No question-level data saved for this session.
     </div>`;
