@@ -1960,7 +1960,11 @@ function renderPromptsPanel() {
     </div>
 
     <div class="form-card" style="margin-top:1.5rem">
-      <div class="form-card-title">Paste AI Response — Auto-fill &amp; Save to Selected Users</div>
+      <div class="form-card-title">Paste AI Response — Auto-fill &amp; Save to Selected Users
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--purple);margin-left:8px">
+          → Week ${currentWeek}
+        </span>
+      </div>
       <div class="form-group">
         <label class="form-label">Paste JSON from AI here</label>
         <textarea class="form-textarea" id="json-paste" rows="8" placeholder='Paste the JSON block from AI response here…'></textarea>
