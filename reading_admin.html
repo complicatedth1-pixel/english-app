@@ -2083,10 +2083,11 @@ async function parseAndSaveToSelected() {
     return;
   }
 
-  const day = data.day || activeDay;
+const day  = data.day  || activeDay;
+  const week = data.week || currentWeek;
   const questions = (data.ex2_questions || []);
   const payload = {
-    week:                currentWeek,
+    week,
     day,
     topic:               data.topic || '',
     ex1_blocks:          data.ex1_blocks || [],
@@ -2121,10 +2122,11 @@ async function parseAndSaveToSelected() {
     }
   }
 
-  if (eligibleUIDs.includes(currentUID)) {
-allExercises = await rdGetAllExercises(currentUID);
-renderWeekTabs();
-renderDayTabs();
+if (eligibleUIDs.includes(currentUID)) {
+    allExercises = await rdGetAllExercises(currentUID);
+    renderWeekTabs();
+    renderDayTabs();
+    renderPromptsPanel();
   }
 
   if (statusEl) statusEl.innerHTML = results.join(' &nbsp;·&nbsp; ');
