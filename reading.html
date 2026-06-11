@@ -334,8 +334,8 @@ async function startSession() {
   const week        = userState.current_week;
   const isRecallDay = [2, 4, 6, 7].includes(day);
 
-const dayEx  = await rdGetExercise(week, day, currentUser.id);
-const day1Ex = (day === 1) ? dayEx : await rdGetExercise(week, 1, currentUser.id);
+  const dayEx  = await rdGetExercise(week, day, currentUser.id);
+  const day1Ex = (day === 1) ? dayEx : await rdGetExercise(week, 1, currentUser.id);
 
   if (!dayEx) {
     btn.textContent = 'No exercise uploaded for today yet.';
@@ -356,21 +356,25 @@ const day1Ex = (day === 1) ? dayEx : await rdGetExercise(week, 1, currentUser.id
     startTime:  Date.now(),
     phaseStart: Date.now(),
     phaseTimes: {},
-    questionResults: [],   // all per-question results accumulated across Ex2 steps
+    questionResults: [],
 
-    // Ex1 scores
+    // Ex1 scores — today's recall
     ex1Correct: 0, ex1Total: 0, ex1Score: null,
-    ex1D1Correct: 0, ex1D1Total: 0, ex1D1Score: null,
 
-    // Ex2 scores
+    // Ex1 scores — day 1 recall (null until set on recall days)
+    ex1D1Correct: null, ex1D1Total: null, ex1D1Score: null,
+
+    // Ex2 scores — today's questions
     ex2Correct: 0, ex2Total: 0, ex2Score: null,
-    ex2D1Correct: 0, ex2D1Total: 0, ex2D1Score: null,
 
-    // store results arrays for review in analysis
+    // Ex2 scores — day 1 recall questions (null until set on recall days)
+    ex2D1Correct: null, ex2D1Total: null, ex2D1Score: null,
+
+    // results arrays for review in analysis
     _activeQuestions:       [],
     _activeRecallQuestions: [],
-    _ex2Results:            [],   // results from Ex2Screen for today's Qs
-    _ex2RecallResults:      [],   // results from Ex2Screen for recall Qs
+    _ex2Results:            [],
+    _ex2RecallResults:      [],
   };
 
   document.getElementById('ex-meta').textContent  = `${dayEx.topic} · Week ${week} Day ${day}`;
