@@ -690,6 +690,7 @@ async function buildAnalysis() {
       week:             sess.week,
       day:              sess.day,
       session_type:     sess.isRecallDay ? 'recall' : 'normal',
+      ex1_read_time:    sess.phaseTimes['ex1-read'] || sess.phaseTimes['ex1-read-day'] || null,
       ex1_recall_time:  sess.phaseTimes['ex1-recall'] || sess.phaseTimes['ex1-recall-day'] || null,
       ex1_score:        dbEx1Score != null ? dbEx1Score : null,
       ex1_correct:      sess.ex1Correct  != null ? sess.ex1Correct  : null,

@@ -2445,7 +2445,7 @@ function _renderAnMain() {
   if (_anSessions.length) {
     html += `<div class="section-label" style="margin-top:1.5rem;margin-bottom:.85rem">Session History</div>
 <table class="session-table">
-      <thead><tr><th>Day</th><th>Date</th><th>Type</th><th>Ex1</th><th>Ex1 Time</th><th>Ex2</th><th>Ex2 Time</th><th>Total</th><th></th></tr></thead><tbody>`;
+      <thead><tr><th>Day</th><th>Date</th><th>Type</th><th>Ex1</th><th>Ex1 Read</th><th>Ex1 Recall</th><th>Ex2</th><th>Ex2 Time</th><th>Total</th><th></th></tr></thead><tbody>`;
     _anSessions.forEach((s, i) => {
       const e1c  = _scoreCls(s.ex1_score);
       const e2c  = _scoreCls(s.ex2_score);
@@ -2455,6 +2455,7 @@ html += `<tr style="cursor:pointer" onclick="_openResultSheet(${i}, 'session')">
         <td>${date}</td>
         <td>${s.session_type||'—'}</td>
         <td class="${e1c}">${s.ex1_score!=null?s.ex1_score+'%':'—'}</td>
+        <td>${s.ex1_read_time!=null?fmt(s.ex1_read_time):'—'}</td>
         <td>${s.ex1_recall_time!=null?fmt(s.ex1_recall_time):'—'}</td>
         <td class="${e2c}">${s.ex2_score!=null?s.ex2_score+'%':'—'}</td>
         <td>${s.ex2_time!=null?fmt(s.ex2_time):'—'}</td>
@@ -2854,6 +2855,9 @@ function _renderResultSheet() {
       ${s.ex2_d1_score != null ? `<div class="rs-score-cell"><div class="rs-score-val" style="color:${_scoreColor(s.ex2_d1_score)}">${s.ex2_d1_score}%</div><div class="rs-score-lbl">Day 1 Recall Q</div></div>` : ''}
       ${s.ex2_correct != null ? `<div class="rs-score-cell"><div class="rs-score-val">${s.ex2_correct}/${s.ex2_total || 0}</div><div class="rs-score-lbl">Today's Qs</div></div>` : ''}
 ${s.ex1_recall_time != null ? `<div class="rs-score-cell"><div class="rs-score-val">${fmt(s.ex1_recall_time)}</div><div class="rs-score-lbl">Ex1 Time</div></div>` : ''}
+      ${s.ex2_time != null ? `<div class="rs-score-cell"><div class="rs-score-val">${fmt(s.ex2_time)}</div><div class="rs-score-lbl">Ex2 Time</div></div>` : ''}
+${s.ex1_read_time != null ? `<div class="rs-score-cell"><div class="rs-score-val">${fmt(s.ex1_read_time)}</div><div class="rs-score-lbl">Ex1 Read Time</div></div>` : ''}
+      ${s.ex1_recall_time != null ? `<div class="rs-score-cell"><div class="rs-score-val">${fmt(s.ex1_recall_time)}</div><div class="rs-score-lbl">Ex1 Recall Time</div></div>` : ''}
       ${s.ex2_time != null ? `<div class="rs-score-cell"><div class="rs-score-val">${fmt(s.ex2_time)}</div><div class="rs-score-lbl">Ex2 Time</div></div>` : ''}
       <div class="rs-score-cell"><div class="rs-score-val">${totalTime}</div><div class="rs-score-lbl">Total Time</div></div>
     </div>`;
